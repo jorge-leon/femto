@@ -393,7 +393,7 @@
 	read in object is returned.  If end of file is reached, an exception is raised, unless <var>eof-value</var> is
 	not <code>nil</code>. In that case <code>eof-value</code> is returned.
       </dd>
-      <dt><code>(write <var>object</var>[ <var>keys</var>..]]</code>
+      <dt><code>(write <var>object</var>[ <var>keys</var>..]] <u>C</u></code>
       </dt>
       <dd><code><var>keys</var></code>:</dd>
       <dd>
@@ -408,15 +408,15 @@
 	not <code>nil</code> output is formatted in a way which which gives the same object when read again.
 	<code>write</code> returns the <var>object</var>.
       </dd>
-      <dt><code>(eval <var>object</var>)</code></dt>
+      <dt><code>(eval <var>object</var>)</code> <u>C</u></dt>
       <dd>Evaluates <var>object</var> and returns the result.</dd>
 
-      <dt><code>(system <var>string</var>)</code></dt>
+      <dt><code>(system <var>string</var>)</code> <u>Sc: run-shell-command</u></dt>
       <dd>
 	Executes the <a href="https://man7.org/linux/man-pages/man3/system.3.html">system(1)</a> function
 	with <var>string</var> as parameter.
       </dd>
-      <dt><code>(os.getenv <var>string</var>) </code></dt>
+      <dt><code>(os.getenv <var>string</var>)</code> <u>Ss: get-environment-variables</u></dt>
       <dd>Returns the value of the environment variable named <var>string</var>.</dd>
     </dl>    
 

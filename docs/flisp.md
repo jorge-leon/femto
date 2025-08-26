@@ -169,10 +169,9 @@ interpreter, extension functions behave the same as core functions.
 #### Syntax
 
 Program text is written as a sequence of symbolic expressions -
-<span class="abbr"><span class="dfn">sexp</span></span>'s - in
-parenthesized form. A [sexp](https://en.wikipedia.org/wiki/S-expression)
-is either a single symbol or a sequence of symbols or sexp's enclosed in
-parenthesis.
+<span class="dfn">sexp</span>'s - in parenthesized form. A
+[sexp](https://en.wikipedia.org/wiki/S-expression) is either a single
+symbol or a sequence of symbols or sexp's enclosed in parenthesis.
 
 The following characters are special to the reader:
 
@@ -184,8 +183,7 @@ Starts a function or macro invocation, a *list* or *cons* object (see
 Finishes a function invocation, *list* or *cons* object.
 
 `'` and `:`  
-With a single quote or a colon prefix before a
-<span class="abbr">sexp</span>, the <span class="abbr">sexp</span> is
+With a single quote or a colon prefix before a sexp, the sexp is
 expanded to `(quote «sexp»)` before it is evaluated.
 
 `.`  
@@ -747,14 +745,10 @@ only one *num* is given they all return `t`.
 This library implements commonly excpected Lisp idioms. *fLisp*
 implements a carefully selected minimum set of commonly used functions.
 
-listp
-
-and
-
-or
-
-`(reduce «func» «list» «start»)` <u>D</u>
-
+listp  
+and  
+or  
+`(reduce «func» «list» «start»)` <u>D</u>  
 `reduce` applies the binary *func* to the first element of *list* and
 *start* and then recursively to the first element of the rest of the
 *list* and the result of the previous invocation: it is “right binding”.
@@ -762,19 +756,19 @@ or
 Since `reduce` is right associative and *start* is not optional, it
 differs significantly both from Common Lisp and Scheme.
 
-max
+max  
+min  
+nthcdr  
+nth  
+`(fold-right «func» «end» «list»)` <u>Cs</u>  
+`(unfold «func» «init» «pred»)` <u>Cs</u>  
+`(iota «count»[ «start»[ «step»]])` <u>Cs</u>  
+`(flip «func»)` <u>f</u>  
+Returns a lambda which calls binary *func* with it's two arguments
+reversed (flipped).
 
-min
-
-nthcdr
-
-nth
-
-`(fold-right «func» «end» «list»)` <u>Cs</u>
-
-`(unfold «func» «init» «pred»)` <u>Cs</u>
-
-`(iota «count»[ «start»[ «step»]])` <u>Cs</u>
+`(reverse «l»)`  
+Returns a list with all elements of *l* in reverse order
 
 #### Standard Library
 

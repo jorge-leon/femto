@@ -178,7 +178,7 @@ flisplib 1; ok nth-1 yields element
 
 false; ok foldr-1 \# TODO
 
-false; ok unfold-1 \# TODO
+true; ok unfold-1 \# TODO unfold is tested by its application in iota
 
 IN="(iota 5)" OUT="(0 1 2 3 4)"
 flisplib 1; ok iota-1 iota count gives count
@@ -188,6 +188,13 @@ flisplib 1; ok iota-1 iota count start gives count from start
 
 IN="(iota 5 10 2)" OUT="(10 12 14 16 18)"
 flisplib 1; ok iota-1 iota count step gives count from start by step
+
+IN="((flip -) 2 3)" OUT="1"
+flisplib 1; ok flip-1 flip - on '2-3' is 1
+
+IN="(reverse '(1 2 3))" OUT="(3 2 1)"
+flisplib 1; ok reverse-1 reverse 1 2 3 is 3 2 1
+
 
 
 # Local Variables:

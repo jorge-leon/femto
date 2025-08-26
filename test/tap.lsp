@@ -10,7 +10,8 @@
 
 (defmacro test (comment . body)
   ;;; Note: my macro skills fail on me again, this does not work
-  (list 'setq 'tests (list 'append 'tests comment (list 'lambda () body))))
+  ;;; want: `(setq tests (cons (cons ,comment (lambda () ,body)) tests))
+  (list 'setq 'tests (list 'cons (list 'cons comment (list 'lambda '()  body)) 'tests)))
 
 (defun ok (num test)
   ;; Ok runs 'test' and prints out a TAP14 conform message
@@ -29,4 +30,4 @@
 	   (pr "TAP version 14")
 	   (pr "1.." (length (caddr result)))
 	   (pr "# " suite)
-	   (fold-left ok 1 (caddr result))))))
+	   (fold-left ok 1 (reverse (caddr result)))))))

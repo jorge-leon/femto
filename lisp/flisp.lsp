@@ -64,4 +64,7 @@
 	  (pred (lambda (n) (= 0 count))))
       (unfold func start pred))))
 
+(defun flip (func)  (lambda (o1 o2) (func o2 o1)))
+(defun reverse (l)  (fold-left (flip cons) nil l))
+
 (provide 'flisp)

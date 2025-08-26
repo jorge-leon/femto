@@ -194,7 +194,7 @@ ftest: femto FORCE
 	FEMTORC=femto.rc FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto +6 lisp/core.lsp
 
 ltest: femto test.rc
-	FEMTOLIB=lisp FEMTORC=test.rc FEMTO_DEBUG=1 FEMTO_BATCH=1 ./femto 3> test/test.out
+	FEMTOLIB=lisp FEMTORC=test.rc FEMTO_DEBUG=1 FEMTO_BATCH=1 ./femto 3>&1
 
 test_core: test/core.lsp flisp
 	<$< FLISPRC= FLISPLIB= ./flisp > test/core.now &&  sed 's/Stream 0x\(.\+\),/Stream /' test/core.now | diff -q - test/core.out

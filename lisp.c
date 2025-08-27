@@ -1021,9 +1021,17 @@ Object *readNumberOrSymbol(Interpreter *interp, FILE *fd)
         (void)addCharToBuf(interp, streamGetc(interp, fd));
         ch = streamPeek(interp, fd);
     }
-    // try to read a number in integer or decimal format
-    // Note: readInteger support hex and octal, but we do not support it here.
+    // Try to read a number in integer or decimal (float) format.
+    // C notation applies: 010 = 8, 0x10 = 16
     if (ch == '.' || isdigit(ch)) {
+        if (ch == '0') {
+            (void)addCharToBuf(interp, streamGetc(interp, fd));
+            ch = streamPeek(interp, fd);
+            if (ch == 'x') {
+                (void)addCharToBuf(interp, streamGetc(interp, fd));
+                ch = streamPeek(interp, fd);
+            }
+        }
         if (isdigit(ch))
             ch = readWhile(interp, fd, isdigit);
         if (!isSymbolChar(ch))

@@ -882,7 +882,6 @@ Object *readInteger(Interpreter *interp)
 
     addCharToBuf(interp, '\0');
     errno = 0;
-    /* Note: we allow hex and octal scanning, but the reader does not support it */
     n = strtoimax(interp->buf, NULL, 0);
     if (errno == ERANGE)
         exception(interp, range_error, "integer out of range,: %"PRId64, n);

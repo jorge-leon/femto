@@ -12,8 +12,7 @@
     ((null (cdr args)) (car args))
     (t (list 'cond (list (car args) (cons 'and (cdr args)))))))
 
-(defmacro or args
-  (cond (args (cons (quote cond) (map1 list args)))))
+(defmacro or args  (cons 'cond (map1 list args)))
 
 (defun reduce (func seq start)
   (cond ((null seq) start)

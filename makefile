@@ -121,8 +121,6 @@ replace.o: replace.c header.h
 search.o: search.c header.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c search.c
 
-test.rc: test.sht lisp/core.lsp
-
 undo.o: undo.c header.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c undo.c
 
@@ -182,9 +180,22 @@ run: femto FORCE
 splint: FORCE
 	splint +posixlib -macrovarprefix "M_" *.c *.h
 
-test: flisp femto FORCE
-	(cd test && SUMMARY=1 ./run)
+test: flisp femto test/test.rc FORCE
+	@(cd test && ./test -as)
 
+# Exit 1 if any testsuite fails
+check: flisp femto test/test.rc FORCE
+	@(cd test && ./test -sa | grep tests, | \
+	while read RESULT; do \
+	   RESULT=$${RESULT#* tests, }; \
+	   RESULT=$${RESULT% failures*}; \
+	   [ "$$RESULT" = 0 ] || { echo failed >&2; exit 1; } \
+        done )
+
+test/test.rc: test/test.sht lisp/core.lsp
+
+
+# Manually test femto invocation and review syntax highlighting
 ftest: femto FORCE
 	FEMTORC=femto.rc FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto
 	FEMTORC=femto.rc FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto _no_file_
@@ -192,14 +203,6 @@ ftest: femto FORCE
 	FEMTORC=femto.rc FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto +6 test/circle.py
 	FEMTORC=femto.rc FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto +8 lisp.c
 	FEMTORC=femto.rc FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto +6 lisp/core.lsp
-
-ltest: femto test.rc
-	FEMTOLIB=lisp FEMTORC=test.rc FEMTO_DEBUG=1 FEMTO_BATCH=1 ./femto 3>&1
-
-test_core: test/core.lsp flisp
-	<$< FLISPRC= FLISPLIB= ./flisp > test/core.now &&  sed 's/Stream 0x\(.\+\),/Stream /' test/core.now | diff -q - test/core.out
-test/core.out: test/core.lsp flisp
-	<$< FLISPRC= FLISPLIB= ./flisp | sed 's/Stream 0x\(.\+\),/Stream /' > test/core.out
 
 val: femto FORCE
 	FEMTORC=femto.rc FEMTOLIB=lisp FEMTO_DEBUG=1 valgrind ./femto 2> val.log
@@ -212,9 +215,10 @@ clean: FORCE
 	-$(RM) -f $(OBJ) $(FLISP_OBJ) $(BINARIES) $(RC_FILES)
 	-$(RM) -rf doxygen
 	-$(RM) -f $(MOREDOCS)
-	-$(RM) -f val.log debug.out f.log test/f.log
+	-$(RM) -f val.log debug.out f.log
 	-$(RM) -rf debian/femto debian/files \
 		debian/femto.debhelper.log debian/femto.substvars
+	-$(RM) -f test/test.rc  test/debug.out
 
 deb: FORCE
 	dpkg-buildpackage -b -us -uc

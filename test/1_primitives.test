@@ -1,4 +1,5 @@
-#!./run
+#!./test # -*- mode: sh -*-
+#
 # test executable and fLisp functionality
 # leg20231128: Femto
 
@@ -458,8 +459,3 @@ false; ok file extension \# TODO
 # Femto editor extension
 
 false; ok femto editor extension \# TODO
-
-
-# Local Variables:
-# mode: sh
-# End:

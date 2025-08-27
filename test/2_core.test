@@ -1,4 +1,4 @@
-#!./run
+#!./test # -*- mode: sh -*-
 # test the fLisp core library
 # leg20231129: Femto
 
@@ -264,8 +264,3 @@ flisp_expr 2; ok require-3 requiring existing feature returns feature
 IN="(require 'flisp)" OUT="(core)
 flisp"
 flisp_expr 2; ok require-4 requiring new feature returns feature
-
-
-# Local Variables:
-# mode: sh
-# End:

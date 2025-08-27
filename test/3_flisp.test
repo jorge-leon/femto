@@ -1,4 +1,4 @@
-#!./run
+#!./test# -*- mode: sh -*-
 # test the fLisp library
 # leg20231129: Femto
 tap 56
@@ -194,9 +194,3 @@ flisplib 1; ok flip-1 flip - on '2-3' is 1
 
 IN="(reverse '(1 2 3))" OUT="(3 2 1)"
 flisplib 1; ok reverse-1 reverse 1 2 3 is 3 2 1
-
-
-
-# Local Variables:
-# mode: sh
-# End:

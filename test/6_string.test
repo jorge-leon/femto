@@ -1,4 +1,4 @@
-#!./run
+#!./test # -*- mode: sh -*-
 # test executable and fLisp functionality
 # leg20231128: Femto
 

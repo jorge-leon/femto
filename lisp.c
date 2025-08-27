@@ -1149,6 +1149,17 @@ Object *readExpr(Interpreter *interp, FILE *fd)
             return NULL;
         else if (ch == '\'' || ch == ':')
             return readUnary(interp, fd, "quote");
+        else if (ch == '`')
+            return readUnary(interp, fd, "quasiquote");
+        else if (ch == ',') {
+            ch = streamPeek(interp, fd);
+            if (ch == '@') {
+                (void)addCharToBuf(interp, streamGetc(interp, fd));
+                return readUnary(interp, fd, "splice-unquote");
+            }
+            else
+                return readUnary(interp, fd, "unquote");
+        }
         else if (ch == '"')
             return readString(interp, fd);
         else if (ch == '(')

@@ -5,9 +5,7 @@
 $(cat lisp/core.lsp)
 
 ;; flisp initialzation 
-(setq
- ~ (os.getenv "HOME")
- config_file (concat ~ "/" ".config/flisp/flisp.rc"))
+(setq config_file (concat ~ "/" ".config/flisp/flisp.rc"))
 
 (defun getopts (opts pos)
   (setq o (car opts))

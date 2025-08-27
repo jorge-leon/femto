@@ -807,7 +807,7 @@ int streamUngetc(Interpreter *interp, FILE *fd, int c)
 // Begin helpers //////////
 int isSymbolChar(int ch)
 {
-    static const char *valid = "!#$%&*+-./:<=>?@^_~";
+    static const char *valid = "!#$%&*+-./:<=>?@^_|~";
     return isalnum(ch) || strchr(valid, ch);
 }
 
@@ -1893,6 +1893,32 @@ Object *integerGreaterEqual(Interpreter *interp, Object **args, Object **env)
     return (FLISP_ARG_ONE->integer >= FLISP_ARG_TWO->integer) ? t : nil;
 }
 
+// Integer bit operations //////
+Object *integerAnd(Interpreter *interp, Object **args, Object **env)
+{
+    return newInteger(interp, FLISP_ARG_ONE->integer & FLISP_ARG_TWO->integer);
+}
+Object *integerOr(Interpreter *interp, Object **args, Object **env)
+{
+    return newInteger(interp, FLISP_ARG_ONE->integer | FLISP_ARG_TWO->integer);
+}
+Object *integerXor(Interpreter *interp, Object **args, Object **env)
+{
+    return newInteger(interp, FLISP_ARG_ONE->integer ^ FLISP_ARG_TWO->integer);
+}
+Object *integerShiftLeft(Interpreter *interp, Object **args, Object **env)
+{
+    return newInteger(interp, FLISP_ARG_ONE->integer << FLISP_ARG_TWO->integer);
+}
+Object *integerShiftRight(Interpreter *interp, Object **args, Object **env)
+{
+    return newInteger(interp, FLISP_ARG_ONE->integer >> FLISP_ARG_TWO->integer);
+}
+Object *integerNot(Interpreter *interp, Object **args, Object **env)
+{
+    return newInteger(interp, ~FLISP_ARG_ONE->integer);
+}
+
 
 
 // STREAMS //////////////////////////////////////////////////
@@ -2241,6 +2267,12 @@ Primitive primitives[] = {
     {"i<=",           2,  2, TYPE_INTEGER, integerLessEqual},
     {"i>",            2,  2, TYPE_INTEGER, integerGreater},
     {"i>=",           2,  2, TYPE_INTEGER, integerGreaterEqual},
+    {"&",             2,  2, TYPE_INTEGER, integerAnd},
+    {"|",             2,  2, TYPE_INTEGER, integerOr},
+    {"^",             2,  2, TYPE_INTEGER, integerXor},
+    {"<<",            2,  2, TYPE_INTEGER, integerShiftLeft},
+    {">>",            2,  2, TYPE_INTEGER, integerShiftRight},
+    {"~",             1,  1, TYPE_INTEGER, integerNot},
     {"string-equal",  2,  2, TYPE_STRING, stringEqual},
     {"string-length", 1,  1, TYPE_STRING, stringLength},
     {"string-append", 2,  2, TYPE_STRING, stringAppend},

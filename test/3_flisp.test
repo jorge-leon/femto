@@ -1,7 +1,7 @@
 #!./test# -*- mode: sh -*-
 # test the fLisp library
 # leg20231129: Femto
-tap 56
+tap 58
 
 export FLISPRC=../lisp/core.lsp
 flisplib() { IN="(require 'flisp) $IN" flisp_expr "$@"; }

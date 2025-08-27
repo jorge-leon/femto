@@ -50,7 +50,8 @@ This manual refers to version 0.6 or later of fLisp.
     2.  [Input / Output and Others](#in_out)
     3.  [Object Operations](#object_ops)
     4.  [Arithmetic Operations](#arithmetic_ops)
-    5.  [String Operations](#string_ops)
+    5.  [Bitwise Integer Operations](#bitwise_ops)
+    6.  [String Operations](#string_ops)
 6.  [Double Extension](#double)
 7.  [Lisp Libraries](#libraries)
     1.  [Library Loading](#startup)
@@ -169,9 +170,10 @@ interpreter, extension functions behave the same as core functions.
 #### Syntax
 
 Program text is written as a sequence of symbolic expressions -
-<span class="dfn">sexp</span>'s - in parenthesized form. A
-[sexp](https://en.wikipedia.org/wiki/S-expression) is either a single
-symbol or a sequence of symbols or sexp's enclosed in parenthesis.
+<span class="abbr"><span class="dfn">sexp</span></span>'s - in
+parenthesized form. A [sexp](https://en.wikipedia.org/wiki/S-expression)
+is either a single symbol or a sequence of symbols or sexp's enclosed in
+parenthesis.
 
 The following characters are special to the reader:
 
@@ -183,7 +185,8 @@ Starts a function or macro invocation, a *list* or *cons* object (see
 Finishes a function invocation, *list* or *cons* object.
 
 `'` and `:`  
-With a single quote or a colon prefix before a sexp, the sexp is
+With a single quote or a colon prefix before a
+<span class="abbr">sexp</span>, the <span class="abbr">sexp</span> is
 expanded to `(quote «sexp»)` before it is evaluated.
 
 `.`  
@@ -515,6 +518,26 @@ Returns the rest (modulo) of the integer division of *i* by *j*. Throws
 `(i>= «i» «j»)`  
 These predicate functions apply the respective comparison operator
 between *i* *j*.
+
+#### Bitwise Integer Operations
+
+`(& «i» «j»)`  
+Returns the bitwise and operation on *i* and *j*.
+
+`(| «i» «j»)`  
+Returns the bitwise or operation on *i* and *j*.
+
+`(^ «i» «j»)`  
+Returns the bitwise xor operation on *i* and *j*.
+
+`(<< «i» «j»)`  
+Returns *i* shift left by *j* bits.
+
+`(>> «i» «j»)`  
+Returns *i* shift right by *j* bits.
+
+`(~ «i»)`  
+Returns the bitwise negation of *i*.
 
 #### String Operations
 

@@ -38,7 +38,7 @@
     (t (throw wrong-type-argument "(getopts opts pos) - opts must be list"))))
   
 (defun confn(fn)
-  (concat ~ "/" config_dir "/" fn))
+  (concat (os.getenv "HOME") "/" config_dir "/" fn))
 
 (defun edit-config()
   (find-file (confn config_file)))

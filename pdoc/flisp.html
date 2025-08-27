@@ -67,6 +67,7 @@
 	<li><a href="#in_out">Input / Output and Others</a></li>
 	<li><a href="#object_ops">Object Operations</a></li>
 	<li><a href="#arithmetic_ops">Arithmetic Operations</a></li>
+	<li><a href="#bitwise_ops">Bitwise Integer Operations</a></li>
 	<li><a href="#string_ops">String Operations</a></li>
       </ol>
       <li><a href="#double">Double Extension</a></li>
@@ -521,6 +522,23 @@
       <dd>
 	These predicate functions apply the respective comparison operator between <var>i</var> <var>j</var>.
       </dd>
+    </dl>
+
+        <h4 id="bitwise_ops">Bitwise Integer Operations</h4>
+
+    <dl>
+      <dt><code>(& <var>i</var> <var>j</var>)</code></dt>
+      <dd>Returns the bitwise and operation on <var>i</var> and <var>j</var>.</dd>
+      <dt><code>(| <var>i</var> <var>j</var>)</code></dt>
+      <dd>Returns the bitwise or operation on <var>i</var> and <var>j</var>.</dd>
+      <dt><code>(^ <var>i</var> <var>j</var>)</code></dt>
+      <dd>Returns the bitwise xor operation on <var>i</var> and <var>j</var>.</dd>
+      <dt><code>(&lt;&lt; <var>i</var> <var>j</var>)</code></dt>
+      <dd>Returns <var>i</var> shift left by <var>j</var> bits.</dd>
+      <dt><code>(&gt;&gt; <var>i</var> <var>j</var>)</code></dt>
+      <dd>Returns <var>i</var> shift right by <var>j</var> bits.</dd>
+      <dt><code>(~ <var>i</var>)</code></dt>
+      <dd>Returns the bitwise negation of <var>i</var>.</dd>
     </dl>
 
     <h4 id="string_ops">String Operations</h4>

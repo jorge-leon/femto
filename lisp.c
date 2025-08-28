@@ -1024,9 +1024,14 @@ Object *readNumberOrSymbol(Interpreter *interp, FILE *fd)
         (void)addCharToBuf(interp, streamGetc(interp, fd));
         ch = streamPeek(interp, fd);
     }
-    // Try to read a number in integer or decimal (float) format.
-    // C notation applies: 010 = 8, 0x10 = 16
+    /* Try to read a number in integer or decimal (float) format.
+     * C notation applies: 010 = 8, 0x10 = 16
+     */
+#ifdef FLISP_DOUBLE_EXTENSION
     if (ch == '.' || isdigit(ch)) {
+#else
+    if (isdigit(ch)) {
+#endif
         if (ch == '0') {
             (void)addCharToBuf(interp, streamGetc(interp, fd));
             ch = streamPeek(interp, fd);
@@ -1039,6 +1044,7 @@ Object *readNumberOrSymbol(Interpreter *interp, FILE *fd)
             ch = readWhile(interp, fd, isdigit);
         if (!isSymbolChar(ch))
             return readInteger(interp);
+#ifdef FLISP_DOUBLE_EXTENSION
         if (ch == '.') {
             addCharToBuf(interp, ch);
             ch = streamGetc(interp, fd);
@@ -1048,6 +1054,7 @@ Object *readNumberOrSymbol(Interpreter *interp, FILE *fd)
                     return readDouble(interp);
             }
         }
+#endif
     }
     // non-numeric character encountered, read a symbol
     readWhile(interp, fd, isSymbolChar);

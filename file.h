@@ -5,13 +5,10 @@
 
 extern Primitive flisp_file_primitives[];
 
-extern Object *primitiveFflush(Interpreter *, Object** , Object **);
-extern Object *primitiveFtell(Interpreter *, Object** , Object **);
-extern Object *primitiveFeof(Interpreter *, Object** , Object **);
-extern Object *primitiveFgetc(Interpreter *, Object** , Object **);
-extern Object *primitiveFgets(Interpreter *, Object** , Object **);
-extern Object *primitivePopen(Interpreter *, Object** , Object **);
-extern Object *primitivePclose(Interpreter *, Object** , Object **);
+extern Object *permission_denied;
+extern Object *not_found;
+
+extern Constant flisp_file_constants[];
 
 #endif
 /*

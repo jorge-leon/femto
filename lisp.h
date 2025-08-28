@@ -148,6 +148,8 @@ extern Object *newObject(Interpreter *, Object *);
 extern Object *newObjectFrom(Interpreter *, Object **);
 extern Object *newInteger(Interpreter *, int64_t);
 extern Object *newString(Interpreter *, char *);
+extern Object *newCons(Interpreter *, Object **, Object **);
+extern Object *newSymbol(Interpreter *, char *);
 extern Object *newStreamObject(Interpreter *, FILE *, char *);
 
 extern size_t addCharToBuf(Interpreter *, int);

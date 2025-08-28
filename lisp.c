@@ -2318,7 +2318,7 @@ Primitive primitives[] = {
 
 void initRootEnv(Interpreter *interp)
 {
-    int i;
+    int i, nConstants;
 
     GC_CHECKPOINT;
     GC_TRACE(gcEnv, newEnv(interp, &nil, &nil));
@@ -2326,7 +2326,7 @@ void initRootEnv(Interpreter *interp)
     interp->global = *gcEnv;
 
     // add constants
-    int nConstants = sizeof(flisp_constants) / sizeof(flisp_constants[0]);
+    nConstants = sizeof(flisp_constants) / sizeof(flisp_constants[0]);
     for (i = 0; i < nConstants; i++) {
         (*flisp_constants[i].symbol)->type = type_symbol;
         envSet(interp, flisp_constants[i].symbol, flisp_constants[i].value, &interp->global, true);
@@ -2369,6 +2369,12 @@ void initRootEnv(Interpreter *interp)
     }
 #endif
 #ifdef FLISP_FILE_EXTENSION
+    for (Constant *constant = flisp_file_constants; constant->symbol != NULL; constant++) {
+        (*constant->symbol)->type = type_symbol;
+        envSet(interp, constant->symbol, constant->value, &interp->global, true);
+        interp->symbols = newCons(interp, constant->symbol, &interp->symbols);
+    }
+
     for (Primitive *entry = flisp_file_primitives; entry->name != NULL; entry++) {
         *gcVar = newSymbol(interp, entry->name);
         *gcVal = newPrimitive(interp, entry);

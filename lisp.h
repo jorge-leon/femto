@@ -33,31 +33,6 @@
 typedef struct Object Object;
 typedef struct Interpreter Interpreter;
 typedef Object *(*LispEval) (Interpreter *, Object **, Object **);
-/* Constants */
-/* Fundamentals */
-extern Object *nil;
-extern Object *t;
-/* Types */
-extern Object *type_integer;
-extern Object *type_double;
-extern Object *type_string;
-extern Object *type_symbol;
-extern Object *type_cons;
-extern Object *type_lambda;
-extern Object *type_macro;
-extern Object *type_primitive;
-extern Object *type_stream;
-/* internal */
-extern Object *type_env;
-extern Object *type_moved;
-/* Exceptions */
-extern Object *end_of_file;
-extern Object *range_error;
-extern Object *wrong_type_argument;
-extern Object *invalid_value;
-extern Object *wrong_num_of_arguments;
-extern Object *io_error;
-extern Object *out_of_memory;
 
 typedef enum ObjectType {
     TYPE_MOVED,
@@ -140,11 +115,40 @@ typedef struct Interpreter {
 /*@null@*/extern Interpreter *lisp_interpreters;
 
 // PROGRAMMING INTERFACE ////////////////////////////////////////////////
+/* Constants */
+/* Fundamentals */
+extern Object *nil;
+extern Object *t;
+/* Types */
+extern Object *type_integer;
+extern Object *type_double;
+extern Object *type_string;
+extern Object *type_symbol;
+extern Object *type_cons;
+extern Object *type_lambda;
+extern Object *type_macro;
+extern Object *type_primitive;
+extern Object *type_stream;
+/* internal */
+extern Object *type_env;
+extern Object *type_moved;
+/* Exceptions */
+extern Object *end_of_file;
+extern Object *range_error;
+extern Object *wrong_type_argument;
+extern Object *invalid_value;
+extern Object *wrong_num_of_arguments;
+extern Object *io_error;
+extern Object *out_of_memory;
+/* utility */
+extern Object *one;
+extern Object *empty;
 
 extern Object *newObject(Interpreter *, Object *);
 extern Object *newObjectFrom(Interpreter *, Object **);
 extern Object *newInteger(Interpreter *, int64_t);
 extern Object *newString(Interpreter *, char *);
+extern Object *newStreamObject(Interpreter *, FILE *, char *);
 
 extern size_t addCharToBuf(Interpreter *, int);
 extern void resetBuf(Interpreter *);

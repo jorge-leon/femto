@@ -2136,7 +2136,7 @@ Object *os_getenv(Interpreter *interp, Object **args, Object **env)
 
 /* Strings */
 
-// (string-append s a) 
+// (string-append s a)
 Object *stringAppend(Interpreter *interp, Object **args, Object **env)
 {
     int len1 = strlen(FLISP_ARG_ONE->string);
@@ -2219,7 +2219,7 @@ Object *stringLength(Interpreter *interp, Object **args, Object **env)
 Object *stringSearch(Interpreter *interp, Object **args, Object **env)
 {
     char *pos;
-    
+
     pos = strstr(FLISP_ARG_TWO->string, FLISP_ARG_ONE->string);
     if (pos)
         return newInteger(interp, pos - FLISP_ARG_TWO->string);
@@ -2302,7 +2302,7 @@ Primitive primitives[] = {
     {"string-length", 1,  1, TYPE_STRING, stringLength},
     {"string-append", 2,  2, TYPE_STRING, stringAppend},
     {"substring",     1,  3, 0,           stringSubstring},
-    {"string-search", 2,  2, TYPE_STRING, stringSearch}, 
+    {"string-search", 2,  2, TYPE_STRING, stringSearch},
     {"ascii",         1,  1, TYPE_INTEGER, asciiToString},
     {"ascii->number", 1,  1, TYPE_STRING, asciiToInteger},
     {"os.getenv",     1,  1, TYPE_STRING, os_getenv},
@@ -2349,7 +2349,7 @@ void initRootEnv(Interpreter *interp)
     ok->type = type_cons;
     ok->car = nil;
     ok->cdr = okMessage;
-    
+
     // add primitives
     GC_TRACE(gcVar, nil);
     GC_TRACE(gcVal, nil);
@@ -2367,7 +2367,7 @@ void initRootEnv(Interpreter *interp)
 
         envSet(interp, gcVar, gcVal, &interp->global, true);
     }
-#endif    
+#endif
 #ifdef FLISP_FILE_EXTENSION
     for (Primitive *entry = flisp_file_primitives; entry->name != NULL; entry++) {
         *gcVar = newSymbol(interp, entry->name);
@@ -2375,7 +2375,7 @@ void initRootEnv(Interpreter *interp)
 
         envSet(interp, gcVar, gcVal, &interp->global, true);
     }
-#endif    
+#endif
     GC_RELEASE;
 }
 
@@ -2739,11 +2739,11 @@ void cerf(Interpreter *interp, FILE *fd)
     if (fd == NULL)
         readCons.cdr = nil;
     Object readApply =  (Object) { type_cons, .car = &readCons, .cdr = nil };
-    
+
     Object eval =      (Object) { type_primitive, .primitive = &evalPrimitive, .type_check = nil };
     Object evalCons =  (Object) { type_cons, .car = &eval, .cdr = &readApply };
     Object *evalApply = &(Object) { type_cons, .car = &evalCons, .cdr = nil };
-    
+
     (void) evalCatch(interp, &evalApply, &interp->global);
 }
 

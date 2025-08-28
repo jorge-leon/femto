@@ -30,7 +30,7 @@ OBJ = command.o display.o complete.o data.o gap.o key.o search.o	\
 	buffer.o replace.o window.o undo.o funcmap.o utils.o hilite.o	\
 	femto_lisp.o double.o main.o
 
-FLISP_OBJ = flisp.o lisp.o double.o
+FLISP_OBJ = flisp.o lisp.o double.o file.o
 FLISP_LIBS = -lm
 BINARIES = femto flisp
 RC_FILES = femto.rc flisp.rc

@@ -1,5 +1,13 @@
-#ifndef FILE_C
-#define FILE_C
+#include <errno.h>
+
+#include "lisp.h"
+#include "file.h"
+
+Primitive flisp_file_primitives[] = {
+    {"fflush", 1, 1, TYPE_STREAM, primitiveFflush},
+    {"ftell",  1, 1, TYPE_STREAM, primitiveFtell},
+    {"fgetc",  1, 1, TYPE_STREAM, primitiveFgetc},
+};
 
 /** file_fflush - flush output stream
  *
@@ -42,8 +50,6 @@ Object *primitiveFgetc(Interpreter *interp, Object** args, Object **env)
     s[0] = (char)c;
     return newString(interp, s);
 }
-#endif
-
 
 /*
  * Local Variables:

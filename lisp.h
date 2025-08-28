@@ -141,11 +141,14 @@ typedef struct Interpreter {
 
 // PROGRAMMING INTERFACE ////////////////////////////////////////////////
 
-extern Object * newObject(Interpreter *, Object *);
+extern Object *newObject(Interpreter *, Object *);
 extern Object *newObjectFrom(Interpreter *, Object **);
 extern Object *newInteger(Interpreter *, int64_t);
+extern Object *newString(Interpreter *, char *);
+
 extern size_t addCharToBuf(Interpreter *, int);
 extern void resetBuf(Interpreter *);
+
 extern void exceptionWithObject(Interpreter *, Object *, Object *, char *, ...);
 #define exception(interp, result, ...)       exceptionWithObject(interp, nil, result, __VA_ARGS__)
 #define GC_PASTE1(name, id)  name ## id
@@ -189,16 +192,6 @@ extern void lisp_write_error2(Interpreter *, FILE *);
 extern void lisp_eval2(Interpreter *);
 extern void lisp_eval3(Interpreter *, char *);
 extern void lisp_eval_string2(Interpreter *, char *);
-
-#ifdef FLISP_FILE_EXTENSION
-#define FLISP_REGISTER_FILE_EXTENSION \
-    {"fflush", 1, 1, TYPE_STREAM, primitiveFflush},     \
-    {"ftell",  1, 1, TYPE_STREAM, primitiveFtell},   \
-    {"fgetc",  1, 1, TYPE_STREAM, primitiveFgetc},
-#else
-#define FLISP_REGISTER_FILE_EXTENSION
-#endif
-
 
 #endif
 /*

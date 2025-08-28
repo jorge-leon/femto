@@ -26,6 +26,10 @@
 #include "double.h"
 #endif
 
+#ifdef FLISP_FILE_EXTENSION
+#include "file.h"
+#endif
+
 #if !defined(MAP_ANONYMOUS) && defined(MAP_ANON)
 #define MAP_ANONYMOUS        MAP_ANON
 #endif
@@ -2109,10 +2113,6 @@ Object *primitiveFclose(Interpreter *interp, Object**args, Object **env)
     GC_RETURN(newCons(interp, &(FLISP_ARG_ONE->path), gcObject));
 }
 
-#ifdef FLISP_FILE_EXTENSION
-#include "file.c"
-#endif
-
 /* OS interface */
 
 Object *fl_system(Interpreter *interp, Object **args, Object **env)
@@ -2300,7 +2300,7 @@ Primitive primitives[] = {
     {"ascii->number", 1,  1, TYPE_STRING, asciiToInteger},
     {"os.getenv",     1,  1, TYPE_STRING, os_getenv},
     {"system",        1,  1, TYPE_STRING, fl_system},
-    FLISP_REGISTER_FILE_EXTENSION
+//    FLISP_REGISTER_FILE_EXTENSION
 #ifdef FLISP_FEMTO_EXTENSION
 #include "femto.register.c"
 #endif
@@ -2353,14 +2353,22 @@ void initRootEnv(Interpreter *interp)
 
         envSet(interp, gcVar, gcVal, &interp->global, true);
     }
-
+#ifdef FLISP_DOUBLE_EXTENSION
     for (Primitive *entry = flisp_double_primitives; entry->name != NULL; entry++) {
         *gcVar = newSymbol(interp, entry->name);
         *gcVal = newPrimitive(interp, entry);
 
         envSet(interp, gcVar, gcVal, &interp->global, true);
     }
-    
+#endif    
+#ifdef FLISP_FILE_EXTENSION
+    for (Primitive *entry = flisp_file_primitives; entry->name != NULL; entry++) {
+        *gcVar = newSymbol(interp, entry->name);
+        *gcVal = newPrimitive(interp, entry);
+
+        envSet(interp, gcVar, gcVal, &interp->global, true);
+    }
+#endif    
     GC_RELEASE;
 }
 

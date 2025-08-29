@@ -1180,7 +1180,7 @@ Object *readExpr(Interpreter *interp, FILE *fd)
             return readNumberOrSymbol(interp, fd);
         }
         else
-            exception(interp, invalid_read_syntax, "unexpected character, `%c'", ch);
+            exception(interp, invalid_read_syntax, "unexpected character: '%c'", ch);
     }
 }
 
@@ -1201,7 +1201,7 @@ Object *primitiveRead(Interpreter *interp, Object **args, Object **env)
     FILE *fd = interp->input;
 
     GC_CHECKPOINT;
-    if (*args != nil) {
+    if (FLISP_HAS_ARGS) {
         stream = (*args)->car;
         if (stream->type != type_stream)
             exceptionWithObject(interp, stream, invalid_value, "(read [fd ..]) - arg 1 expected %s, got: %s", type_stream->string, stream->type->string);
@@ -2546,190 +2546,27 @@ void lisp_destroy(Interpreter *interp)
     free(interp);
 }
 
-/** lisp_eval - protected evaluation of input stream
- *
- * @param interp  fLisp interpreter
- * @param stream  open readable stream object
- * @param gcRoots gc root object
- *
- */
-void lisp_eval(Interpreter *interp)
-{
-    if (interp->input == NULL) {
-        interp->result = invalid_value;
-        strncpy(interp->msg_buf, "no input stream to evaluate", sizeof(interp->msg_buf));
-        interp->object = nil;
-        return;
-    }
-
-    interp->result = nil;
-    interp->msg_buf[0] = '\0';
-
-    // start the garbage collector
-    interp->gcTop = nil;
-    GC_CHECKPOINT;
-    GC_TRACE(gcObject, nil); // will not be released at all
-
-    for (;;) {
-        interp->result = nil;
-        interp->msg_buf[0] = '\0';
-        switch (setjmp(*interp->catch)) {
-        case FLISP_OK: break;
-        case FLISP_RETURN: return;
-        default:
-            fl_debug(interp, "error: %s, '%s'", interp->result->string, interp->msg_buf);
-            GC_RELEASE;
-            return;
-        }
-        if ((*gcObject = readExpr(interp, interp->input)) == NULL) {
-            interp->result = nil;
-            interp->msg_buf[0] = '0';
-            return;
-        }
-        lisp_write_object(interp, interp->debug, *gcObject, true);
-        writeChar(interp, interp->debug, '\n');
-        *gcObject = evalExpr(interp, gcObject, &interp->global);
-        interp->object = *gcObject;
-        lisp_write_object(interp, interp->output, *gcObject, true);
-        writeChar(interp, interp->output, '\n');
-        if (interp->output) fflush(interp->output);
-    }
-    longjmp(*interp->catch, FLISP_RETURN);
-    GC_RELEASE; // make the compiler happy
-}
-
-/** lisp_write_error - format error message and write to file
+/** lisp_write_error - write error message to file descriptor
  *
  * @param interp  fLisp interpreter
  * @param fd      open writable file descriptor
  *
- * Formats the error message and inserts the error object if not nil,
- * then writes it to the given file descriptor.
+ * Formats an error message from a (catch) result and writes it to the
+ * given file descriptor.  If the error object is nil, it is not
+ * inserted.
  *
- * It is an error to use an interpreter without error.
  */
 void lisp_write_error(Interpreter *interp, FILE *fd)
 {
-    if (interp->object == nil)
-        fprintf(fd, "error: %s\n", interp->msg_buf);
+    if (FLISP_RESULT_OBJECT == nil)
+        fprintf(fd, "error: %s\n", FLISP_RESULT_MESSAGE->string);
     else {
-        fprintf(fd, "%s", "error: '");
-        lisp_write_object(interp, fd, interp->object, true);
-        fprintf(fd, "', %s\n", interp->msg_buf);
+        fprintf(fd, "error: '");
+        lisp_write_object(interp, fd, FLISP_RESULT_OBJECT, true);
+        fprintf(fd, "', %s\n", FLISP_RESULT_MESSAGE->string);
     }
     fflush(fd);
 }
-
-/** lisp_eval_string() - interpret a string in Lisp
- *
- * @param interp  fLisp interpreter
- * @param input   string to evaluate
- *
- * Before calling `lisp_eval_string()` initialize:
- *
- * - interp->result is set to the result symbol of the evaluation, nil if succesful.
- * - interp->object is set to the resulting object
- *
- * If an error occurs during evaluation:
- *
- * - interp->object is set to the object causing the exception, or nil.
- * - interp->msg_buf is set to an error message.
- *
- */
-void lisp_eval_string(Interpreter *interp, char * input)
-{
-    FILE *fd, *prev;
-
-    fl_debug(interp, "lisp_eval_string(\"%s\")", input);
-
-    if (NULL == (fd = fmemopen(input, strlen(input), "r")))  {
-        strncpy(interp->msg_buf, "failed to allocate input stream", sizeof(interp->msg_buf));
-        goto io_error;
-    }
-    prev = interp->input;
-    interp->input = fd;
-    lisp_eval(interp);
-    interp->input = prev;
-    (void)fclose(fd);
-    if (interp->result == nil) {
-        fl_debug(interp, "lisp_eval_string() result: nil");
-        lisp_write_object(interp, interp->debug, interp->object, true);
-    }
-    else
-        fl_debug(interp, "lisp_eval_string() result: error: %s", interp->msg_buf);
-    return;
-
-io_error:
-    interp->result = io_error;
-    interp->object = nil;
-    return;
-}
-
-
-void lisp_write_error2(Interpreter *interp, FILE *fd)
-{
-    fprintf(fd, "error: '");
-    lisp_write_object(interp, fd, interp->object->cdr->cdr->car, true);
-    fprintf(fd, "', %s\n", interp->object->cdr->car->string);
-    fflush(fd);
-}
-
-void lisp_eval2(Interpreter *interp)
-{
-    // reset the garbage collector
-    interp->gcTop = nil;
-    GC_CHECKPOINT;
-    GC_TRACE(gcObject, nil);
-    Primitive readPrimitive = { "read", 0, 2, 0, primitiveRead };
-    Object *readObject =     &(Object) { type_primitive, .primitive = &readPrimitive, .type_check = nil };
-    Object *readInvocation = &(Object) { type_cons, .car = readObject, .cdr = nil };
-    Object *readApply =      &(Object) { type_cons, .car = readInvocation, .cdr = nil };
-
-    Object *okObject = &(Object) { type_cons, .car = nil, .cdr = nil };
-    Object *okString = &(Object) { type_cons, .car = empty, .cdr = okObject };
-    Object *result = &(Object) { type_cons, .car = nil, .cdr = okString };
-
-    for (;;) {
-        /* read */
-        *gcObject = evalCatch(interp, &readApply, &interp->global);
-        if (interp->object->car == end_of_file) {
-            interp->object = result;
-            break;
-        }
-        if (interp->object->car != nil)
-            break;
-        /* eval */
-        *gcObject = newCons(interp, &interp->object->cdr->cdr->car, &nil);
-        *gcObject = evalCatch(interp, gcObject, &interp->global);
-        if ((*gcObject)->car != nil)
-            break;
-        lisp_write_object(interp, interp->output, (*gcObject)->cdr->cdr->car, true);
-        writeChar(interp, interp->output, '\n');
-        if (interp->output) fflush(interp->output);
-        result = *gcObject;
-    }
-    GC_RELEASE;
-}
-void lisp_eval_string2(Interpreter *interp, char *input)
-{
-
-    FILE *fd, *prev;
-    fl_debug(interp, "lisp_eval_string2(\"%s\")", input);
-
-    if (NULL == (fd = fmemopen(input, strlen(input), "r")))  {
-        strncpy(interp->msg_buf, "failed to allocate input stream", sizeof(interp->msg_buf));
-        interp->result = io_error;
-        interp->object = nil;
-        return;
-    }
-    prev = interp->input;
-    interp->input = fd;
-
-    lisp_eval2(interp);
-    interp->input = prev;
-    (void)fclose(fd);
-}
-
 
 /** (catch (eval (read f)))
  */
@@ -2755,19 +2592,50 @@ void cerf(Interpreter *interp, FILE *fd)
 
 Object *openInputStreamError(void)
 {
-    Object *m = &(Object) { type_string, .string = "alloc stream failed" };
+    Object *m = &(Object) { type_string, .string = "cannot open input stream" };
     Object *o = &(Object) { type_cons, .car = nil, .cdr = nil };
     o =         &(Object) { type_cons, .car = m, .cdr = o };
     return      &(Object) { type_cons, .car = io_error, .cdr = o };
 }
 
-void lisp_eval3(Interpreter *interp, char *input)
+/** lisp_eval() - interpret a string or file in Lisp
+ *
+ * @param interp  fLisp interpreter
+ * @param input   string to evaluate
+ *
+ * If input is NULL, the interpreters input stream is evaluated
+ * instead.
+ *
+ * After evaluation, the result of evaluation is available in
+ * interp->object. It is a (catch) result which is a three element
+ * list:
+ *
+ *   (code message result)
+ *
+ * If evaluation was successful, code is nil and message is an empty
+ * string.  Otherwise, code is an error symbol, message is a human
+ * readable error message and result the object causing the error.
+ *
+ * The following macros can be used to access the list elements:
+ *
+ * - FLISP_RESULT_CODE
+ * - FLISP_RESULT_MESSAGE
+ * - FLISP_RESULT_OBJECT
+ *
+ */
+void lisp_eval(Interpreter *interp, char *input)
 {
     FILE *fd = NULL;
     Object *result;
 
-    if (input != NULL) {
-        fl_debug(interp, "lisp_eval3(\"%s\")", input);
+    if (input == NULL) {
+        fl_debug(interp, "lisp_eval()");
+        if (interp->input  == NULL) {
+            interp->object = openInputStreamError();
+            return;
+        }
+    } else {
+        fl_debug(interp, "lisp_eval(\"%s\")", input);
         if (NULL == (fd = fmemopen(input, strlen(input), "r")))  {
             interp->object = openInputStreamError();
             return;
@@ -2783,8 +2651,8 @@ void lisp_eval3(Interpreter *interp, char *input)
         }
         if (interp->object->car != nil)
             break;
+        lisp_write_object(interp, interp->output, FLISP_RESULT_OBJECT, true);
         result = interp->object;
-        lisp_write_object(interp, interp->output, result->cdr->cdr->car, true);
         writeChar(interp, interp->output, '\n');
     }
     if (interp->output) fflush(interp->output);

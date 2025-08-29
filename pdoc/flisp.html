@@ -289,24 +289,10 @@
     </p>
     <h4 id="exceptions">Error handling</h4>
     <p>
-      Whenever fLisp encounters an error an exception is thrown. Exceptions have an error type symbol and a human
-      readable error message. fLisp does not implement stack backtracking. Exceptions are either caught on the top level
-      of an evaluation or by a <code>catch</code> statement.
-    </p>
-    <p>
-      In the <code>flisp</code> interpreter the error message is formated as <code>error: <var>message</var></code> if
-      the error object is <code>nil</code> otherwise as <code>error: '<var>object</var>', <var>message</var></code>,
-      where <var>object</var> is the serialization of the object causing the error and <var>message</var> is the error
-      message.
-    </p>
-    <p>
-      When an exception occurs while calling <code>lisp_eval()</code> or <code>lisp_eval_string()</code> from C-code,
-      the <code>object</code> field of the interpreter is set to the object causing the error, the <code>result</code>
-      field is set to the error type symbol and the <code>msg_buf</code> field is set to the error message.
-    </p>
-    <p>
-      Exceptions can be thrown from within in Lisp code via the <a href="#interp_ops"><code>throw</code></a>
-      function.
+      Whenever fLisp encounters an error an exception is thrown. Exceptions have an <dfn>error type</dfn> symbol a human
+      readable <dfn>error message</dfn> and the <dfn>object in error</dfn>, which is nil with generic errors. fLisp does
+      not implement stack backtracking. Exceptions are either caught on the top level of an evaluation or by
+      a <a href="#interp_ops"><code>catch</code></a> statement.
     </p>
     <p>
       The following error type symbols are defined and used internally:
@@ -324,7 +310,18 @@
       <li><code>out-of-memory</code></li>
       <li><code>gc-error</code></li>
     </ul>
-
+    <p>
+      Exceptions can be thrown via the <a href="#interp_ops"><code>throw</code></a> function. As long as applicable use
+      one of the existing error codes with <code>throw</code>.
+    </p>
+    <p>
+      <i>fLisp</i> outputs an error message formated as <code>error: <var>message</var></code> if the error object
+      is <code>nil</code> otherwise as <code>error: '<var>object</var>', <var>message</var></code>,
+      where <var>object</var> is the serialization of the object causing the error. <var>message</var> is the error
+      message.
+    </p>
+    
+    
     <nav><a href="#toc">^</a></nav>
     
     <h3 id="primitives"><i>fLisp</i> Primitives</h3>
@@ -390,8 +387,8 @@
       <dd>
 	<p>Evaluates <var>expr</var> and returns a list with three elements:</p>
 	<dl>
-	  <dt><var>result</var></dt>
-	  <dd><code>0</code> on success or any other number indicating an error.</dd>
+	  <dt><var>error_type</var></dt>
+	  <dd><code>nil</code> on success or an error type symbol.</dd>
 	  <dt><var>message</var></dt><dd>A human readable error message.</dd>
 	  <dt><var>object</var></dt><dd>The result of the the expression or the object in error.</dd>
 	</dl>
@@ -616,12 +613,12 @@
       variables:
     </p>
     <dl>
-      <dt>Library path</dt>
-      <dd>femto: <code>/usr/local/share/femto</code>, <code>FEMTOLIB</code></dd>
-      <dd>flisp: <code>/usr/local/share/flisp</code>, <code>FLISPLIB</code></dd>
       <dt>Startup file</dt>
       <dd>femto: <code>femto.rc</code>, <code>FEMTORC</code></dd>
       <dd>flisp: <code>flisp.rc</code>, <code>FLISPRC</code></dd>
+      <dt>Library path</dt>
+      <dd>femto: <code>/usr/local/share/femto</code>, <code>FEMTOLIB</code></dd>
+      <dd>flisp: <code>/usr/local/share/flisp</code>, <code>FLISPLIB</code></dd>
     </dl>
     <p>
       The library path is exposed to the Lisp interpreter as the variable <code>script_dir</code>.
@@ -631,12 +628,24 @@
       path conveniently and without repetition.  The command to load the file <code>example.lsp</code> from the
       library is <code>(require &apos;example)</code>.
     </p>
-    <p>Femto provides a set of libraries, some of them are required by the editor</p>
+    <p>Femto provides the following set of libraries:</p>
+    <dl>
+      <dt>core</dt>
+      <dd>
+	Integrated in the <code>.rc</code> files, always loaded. The core library implements the minimum required Lisp
+	features for loading libraries.
+      </dd>
+      <dt>flisp</dt>
+      <dd>
+	Implements expected standard Lisp functions and additions expected by <code>femto</code> and <code>flisp</code>.
+      </dd>
+      <dt>string</dt><dd>String manipulation library.</dd>
+      <dt>femto</dt><dd><code>femto</code> editor specific functions.</dd>
+      <dt>bufmenu, defmacro, dired, info</dt><dd><code>femto</code> editor utilities</dd>
+      <dt>git, grep, oxo</dt><dd><code>femto</code> editor modules</dd>
+    </dl>
 
     <h4 id="core_lib">Core Library</h4>
-    <p>
-      This library is built into the startup file.
-    </p>
     <dl>
       <dt><code>(list</code> [<code><var>element</var></code> ..]<code>)</code> <u>C</u></dt>
       <dd>Returns the list of all provided elements.</dd>
@@ -797,6 +806,7 @@
     </dl>
 
     <h4 id="std_lib">Standard Library</h4>
+    <p><mark>To be integrated into the flisp library</mark></p>
     <p>
       This library implements some Common Lisp functions, which are not used in the editor libraries.  They are provided
       for reference.
@@ -1140,8 +1150,8 @@
     <h4 id="embed_overview">Embedding Overview</h4>
     
     <p>
-      fLisp can be embedded into a C application.  Two examples of embedding are the `femto` editor and the simplistic
-      `flisp` command line Lisp interpreter.
+      fLisp can be embedded into a C application.  Two examples of embedding are the <code>femto</code> editor and the
+      simplistic <code>flisp</code> command line Lisp interpreter.
     <p>
     <p>
       Currently embedding can only be done by extending the build system.  Application specific binary Lisp extensions
@@ -1149,44 +1159,42 @@
       file.  Two extensions are provided: the Femto extension which provides the editor functionality and the file
       extension which provides access to the low level stream I/O functions and adds some more.
     </p>
-    fLisp exposes the following public interface functions:
+    <i>fLisp</i> exposes the following public interface functions:
     </p>
     <dl>
       <dt><code>lisp_new()</code></dt><dd>Create a new interpreter.</dd>
       <dt><code>lisp_destroy()</code></dt><dd>Destroy an interpreter, releasing resources.</dd>
-      <dt><code>lisp_eval()</code></dt><dd>Evaluate input stream until exhausted or error.</dd>
-      <dt><code>lisp_eval_string()</code></dt><dd>Evaluate given string until exhausted or error.</dd>
+      <dt><code>lisp_eval()</code></dt><dd>Evaluate a string or the input stream until exhausted or error.</dd>
       <dt><code>lisp_write_object()</code></dt><dd>Format and write object to file descriptor.</dd>
       <dt><code>lisp_write_error()</code></dt>
       <dd>Format and write the error object and error message of an interpreter to a file descriptor.</dd>
     </dl>
     <p>
-      Different flows of operation can be implemented. The Femto editor initializes the interpreter without input/output
-      file descriptors and sends strings of Lisp commands to the interpreter, either when a key is pressed or upon
-      explicit request via the editor interface.
+      Different flows of operation can be implemented. The <i>femto</i> editor initializes the interpreter without
+      input/output file descriptors and sends strings of Lisp commands to the interpreter, either when a key is pressed
+      or upon explicit request via the editor interface.
     </p>
     <p>
       The <code>flisp</code> command line interpreter sets <code>stdout</code> as the default output file descriptors of
-      the fLisp interpreter and feeds it with strings of lines read from the terminal. If the standard input is not a
-      terminal <code>stdin</code> is set as the default input file descriptor and fLisp reads it through until end of
-      file.
+      the <i>fLisp</i> interpreter and feeds it with strings of lines read from the terminal. If the standard input is
+      not a terminal <code>stdin</code> is set as the default input file descriptor and <i>fLisp</i> reads it through
+      until end of file.
     </p>
     <p>
-      After processing the given input, the interpreter puts a pointer to the object which is the result of the last
-      evaluation into the <code>object</code> field of the interpreter structure.  The <code>result</code> field is set
-      to the <code>nil</code> and the <code>msg_buf</code> field is set to  the empty string.
+      After processing the input, the interpreter puts a <a href="interp_ops"><code>catch</code></a> result in the
+      form <code>(<var>error_type</var> <var>message</var> <var>object</var>)</code> object into the <code>object</code>
+      field of the interpreter structure.  Upon success <var>error_type</var> is nil and the <var>object</var> element
+      is the result of the last evaluation. They can be accessed with the C-macros <code>FLISP_RESULT_CODE</code>
+      and <code>FLISP_RESULT_OBJECT</code>.
     </p>
     <p>
-      fLisp sends all output to the default output stream. If <code>NULL</code> is given on initialization, output is
+      On error use <code>lisp_write_error()</code> to write the standard error message to a file descriptor of choice,
+      or use the above C-macros and <code>FLISP_ERROR_MESSAGE</code> for taking specific action. Note that these macros
+      evaluate to a Lisp object, you have to dereference their content to used it.
+    </p>
+    <p>
+      <i>fLisp</i> sends all output to the default output stream. If <code>NULL</code> is given on initialization, output is
       suppressed altogether.
-    <p>
-      If an exception is thrown inside the Lisp interpreter an error message is formatted and copied to
-      the <code>msg_buf</code> buffer of the interpreter, A pointer to the object causing the error is set to
-      the <code>object</code> field. The <code>result</code> field is set to the respective error type symbol.
-    </p>
-    <p>
-      In this <dfn>error state</dfn> of the interpreter, the function <code>lisp_write_error()</code> can be used to
-      write a standardized error message including the error object to a file descriptor of choice
     </p>
     
     <h4 id="c_api">fLisp C Interface</h4>
@@ -1232,19 +1240,19 @@
       <dd>Frees all resources used by the interpreter.</dd>
       
       <dt>
-	<code>void lisp_eval(Interpreter *<var>interp</var>)</code>
-      </dt>
+	<code>void lisp_eval(Interpreter *<var>interp</var>, char *<var>string</var>)</code></dt>
       <dd>
-	<p>
-	  Evaluates the input file set in the <var>input</var> field of the fLisp interpreter <var>interp</var> until
-	  end of file.  If no input file is set, <code>interp</code> is set to a respective error state.
-	</p>
+	If <var>string</var> is not <code>NULL</code> evaluates all Lisp expressions in <var>string</var>.
       </dd>
-      <dt>
-	<code>void lisp_eval_string(Interpreter *<var>interp</var>, char *<var>string</var>)</code>
-      </dt>
       <dd>
-	Evaluates all Lisp expressions in <var>string</var>.</dd>
+	If <var>string</var> is <code>NULL</code> input from the file descriptor in the <var>input</var> field of
+	the <i>fLisp</i> interpreter <var>interp</var> is evaluated until end of file.
+      </dd>
+      
+      <dd>
+	If no memory can be allocated for the input string or the input file descriptor is <code>NULL</code> no Lisp
+	evaluation takes place and the <code>object</code> field of the interpreter is set to an <code>io-error</code>.
+      </dd>
       <dt>
 	<code>void lisp_write_object(Interpreter *<var>interp</var>, FILE <var>*fd</var>, Object *<var>object</var>,
 	  bool readably)</code>
@@ -1269,7 +1277,7 @@
       signature: <code>Object *<var>primitive</var>(Interpreter *interp, Object **args, Object **env)</code>,
       where <var>primitive</var> is a distinct name in C space. This function has to be added to the global
       variable <code>primitives</code> in the following
-      format: <code>{&quot;<var>name</var>&quot;, <var>argMin</var>, <var>argMax</var>, <var>primitive</var>}</code>. Here
+      format: <code>{&quot;<var>name</var>&quot;, <var>argMin</var>, <var>argMax</var>, <var>type_check</var>, <var>primitive</var>}</code>. Here
       <var>name</var> is a distinct name in Lisp space.
     </p>
     <p>
@@ -1277,6 +1285,11 @@
       <var>argMin</var> is the minimum number of arguments, <var>argMax</var> is the maximum number of arguments allowed
       for the function.  If <var>argMax</var> is a negative number, arguments must be given in tuples
       of <var>argMax</var> and the number of tuples is not restricted.
+    </p>
+    <p>
+      When type check is set to a type C-macro the interpreter assures that all arguments are of the given type and
+      creates a standardized exception otherwise. When type check is set to <code>0</code> the primitive has to take
+      care of type checking by itself. The C-macro <code>CHECK_TYPE</code> helps with this.
     </p>
     <p>
       When creating more then one new objects within a primitive, care has to be taken to register them with the garbage
@@ -1287,29 +1300,24 @@
       macro <code>GC_RETURN(<var>object</var>)</code> calls <code>GC_RELEASE</code> and returns <var>object</var>.
     </p>
     <p>
-      Some CPP macros are provided to simplify argument validation in primitives, all of them receive
-      the <var>name</var> of the primitive as a parameter:
+      Some CPP macros are provided to simplify argument access and validation in primitives:
     </p>
     <dl>
-      <dt><code>TWO_STRING_ARGS(<var>name</var>)</code></dt>
-      <dd>
-	Assures that the first two arguments are of type string.  They are assigned to the <code>Object *</code>
-	variables <var>first</var> and <var>second</var>.
-      </dd>
-      <dt><code>ONE_STRING_ARG(<var>name</var>)</code></dt>
-      <dd>
-	Assures that the first argument is of type string. It is assigned to the <code>Object *</code>
-	variable <var>arg</var>.
-      </dd>
+      <dt><code>FLISP_HAS_ARGS</code></dt>
+      <dt><code>FLISP_HAS_ARG_TWO</code></dt>
+      <dt><code>FLISP_HAS_ARG_THREE</code></dt>
+      <dd>Evaluate to true if there are arguments or the respective argument is available.</dd>
       <dt><code>ONE_NUMBER_ARG(<var>name</var>)</code></dt>
+      <dt><code>FLISP_ARG_ONE</code></dt>
+      <dt><code>FLISP_ARG_TWO</code></dt>
+      <dt><code>FLISP_ARG_THREE</code></dt>
+      <dd>Evaluate to the respective argument.</dd>
+      <dt><code>CHECK_TYPE(<var>argument</var>, <var>type</var>, <var>signature</var>)</code></dt>
       <dd>
-	Assures that the first argument is of type number. It is assigned to the <code>Object *</code>
-	variable <var>num</var>.
-      </dd>
-      <dt><code>ONE_STREAM_ARG(<var>name</var>)</code></dt>
-      <dd>
-	Assures that the first argument is of type stream. It is assigned to the <code>Object *</code>
-	variable <var>stream</var>.
+	Assures that the given argument is of the given type. <var>type</var> must be a type variable
+	like <code>type_string</code>. <var>signature</var> is the signature of the primitive followed
+	by <q><code>&nbsp;-&nbsp;</code></q> and the name of the argument to be type checked.  This is used to form a
+	standardized <code>wrong-type-argument</code> error message.
       </dd>
     </dl>
     
@@ -1318,9 +1326,9 @@
 
     <h4 id="gc">Garbage Collection</h4>
     <p>
-      fLisp implements Cheney&apos;s copying garbage collector, with which memory is divided into two equal halves
-      (semi spaces): from- and to-space. From-space is where new objects are allocated, whereas to-space is used during
-      garbage collection.
+      <i>fLisp</i> implements Cheney&apos;s copying garbage collector, with which memory is divided into two equal
+      halves (semi spaces): from- and to-space. From-space is where new objects are allocated, whereas to-space is used
+      during garbage collection.
     </p>
     <p>
       When garbage collection is performed, objects that are still in use (live) are copied from from-space to
@@ -1371,7 +1379,8 @@
       <dt>Output buffer</dt><dd>2048, <code>WRITE_FMT_BUFSIZ</code>, size of the output and message formatting buffer.</dd>
     </dl>
     <p>
-      fLisp can live with as little as 300k object memory. The Femto editor requires 16M since the <q>OXO</q> game requires a lot of memory.
+      <i>fLisp</i> can live with as little as 400k object memory. The Femto editor requires 16M since the <q>OXO</q>
+      game requires a lot of memory.
     </p>
 
     <h4 id="future">Future Directions</h4>
@@ -1386,27 +1395,10 @@
       input</q> result codes are returned.
     </p>
     <p>
-      Integer arithmetic would be sufficient for all current purposes and increase portability and speed while reducing
-      size.
-    </p>
-    <p>
-      The file extension only contains <code>(fflush)</code>,  <code>(ftell)</code> and  <code>(fgetc)</code> and could
-      easily be extended into something useful. <code>(fstat)</code> would be most pressing for
-      improving <code>femto.rc</code> and <code>flisp.rc</code>.
-    </p>
-    <p>
-      The string library should implement Elisp <code>substring</code> to replace <code>string.substring</code> and a
-      simplified version of <code>string-search</code> without start index.
-    </p>
-    <p>
-      Implement <code>(type <var>object</var>)</code> returning symbols for each type in C and implement individual type
-      checking predicates in Lisp.
-    </p>
-    <p>
-      loop programming is availble via the labelled let macro. It could made easier, by any combination of:
+      Loops are availble via the labelled let macro and supported by <code>iota</code>. It could made easier, by any
+      combination of:
     </p>
     <ul>
-      <li>iota</li>
       <li>loop/while/for macro</li>
       <li>Demoing hand crafted loops including breaking with throw.</li>
     </ul>

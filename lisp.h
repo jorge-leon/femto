@@ -11,7 +11,7 @@
 #include <inttypes.h>
 
 #define FL_NAME     "fLisp"
-#define FL_VERSION  "0.10"
+#define FL_VERSION  "0.11"
 
 #define FL_INITFILE "flisp.rc"
 #define FL_LIBDIR "/usr/local/share/flisp"
@@ -86,11 +86,13 @@ typedef struct Memory {
 } Memory;
 
 typedef struct Interpreter {
+
     Object *object;                  /* result or error object */
+
+    /* private */
     Object *result;                  /* result symbol */
     char msg_buf[WRITE_FMT_BUFSIZ];  /* error string */
 
-    /* private */
     FILE *input;                     /* default input stream object */
     FILE *output;                    /* default output file descriptor */
     FILE *debug;                     /* debug stream */
@@ -178,6 +180,7 @@ void fl_debug(Interpreter *, char *, ...);
 #define FLISP_ARG_TWO (*args)->cdr->car
 #define FLISP_ARG_THREE (*args)->cdr->cdr->car
 
+#define FLISP_HAS_ARGS *args != nil
 #define FLISP_HAS_ARG_TWO ((*args)->cdr != nil)
 #define FLISP_HAS_ARG_THREE ((*args)->cdr->cdr != nil)
 
@@ -189,15 +192,13 @@ void fl_debug(Interpreter *, char *, ...);
 // PUBLIC INTERFACE ///////////////////////////////////////////////////////
 extern Interpreter *lisp_new(size_t, char**, char*, FILE*, FILE*, FILE*);
 extern void lisp_destroy(Interpreter *);
-extern void lisp_eval(Interpreter *);
-extern void lisp_eval_string(Interpreter *, char *);
+extern void lisp_eval(Interpreter *, char *);
 extern void lisp_write_object(Interpreter *, FILE *, Object *, bool);
 extern void lisp_write_error(Interpreter *, FILE *);
 
-extern void lisp_write_error2(Interpreter *, FILE *);
-extern void lisp_eval2(Interpreter *);
-extern void lisp_eval3(Interpreter *, char *);
-extern void lisp_eval_string2(Interpreter *, char *);
+#define FLISP_RESULT_CODE interp->object->car
+#define FLISP_RESULT_MESSAGE interp->object->cdr->car
+#define FLISP_RESULT_OBJECT interp->object->cdr->cdr->car
 
 #endif
 /*

@@ -38,10 +38,9 @@ void load_file(char *file)
     }
     interp->input = fd;
     interp->output = debug_fp;
-    lisp_eval(interp);
-    if (interp->result != nil) {
-        // Note: the error object can be printed with lisp_write_object
-        debug("failed to load file %s: %s\n", file, interp->msg_buf);
+    lisp_eval(interp, NULL);
+    if (FLISP_RESULT_CODE != nil) {
+        debug("failed to load file %s:\n", file);
         lisp_write_error(interp, debug_fp);
     }
     if (fclose(fd))
@@ -149,8 +148,8 @@ char *eval_string(bool do_format, char *format, ...)
 
     prev = interp->output;  // Note: save for double invocation with user defined functions.
     interp->output = open_memstream(&output, &len);
-    lisp_eval_string(interp, input);
-    if (interp->result == nil)
+    lisp_eval(interp, input);
+    if (FLISP_RESULT_CODE == nil)
         return output;
     if (interp->output)
         fflush(interp->output);

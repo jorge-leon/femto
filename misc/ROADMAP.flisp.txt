@@ -1,26 +1,33 @@
-+ Bump fLisp version: reason: error type symbols instead of result codes
-+ Add error type symbols to the top level environment
-+ Change to 64 bit integers
++ Bump fLisp version: reason: error type symbols instead of result codes.
++ Add error type symbols to the top level environment.
++ Change to 64 bit integers.
 + Implement type-of, curry and move all type predicates except null and consp from C to Lisp.
-+ Add search to string library
-+ implement fold
-+ start a test library
++ Add search to string library.
++ Implement fold.
++ start a test library.
 + Move string-to-number to Lisp by using (read f) from a memory stream.
-+ Fix string library,
-- Showcase lisp_eval2 with (catch (fread)) mechanism
-- Implement fstat and improve femto.rc
-- Implement mkdir and fix file save bug
-- Implement popen, pclose
-- improve/support batch mode: output = stdout
-- expose envSet to Lisp and move setq from C to Lisp
-- Implement backquote and friends
++ Fix string library.
++ Showcase lisp_eval2 with (catch (fread)) mechanism.
++ Implement fstat.
++ Implement popen, pclose.
+- Make femto.rc use fstat.
+- Implement mkdir and fix file save bug.
+- Improve/support batch mode: output = stdout.
+- Expose envSet to Lisp and move setq from C to Lisp.
+- Implement backquote and friends.
+  + The reader already implements '`', ',' and ',@' as `quasiquote`, `unquote` and `splice-unquote`.
 - Fix reduce, implement map, consider simplifying core functions and make them n-ary in Lisp.
-- Unify stdlib into flisp.lsp
+- Unify stdlib into flisp.lsp.
 - Implement simple repl in Lisp
-  - needs getline
-  - isatty() can set an 'interactive' flag
-- rename global argv to command-line-args, argv0 to invocation-name
-- rename os.env to getenv
-- make extensions plugable
-- test more then one interpreter
+  - needs getline.
+  - isatty() can set an 'interactive' flag.
+- Rename global argv to command-line-args, argv0 to invocation-name.
+- Rename os.env to getenv.
+- Make extensions plugable.
+- Test more then one interpreter.
 - ? CSP between interpreters?
+- Size reduction:
+  - Make double extensions optional.
+  - Replace string-contains with string-search.
+  - Make file extension optional.
+  - Reduce binary operators to 'and' and 'xor' and write needed rest in Lisp.

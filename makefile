@@ -41,6 +41,7 @@ LISPFILES = femto.rc lisp/startup.lsp lisp/defmacro.lsp			\
 	lisp/string.lsp
 
 FLISPFILES = flisp.rc lisp/flisp.lsp lisp/stdlib.lsp
+FLISPSOURCES = lisp.c lisp.h double.c double.h file.c file.h
 
 DOCFILES = BUGS CHANGE.LOG.md README.md pdoc/flisp.html
 MOREDOCS = README.html docs/flisp.md docs/femto.md
@@ -162,20 +163,24 @@ flv: flisp FORCE
 frama-c: FORCE
 	frama-c -c11 -cpp-extra-args="-I$(frama-c -print-path)/libc -I/usr/include -I." -kernel-msg-key pp -metrics *.c
 
-measure: strip FORCE
+measure: $(RC_FILES) $(BINARIES) strip FORCE
+	@ln -s femto.rc femto.lsp
+	@ln -s flisp.rc flisp.lsp
 	@echo Total
-	@echo binsize: $$(set -- $$(ls -l femto); echo $$5)
-	@echo C-lines: $$(cat *.c *.h | wc -l)
-	@echo linecount: $$(cat *.c *.h $(LISPFILES) | wc -l)
-	@echo sloccount: $$(set -- $$(which sloccount >/dev/null && { sloccount *.c *.h $(LISPFILES) | grep ansic=; }); echo $$3)
-	@echo files: $$(ls *.c *.h $(LISPFILES) | wc -l)
-	@echo C-files: $$(ls *.c *.h | wc -l)
+	@echo "binsize:      " $$(set -- $$(ls -l femto); echo $$5)
+	@echo "C/Lisp lines: " $$(cat *.c *.h | wc -l) / $$(cat $(LISPFILES) | wc -l)
+	@echo "Total lines:  " $$(cat *.c *.h $(LISPFILES) | wc -l)
+	@echo "Total slocs:  " $$(set -- $$(which sloccount >/dev/null && { sloccount *.c *.h femto.lsp $(LISPFILES) | grep ansic=; }); echo $$3)
+	@echo "C/Lisp files: " $$(ls *.c *.h | wc -l) / $$(echo $(LISPFILES) | wc -w)
+	@echo "Total files:  " $$(ls *.c *.h $(LISPFILES) | wc -l)
 	@echo Minimum
-	@echo flisp: $$(cat flisp.c | wc -l)
-	@echo flispsloc: $$(set -- $$(which sloccount >/dev/null && { sloccount flisp.c | grep ansic=; }); echo $$3)
-	@echo linecount: $$(cat *.c *.h $(LISPFILES) | wc -l)
-	@echo sloccount: $$(set -- $$(which sloccount >/dev/null && { sloccount *.c *.h *.rc $(LISPFILES) | grep ansic=; }); echo $$3)
-	@echo files: $$(ls *.c *.h $(LISPFILES) | wc -l)
+	@echo "binsize:      " $$(set -- $$(ls -l flisp); echo $$5)
+	@echo "flisp:        " $$(cat flisp.c | wc -l)
+	@echo "flispsloc:    " $$(set -- $$(which sloccount >/dev/null && { sloccount flisp.c | grep ansic=; }); echo $$3)
+	@echo "linecount:    " $$(cat $(FLISPSOURCES) $(FLISPFILES) | wc -l)
+	@echo "sloccount:    " $$(set -- $$(which sloccount >/dev/null && { sloccount flisp.lsp $(FLISPSOURCES) $(FLISPFILES) | grep ansic=; }); echo $$3)
+	@echo "files:        " $$(ls $(FLISPSOURCES) $(FLISPFILES) | wc -l)
+	@rm femto.lsp flisp.lsp
 
 run: femto FORCE
 	FEMTORC=femto.rc FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto
@@ -211,8 +216,8 @@ val: femto FORCE
 	FEMTORC=femto.rc FEMTOLIB=lisp FEMTO_DEBUG=1 valgrind ./femto 2> val.log
 
 # Install/package
-strip: femto FORCE
-	strip femto
+strip: femto flisp FORCE
+	strip femto flisp
 
 clean: FORCE
 	-$(RM) -f $(OBJ) $(FLISP_OBJ) $(BINARIES) $(RC_FILES)

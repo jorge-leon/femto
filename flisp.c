@@ -54,12 +54,12 @@ void repl(Interpreter *interp)
             continue;
         }
 
-        lisp_eval3(interp, input);
-        if (interp->object->car != nil)
-            lisp_write_error2(interp, stderr);
+        lisp_eval(interp, input);
+        if (FLISP_RESULT_CODE != nil)
+            lisp_write_error(interp, stderr);
     }
-    if (interp->object->car != nil) {
-        lisp_write_error2(interp, stderr);
+    if (FLISP_RESULT_CODE != nil) {
+        lisp_write_error(interp, stderr);
         exit_code = 1;
     }
     return;
@@ -93,9 +93,9 @@ int main(int argc, char **argv)
         else {
             // load inifile
             interp->input = fd;
-            lisp_eval3(interp, NULL);
-            if (interp->object->car != nil) {
-                lisp_write_error2(interp, stderr);
+            lisp_eval(interp, NULL);
+            if (FLISP_RESULT_CODE != nil) {
+                lisp_write_error(interp, stderr);
                 fprintf(stderr, "failed to load inifile %s: %s\n", init_file, interp->msg_buf);
             // Note: if we could implement the repl in fLisp itself we'd bail out here.
             }
@@ -112,9 +112,9 @@ int main(int argc, char **argv)
 
         // Just eval the standard input
         interp->input = stdin;
-        lisp_eval3(interp, NULL);
-        if (interp->object->car != nil) {
-            lisp_write_error2(interp, stderr);
+        lisp_eval(interp, NULL);
+        if (FLISP_RESULT_CODE != nil) {
+            lisp_write_error(interp, stderr);
             exit_code = 1;
         }
     }

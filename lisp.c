@@ -30,6 +30,11 @@
 #include "file.h"
 #endif
 
+#define EXCEPTION_MEM_RESERVE 4*sizeof(Object)
+//Note: debugging //#define EXCEPTION_MEM_RESERVE 8*sizeof(Object)
+
+/* No user servicable  parts inside */
+
 #if !defined(MAP_ANONYMOUS) && defined(MAP_ANON)
 #define MAP_ANONYMOUS        MAP_ANON
 #endif
@@ -341,7 +346,7 @@ void gc(Interpreter *interp)
     Object *object;
     gcStats stats = {0};
 
-    fl_debug(interp, "collecting garbage, memory: %lu/%lu", interp->memory->fromOffset, interp->memory->capacity);
+    fl_debug(interp, "collecting garbage, memory: %lu/%lu, free %lu", interp->memory->fromOffset, interp->memory->capacity, interp->memory->capacity - interp->memory->fromOffset - EXCEPTION_MEM_RESERVE);
 
     interp->memory->toOffset = 0;
 
@@ -395,10 +400,13 @@ void gc(Interpreter *interp)
     interp->memory->fromSpace = interp->memory->toSpace;
     interp->memory->toSpace = swap;
 
-    fl_debug(interp, "collected %lu objects, skipped %lu, constants %lu, saved %lu bytes, memory: %lu/%lu",
+    /* report before overwriting offset difference */
+    fl_debug(interp, "collected %lu objects, skipped %lu, constants %lu, saved %lu bytes, memory: %lu/%lu free: %lu(%lu) bytes",
              stats.moved, stats.skipped, stats.constant,
              interp->memory->fromOffset - interp->memory->toOffset,
-             interp->memory->toOffset, interp->memory->capacity
+             interp->memory->toOffset, interp->memory->capacity,
+             interp->memory->capacity - interp->memory->toOffset - EXCEPTION_MEM_RESERVE,
+             interp->memory->capacity - interp->memory->toOffset
         );
 
     interp->memory->fromOffset = interp->memory->toOffset;
@@ -412,31 +420,77 @@ size_t memoryAlign(size_t size, size_t alignment)
     return (size + alignment - 1) & ~(alignment - 1);
 }
 
+/** memoryAllocObject() - Acquire memory for a new Lisp object
+ *
+ * Lisp object space is divided intox 'from' space and 'to' space.
+ * Objects are always allocated in 'from' space. If memory there is
+ * exhausted, active objects are garbage collected into 'to' space and
+ * 'to' and 'from' spaces are swapped by gc().
+ *
+ * If gc() does not release sufficient space, 'from' and 'to' space
+ * are increased by a multiple of FLISP_MEMORY_INC_SIZE.
+ *
+ */
 Object *memoryAllocObject(Interpreter *interp, Object *type, size_t size)
 {
     size = memoryAlign(size, sizeof(void *));
 
-    // allocate from- and to-space
+    /* If not done already allocate to space */
     if (!interp->memory->fromSpace) {
-        if (!(interp->memory->fromSpace = mmap(NULL, interp->memory->capacity * 2, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0))) {
-            if (!interp->catch) return nil;
-            exception(interp, out_of_memory, "mmap() failed, %s", strerror(errno));
+        if (!(interp->memory->fromSpace = mmap(NULL, interp->memory->capacity, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0))) {
+            fprintf(stderr, "OOM, allocating from space, exiting\n");
+            exit(2);
         }
-        interp->memory->toSpace = (char *)interp->memory->fromSpace + interp->memory->capacity;
     }
-    // run garbage collection if capacity exceeded
-#if DEBUG_GC
-    if (gc_always)
-        gc(interp);
-#else
-    if ((interp->memory->fromOffset + size >= interp->memory->capacity))
-        gc(interp);
+    /* Run garbage collection if capacity exceeded */
+    if (
+        (interp->memory->fromOffset + size + EXCEPTION_MEM_RESERVE >= interp->memory->capacity)
+#if DEBUG_GC_ALWAYS
+        || gc_always
 #endif
-    if (interp->memory->fromOffset + size >= interp->memory->capacity) {
-        if (!interp->catch) return nil;
-        exception(interp, out_of_memory, "out of memory, %lu bytes", (unsigned long)size);
+        ) {
+        fl_debug(interp, "memoryAllocObject: requesting %lu bytes", size);
+        /* If not done already allocate to space */
+        if (!interp->memory->toSpace) {
+            if (!(interp->memory->toSpace = mmap(NULL, interp->memory->capacity, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0))) {
+                fprintf(stderr, "OOM allocating to space, exiting\n");
+                exit(2);
+            }
+        }
+        gc(interp);
     }
-    // allocate object in from-space
+    /* Check if we now have enough space */
+    if (interp->memory->fromOffset + size + EXCEPTION_MEM_RESERVE >= interp->memory->capacity) {
+        int blocks = size / FLISP_MEMORY_INC_SIZE + 1;
+        size_t memory = blocks * FLISP_MEMORY_INC_SIZE;
+        fl_debug(interp, "memoryAllocObject: %lu bytes needed, increasing memory by %lu", size, memory);
+        /* Increase to space */
+        void *new;
+        new = mmap(NULL, interp->memory->capacity + FLISP_MEMORY_INC_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+        if (new == (void *) -1) {
+            interp->memory->capacity+= EXCEPTION_MEM_RESERVE;
+            exception(interp, out_of_memory, "OOM reallocating toSpace: %s", strerror(errno));
+        }
+        if (munmap(interp->memory->toSpace, interp->memory->capacity) == -1) {
+            interp->memory->capacity+= EXCEPTION_MEM_RESERVE;
+            exception(interp, out_of_memory, "munmap(toSpace) failed: %s", strerror(errno));
+        }
+        interp->memory->toSpace = new;
+        interp->memory->capacity += memory;
+        gc(interp);
+        /* Increase former from space */
+        new = mmap(NULL, interp->memory->capacity, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+        if (new == (void *) -1) {
+            interp->memory->capacity+= EXCEPTION_MEM_RESERVE;
+            exception(interp, out_of_memory, "OOM reallocating fromSpace: %s", strerror(errno));
+        }
+        if (munmap(interp->memory->toSpace, interp->memory->capacity - memory) == -1) {
+            interp->memory->capacity+= EXCEPTION_MEM_RESERVE;
+            exception(interp, out_of_memory, "munmap(fromSpace) failed: %s", strerror(errno));
+        }
+        interp->memory->toSpace = new;
+    }
+    /* Allocate object in from-space */
     Object *object = (Object *) ((char *)interp->memory->fromSpace + interp->memory->fromOffset);
     object->type = type;
     object->size = size;
@@ -2433,6 +2487,7 @@ Interpreter *lisp_new(
 
     if (size/2 < FLISP_MIN_MEMORY) {
         interp->result = invalid_value;
+        /* Note: obsolete error reporting - update needed */
         strncpy(interp->msg_buf,
                 "fLisp needs at least" CPP_STR(FLISP_MIN_MEMORY)  "bytes to start up", sizeof(interp->msg_buf));
         return NULL;
@@ -2467,17 +2522,16 @@ Interpreter *lisp_new(
     object = newCons(interp, &nil, &nil);
     object = newCons(interp, &t, &object);
     interp->symbols = object;
-    fl_debug(interp, "lisp_init: %lu/%lu bytes allocated before gc", interp->memory->fromOffset, interp->memory->capacity);
-    /* gc region start */
-
-    /* global environment */
-    initRootEnv(interp);
 
     interp->catch = &interp->exceptionEnv;
 
     interp->next = interp;
     lisp_interpreters = interp;
 
+    /* global environment */
+    initRootEnv(interp);
+
+    /* gc region start */
     /* Add argv0 to the environment */
     Object *var = newSymbol(interp, "argv0");
     Object *val = newString(interp, *argv);
@@ -2512,7 +2566,9 @@ Interpreter *lisp_new(
         var = newSymbol(interp, "*OUTPUT*");
         (void)envSet(interp, &var, &val, &interp->global, true);
     }
-#if DEBUG_GC && DEBUG_GC_ALWAYS
+    fl_debug(interp, "lisp_init: %lu/%lu bytes allocated before gc", interp->memory->fromOffset, interp->memory->capacity/2);
+
+#if DEBUG_GC_ALWAYS
     gc_always = true;
 #endif
     return interp;
@@ -2525,20 +2581,11 @@ void lisp_destroy(Interpreter *interp)
     i->next = interp->next;
     i = NULL;
 
-#if 0
     if (interp->memory->fromSpace)
-        (void)munmap(interp->memory->fromSpace, interp->memory->capacity * 2);
+        (void)munmap(interp->memory->fromSpace, interp->memory->capacity);
     // Note: we do not know which one it is, so we free both.
     if (interp->memory->toSpace)
-        (void)munmap(interp->memory->toSpace, interp->memory->capacity * 2);
-#else
-    if (interp->memory->fromSpace && interp->memory->toSpace) {
-        if (interp->memory->fromSpace < interp->memory->toSpace)
-            (void)munmap(interp->memory->fromSpace, interp->memory->capacity * 2);
-        else
-            (void)munmap(interp->memory->toSpace, interp->memory->capacity * 2);
-    }
-#endif
+        (void)munmap(interp->memory->toSpace, interp->memory->capacity);
 
     if (interp->debug)
         fclose(interp->debug);
@@ -2568,10 +2615,11 @@ void lisp_write_error(Interpreter *interp, FILE *fd)
     fflush(fd);
 }
 
-/** (catch (eval (read f)))
+/** (catch (eval (read f))) or (catch (eval (read)))
  */
 void cerf(Interpreter *interp, FILE *fd)
 {
+    /* Note: find a way to not construct this all the time anew */
     Primitive readPrimitive =  { "read",  0, 2, 0, primitiveRead };
     Primitive evalPrimitive =  { "eval",  1, 1, 0, primitiveEval };
 
@@ -2592,6 +2640,7 @@ void cerf(Interpreter *interp, FILE *fd)
 
 Object *openInputStreamError(void)
 {
+    /* Note: find a way to not construct this all the time anew */
     Object *m = &(Object) { type_string, .string = "cannot open input stream" };
     Object *o = &(Object) { type_cons, .car = nil, .cdr = nil };
     o =         &(Object) { type_cons, .car = m, .cdr = o };

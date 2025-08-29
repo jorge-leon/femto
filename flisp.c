@@ -9,10 +9,14 @@
 #include <errno.h>
 #include "lisp.h"
 
-// Specify in kByte.
-#define FLISP_MEMORY_SIZE   400
-// less then this is too small for femto.lsp
-
+/* Specify in kByte. Less then 263 is too small for loading stdlib.lsp
+ * and running the tests.
+ */
+//
+//
+#define FLISP_MEMORY_SIZE 363
+//Note: debugging: #define FLISP_MEMORY_SIZE 263
+//Note: debugging: #define FLISP_MEMORY_SIZE 200
 
 #define CPP_XSTR(s) CPP_STR(s)
 #define CPP_STR(s) #s
@@ -55,11 +59,12 @@ void repl(Interpreter *interp)
         }
 
         lisp_eval(interp, input);
-        if (FLISP_RESULT_CODE != nil)
+        if (FLISP_RESULT_CODE != nil) {
             lisp_write_error(interp, stderr);
+            if (FLISP_RESULT_CODE == out_of_memory) break;
+        }
     }
     if (FLISP_RESULT_CODE != nil) {
-        lisp_write_error(interp, stderr);
         exit_code = 1;
     }
     return;
@@ -95,9 +100,11 @@ int main(int argc, char **argv)
             interp->input = fd;
             lisp_eval(interp, NULL);
             if (FLISP_RESULT_CODE != nil) {
+                fprintf(stderr, "failed to load inifile %s:\n", init_file);
                 lisp_write_error(interp, stderr);
-                fprintf(stderr, "failed to load inifile %s: %s\n", init_file, interp->msg_buf);
-            // Note: if we could implement the repl in fLisp itself we'd bail out here.
+                if (FLISP_RESULT_CODE == out_of_memory)
+                    return 1;
+            // Note: if we could implement the repl in fLisp itself we'd done here.
             }
             if (fclose(fd))
                 // Note: the error object can be printed with lisp_write_object
@@ -113,12 +120,11 @@ int main(int argc, char **argv)
         // Just eval the standard input
         interp->input = stdin;
         lisp_eval(interp, NULL);
-        if (FLISP_RESULT_CODE != nil) {
+        if (FLISP_RESULT_CODE != nil)
             lisp_write_error(interp, stderr);
-            exit_code = 1;
-        }
     }
-    lisp_destroy(interp);
+    if (FLISP_RESULT_CODE != out_of_memory)
+        lisp_destroy(interp);
     return exit_code;
 }
 

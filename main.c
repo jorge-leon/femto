@@ -42,6 +42,8 @@ void load_file(char *file)
     if (FLISP_RESULT_CODE != nil) {
         debug("failed to load file %s:\n", file);
         lisp_write_error(interp, debug_fp);
+        if (FLISP_RESULT_CODE == out_of_memory)
+            fatal("OOM, exiting..");
     }
     if (fclose(fd))
         debug("failed to close file %s\n", file);
@@ -158,6 +160,8 @@ char *eval_string(bool do_format, char *format, ...)
         lisp_write_error(interp, debug_fp);
         debug("=> %s\n", output);
     }
+    if (FLISP_RESULT_CODE == out_of_memory)
+        fatal("OOM, exiting..");
     free_lisp_output();
     return NULL;
 }

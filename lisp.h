@@ -18,6 +18,7 @@
 
 /* minimal Lisp object space size */
 #define FLISP_MIN_MEMORY  26624UL  /* currently ~26k */
+#define FLISP_MEMORY_INC_SIZE 8192UL  /* Resize by this amount */
 
 /* buffersize for Lisp eval input */
 #define INPUT_FMT_BUFSIZ 2048

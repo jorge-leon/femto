@@ -5,7 +5,7 @@
 
 export FLISPRC=
 
-tap 161
+tap 160
 
 [ -x ../femto ]
 ok femto-1 femto exists and is executable;
@@ -13,7 +13,7 @@ ok femto-1 femto exists and is executable;
 (FEMTORC= FEMTO_BATCH=1 ../femto >/dev/null)
 ok femto-2 w/o femto.rc femto in batch mode succeds
 
-(: | FEMTORC=- FEMTO_BATCH=1 ../femto >/dev/null)
+(: | FEMTORC= FEMTO_BATCH=1 ../femto >/dev/null)
 ok femto-3 empty input succeeds
 
 [ -x ../flisp ]
@@ -194,6 +194,10 @@ flisp_expr; ok lambda-6 args nil nil
 
 IN='((lambda (a b) a b) 0 "a")' OUT='"a"'
 flisp_expr; ok lambda-7 apply return b string a
+
+# Time for memory allocator test
+#IN='(setq r (lambda args (r args))) (r)' OBJ='out of memory, 48 bytes' ERR='48 bytes'
+#flisp_err 1; ok memory-1 exhausting memory exits with error code
 
 # macro
 IN='(macro nil)' OUT='#<Macro nil>'
@@ -478,7 +482,3 @@ false; ok os.getenv \# TODO
 
 # File extension
 false; ok file extension \# TODO
-
-# Femto editor extension
-
-false; ok femto editor extension \# TODO

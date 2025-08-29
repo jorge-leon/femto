@@ -1,3 +1,9 @@
+# Note: the femto library cannot be loaded into the flisp interpreter:
+# We do not have the editor extension compiled in and the library is
+# just to big.
+# This file must be rewritten to use the *lisp* testmode. Anyway:
+# The tests are only enumerated, but not written yet.
+
 #!./test# -*- mode: sh -*-
 #
 # test the femto Lisp extensions

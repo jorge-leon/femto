@@ -2373,11 +2373,9 @@ Primitive primitives[] = {
 void initRootEnv(Interpreter *interp)
 {
     int i, nConstants;
+    Object *var, *val;
 
-    GC_CHECKPOINT;
-    GC_TRACE(gcEnv, newEnv(interp, &nil, &nil));
-
-    interp->global = *gcEnv;
+    interp->global = newEnv(interp, &nil, &nil);
 
     // add constants
     nConstants = sizeof(flisp_constants) / sizeof(flisp_constants[0]);
@@ -2405,21 +2403,19 @@ void initRootEnv(Interpreter *interp)
     ok->cdr = okMessage;
 
     // add primitives
-    GC_TRACE(gcVar, nil);
-    GC_TRACE(gcVal, nil);
     int nPrimitives = sizeof(primitives) / sizeof(primitives[0]);
     for (i = 0; i < nPrimitives; ++i) {
-        *gcVar = newSymbol(interp, primitives[i].name);
-        *gcVal = newPrimitive(interp, &primitives[i]);
+        var = newSymbol(interp, primitives[i].name);
+        val = newPrimitive(interp, &primitives[i]);
 
-        envSet(interp, gcVar, gcVal, &interp->global, true);
+        envSet(interp, &var, &val, &interp->global, true);
     }
 #ifdef FLISP_DOUBLE_EXTENSION
     for (Primitive *entry = flisp_double_primitives; entry->name != NULL; entry++) {
-        *gcVar = newSymbol(interp, entry->name);
-        *gcVal = newPrimitive(interp, entry);
+        var = newSymbol(interp, entry->name);
+        val = newPrimitive(interp, entry);
 
-        envSet(interp, gcVar, gcVal, &interp->global, true);
+        envSet(interp, &var, &val, &interp->global, true);
     }
 #endif
 #ifdef FLISP_FILE_EXTENSION
@@ -2430,13 +2426,12 @@ void initRootEnv(Interpreter *interp)
     }
 
     for (Primitive *entry = flisp_file_primitives; entry->name != NULL; entry++) {
-        *gcVar = newSymbol(interp, entry->name);
-        *gcVal = newPrimitive(interp, entry);
+        var = newSymbol(interp, entry->name);
+        val = newPrimitive(interp, entry);
 
-        envSet(interp, gcVar, gcVal, &interp->global, true);
+        envSet(interp, &var, &val, &interp->global, true);
     }
 #endif
-    GC_RELEASE;
 }
 
 Memory *newMemory(size_t size)
@@ -2498,32 +2493,29 @@ Interpreter *lisp_new(
     Memory *memory = newMemory(size);
     if (memory == NULL) {
         interp->result = out_of_memory;
+        /* Note: obsolete error reporting - update needed */
         strncpy(interp->msg_buf,
                 "failed to allocate memory for the interpreter",  sizeof(interp->msg_buf));
         return NULL;
     }
     interp->memory = memory;
 
+    /* Note: obsolete initialization - update needed */
     interp->object = ok;
     interp->msg_buf[0] = '\0';
     interp->result = nil;
 
-    interp->catch = NULL;
-
     interp->buf = NULL;
     resetBuf(interp);
 
-    // dynamic gc trace stack
     interp->gcTop = nil;
+    interp->catch = &interp->exceptionEnv;
 
-    /* gc setup */
     /*   symbols */
     Object *object;
     object = newCons(interp, &nil, &nil);
     object = newCons(interp, &t, &object);
     interp->symbols = object;
-
-    interp->catch = &interp->exceptionEnv;
 
     interp->next = interp;
     lisp_interpreters = interp;
@@ -2531,7 +2523,6 @@ Interpreter *lisp_new(
     /* global environment */
     initRootEnv(interp);
 
-    /* gc region start */
     /* Add argv0 to the environment */
     Object *var = newSymbol(interp, "argv0");
     Object *val = newString(interp, *argv);
@@ -2541,6 +2532,7 @@ Interpreter *lisp_new(
     var = newSymbol(interp, "argv");
     val = nil;
     Object **i;
+    /* Note: this can trigger a gc() if argv has many elements, check with max commandline length */
     for (i = &val; *++argv; i = &(*i)->cdr) {
         *i = newCons(interp, &nil, &nil);
         (*i)->car = newString(interp, *argv);
@@ -2566,7 +2558,7 @@ Interpreter *lisp_new(
         var = newSymbol(interp, "*OUTPUT*");
         (void)envSet(interp, &var, &val, &interp->global, true);
     }
-    fl_debug(interp, "lisp_init: %lu/%lu bytes allocated before gc", interp->memory->fromOffset, interp->memory->capacity/2);
+    fl_debug(interp, "lisp_init: %lu/%lu bytes allocated before gc", interp->memory->fromOffset, interp->memory->capacity);
 
 #if DEBUG_GC_ALWAYS
     gc_always = true;

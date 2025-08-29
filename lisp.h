@@ -26,8 +26,8 @@
 #define WRITE_FMT_BUFSIZ 2048
 
 /* Debugging */
-#define DEBUG_GC 0
-#define DEBUG_GC_ALWAYS 0
+#define DEBUG_GC 1
+#define DEBUG_GC_ALWAYS 1
 
 /* Lisp objects */
 

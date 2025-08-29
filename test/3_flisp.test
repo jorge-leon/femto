@@ -1,7 +1,7 @@
 #!./test# -*- mode: sh -*-
 # test the fLisp library
 # leg20231129: Femto
-tap 58
+tap 62
 
 export FLISPRC=../lisp/core.lsp
 flisplib() { IN="(require 'flisp) $IN" flisp_expr "$@"; }
@@ -160,18 +160,34 @@ IN='(min 1 2 3)' OUT=1
 flisplib 1; ok min-6 with more then two args
 
 IN='(nthcdr -1 nil)'
-ERR="negativ index"
+ERR="negative index"
 OBJ='-1'
 flisplib_err 1; ok nthcdr-1 negativ index fails
 
 IN="(nthcdr 0 '(a b c))" OUT='(a b c)'
-flisplib 1; ok nthcdr-2 0 index yields list
+flisplib 1; ok nthcdr-2 0 index is list
 
 IN="(nthcdr 2 '(a b c))" OUT='(c)'
-flisplib 1; ok nthcdr-3 last index yields last element list
+flisplib 1; ok nthcdr-3 last index is last element
 
 IN="(nthcdr 40 '(a b c))" OUT=nil
-flisplib 1; ok nthcdr-4 index over length yields nil
+flisplib 1; ok nthcdr-4 index over length is nil
+
+IN="(nthcdr 40 nil)" OUT=nil
+flisplib 1; ok nthcdr-5 of nil is nil
+
+IN="(nthcdr 1 '(2 . 3))" OUT=3
+flisplib 1; ok nthcdr-6 of 1 of cons is cdr
+
+IN="(nthcdr 'a nil)"
+ERR="(nthcdr n l) - n expected type-integer, got: type-symbol"
+OBJ='a'
+flisplib_err 1; ok nthcdr-7 wrong index type fails
+
+IN="(nthcdr 1 'a)"
+ERR="(nthcdr n l) - l expected type-cons, got: type-symbol"
+OBJ='a'
+flisplib_err 1; ok nthcdr-8 wrong list type fails
 
 IN="(nth 1 '(a b c))" OUT=b
 flisplib 1; ok nth-1 yields element

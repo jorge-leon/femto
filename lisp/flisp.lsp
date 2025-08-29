@@ -30,16 +30,25 @@
 (defun min (n . args)
   (cond
     ((null (numberp n))
-     (throw 'wrong-type-argument "not a number" n))
+     (throw wrong-type-argument "not a number" n))
     ((null args) n)
     (t (reduce (lambda (a b) (cond ((< a b) a) (t b)))
 	args n)) ))
 
-(defun nthcdr (n list)
-  (cond 
-    ((> 0 n) (throw 'range-error "negativ index" n))
-    ((= 0 n) list)
-    (t (nthcdr (- n 1) (cdr list)))))
+(defun nthcdr (n l)
+  (cond
+    ((not (integerp n))
+     (throw wrong-type-argument
+       (concat "(nthcdr n l) - n expected type-integer, got: " (type-of n))
+       n))
+    ((< n 0) (throw range-error "negative index" n))
+    ((null l) nil)
+    ((= 0 n) l)
+   ((not (consp l))
+    (throw wrong-type-argument
+      (concat "(nthcdr n l) - l expected type-cons, got: " (type-of l))
+      l))
+    (t (nthcdr (- n 1) (cdr l)))))
 
 (defun nth (n list)
   (car (nthcdr n list)))

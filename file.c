@@ -160,10 +160,13 @@ Object *primitiveFstat(Interpreter *interp, Object** args, Object **env)
     else if (S_ISREG(info.st_mode)) type = "f";
     else if (S_ISLNK(info.st_mode)) type = "l";
     else if (S_ISSOCK(info.st_mode)) type = "s";
+#if 0
+    /* This works with muslc, but not gnu libc */
     else if (S_TYPEISMQ(info)) type = "Q";
     else if (S_TYPEISSEM(info)) type = "S";
     else if (S_TYPEISSHM(info)) type = "M";
     else if (S_TYPEISTMO(info)) type = "T";
+#endif
     else type = "-";
 
     object = newString(interp, type);

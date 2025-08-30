@@ -306,7 +306,7 @@ bool gcCollectableObject(Interpreter *interp, Object *object) {
 typedef struct gcStats { size_t moved, constant, skipped; } gcStats;
 Object *gcMoveObject(Interpreter *interp, Object *object, gcStats *stats)
 {
-    // skip object if it is not within from-space (i.e. on the stack)
+    /* Skip object if it is not within from-space, i.e. on the stack or a constant */
     if (!gcCollectableObject(interp, object)) {
         stats->constant++;
         return object;
@@ -325,7 +325,9 @@ Object *gcMoveObject(Interpreter *interp, Object *object, gcStats *stats)
 #if DEBUG_GC
     if (object->type == type_stream)
         fl_debug(interp, "moved stream %p, path %p/%s %s to %p\n",
-                 (void *)object, (void *)object->path, object->path->string, object->path->type->string, (void *)forward);
+                 (void *)object, (void *)object->path, object->path->string,
+                 object->path->type->string, (void *)forward
+            );
     if (object->type == type_symbol)
         fl_debug(interp, "moved symbol %s\n", object->string);
 #endif
@@ -345,19 +347,29 @@ void gc(Interpreter *interp)
     Object *object;
     gcStats stats = {0};
 
-    fl_debug(interp, "collecting garbage, memory: %lu/%lu, free %lu\n", interp->memory->fromOffset, interp->memory->capacity, interp->memory->capacity - interp->memory->fromOffset - EXCEPTION_MEM_RESERVE);
-
+    fl_debug(interp, "collecting garbage, memory: %lu/%lu, free %lu\n",
+             interp->memory->fromOffset, interp->memory->capacity,
+             interp->memory->capacity - interp->memory->fromOffset - EXCEPTION_MEM_RESERVE
+        );
     interp->memory->toOffset = 0;
 
     // move trace, symbols and root objects
     for (object = interp->gcTop; object != nil; object = object->cdr) {
-#if DEBUG_GC
-        fl_debug(interp, "moving gc traced object %p of type %s\n", (void *)object->car, object->car->type->string);
+#if DEBUG_GC | FLISP_TRACK_GCTOP
+        fl_debug(interp, "moving gc traced object %p of type %s\n",
+                 (void *)object->car, object->car->type->string
+            );
+#if FLISP_TRACK_GCTOP
+        lisp_write_object(interp, interp->debug, object->car, true);
+        fl_debug(interp, "\n");
+#endif
 #endif
         object->car = gcMoveObject(interp, object->car, &stats);
     }
 #if DEBUG_GC
-    fl_debug(interp, "gc traced objects: %lu, skipped %lu, constant %lu\n", stats.moved, stats.skipped, stats.constant);
+    fl_debug(interp, "gc traced objects: %lu, skipped %lu, constant %lu\n",
+             stats.moved, stats.skipped, stats.constant
+        );
 #endif
     interp->symbols = gcMoveObject(interp, interp->symbols, &stats);
     interp->global = gcMoveObject(interp, interp->global, &stats);
@@ -369,7 +381,9 @@ void gc(Interpreter *interp)
 
         if (object->type == type_stream) {
 #if DEBUG_GC
-            fl_debug(interp, "moving path %p/%s of stream %p\n", (void *)object->path, object->path->string, (void *)object);
+            fl_debug(interp, "moving path %p/%s of stream %p\n",
+                     (void *)object->path, object->path->string, (void *)object
+                );
 #endif
             object->path = gcMoveObject(interp, object->path, &stats);
         } else if (object->type == type_cons) {
@@ -400,7 +414,8 @@ void gc(Interpreter *interp)
     interp->memory->toSpace = swap;
 
     /* report before overwriting offset difference */
-    fl_debug(interp, "collected %lu objects, skipped %lu, constants %lu, saved %lu bytes, memory: %lu/%lu free: %lu(%lu) bytes\n",
+    fl_debug(interp,  "collected %lu objects, skipped %lu, constants %lu, saved %lu bytes, "
+             "memory: %lu/%lu free: %lu(%lu) bytes\n",
              stats.moved, stats.skipped, stats.constant,
              interp->memory->fromOffset - interp->memory->toOffset,
              interp->memory->toOffset, interp->memory->capacity,
@@ -451,7 +466,10 @@ Object *memoryAllocObject(Interpreter *interp, Object *type, size_t size)
         fl_debug(interp, "memoryAllocObject: requesting %lu bytes\n", size);
         /* If not done already allocate to space */
         if (!interp->memory->toSpace) {
-            if (!(interp->memory->toSpace = mmap(NULL, interp->memory->capacity, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0))) {
+            if (!(interp->memory->toSpace = mmap(NULL, interp->memory->capacity,
+                                                 PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS,
+                                                 -1, 0))
+                ) {
                 fprintf(stderr, "OOM allocating to space, exiting\n");
                 exit(2);
             }
@@ -462,7 +480,9 @@ Object *memoryAllocObject(Interpreter *interp, Object *type, size_t size)
     if (interp->memory->fromOffset + size + EXCEPTION_MEM_RESERVE >= interp->memory->capacity) {
         int blocks = size / FLISP_MEMORY_INC_SIZE + 1;
         size_t memory = blocks * FLISP_MEMORY_INC_SIZE;
-        fl_debug(interp, "memoryAllocObject: %lu bytes needed, increasing memory by %lu\n", size, memory);
+        fl_debug(interp, "memoryAllocObject: %lu bytes needed, increasing memory by %lu\n",
+                 size, memory
+            );
         /* Increase to space */
         void *new;
         new = mmap(NULL, interp->memory->capacity + FLISP_MEMORY_INC_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
@@ -1762,9 +1782,11 @@ void lisp_write_object(Interpreter *interp, FILE *fd, Object *object, bool reada
         writeFmt(interp, fd, " - ");
         lisp_write_object(interp, fd, object->vals, readably);
         writeChar(interp, fd, '>');
-    } else if (object->type == type_moved)
-        exception(interp, gc_error, "won't write a garbage collected item");
-    else
+    } else if (object->type == type_moved) {
+        fl_debug(interp, " => ");
+        lisp_write_object(interp, fd, object->forward, readably);
+        //exception(interp, gc_error, "won't write a garbage collected item");
+    } else
         exception(interp, gc_error, "unidentified object: %s", object->type->string);
 
     fflush(fd);

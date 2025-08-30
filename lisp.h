@@ -30,6 +30,7 @@
 #define DEBUG_GC 0
 #define DEBUG_GC_ALWAYS 0
 #define FLISP_TRACE 0
+#define FLISP_TRACK_GCTOP 1
 
 /* Lisp objects */
 

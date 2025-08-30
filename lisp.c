@@ -169,7 +169,6 @@ void fl_debug(Interpreter *interp, char *format, ...)
         (void)fprintf(interp->debug, "fatal: failed to print debug message: %d, %s", errno, format);
     }
     va_end(args);
-    (void)fputc('\n', interp->debug);
     (void)fflush(interp->debug);
 }
 
@@ -325,10 +324,10 @@ Object *gcMoveObject(Interpreter *interp, Object *object, gcStats *stats)
 
 #if DEBUG_GC
     if (object->type == type_stream)
-        fl_debug(interp, "moved stream %p, path %p/%s %s to %p",
+        fl_debug(interp, "moved stream %p, path %p/%s %s to %p\n",
                  (void *)object, (void *)object->path, object->path->string, object->path->type->string, (void *)forward);
     if (object->type == type_symbol)
-        fl_debug(interp, "moved symbol %s", object->string);
+        fl_debug(interp, "moved symbol %s\n", object->string);
 #endif
     // mark object as moved and set forwarding pointer
     object->type = type_moved;
@@ -346,19 +345,19 @@ void gc(Interpreter *interp)
     Object *object;
     gcStats stats = {0};
 
-    fl_debug(interp, "collecting garbage, memory: %lu/%lu, free %lu", interp->memory->fromOffset, interp->memory->capacity, interp->memory->capacity - interp->memory->fromOffset - EXCEPTION_MEM_RESERVE);
+    fl_debug(interp, "collecting garbage, memory: %lu/%lu, free %lu\n", interp->memory->fromOffset, interp->memory->capacity, interp->memory->capacity - interp->memory->fromOffset - EXCEPTION_MEM_RESERVE);
 
     interp->memory->toOffset = 0;
 
     // move trace, symbols and root objects
     for (object = interp->gcTop; object != nil; object = object->cdr) {
 #if DEBUG_GC
-        fl_debug(interp, "moving gc traced object %p of type %s", (void *)object->car, object->car->type->string);
+        fl_debug(interp, "moving gc traced object %p of type %s\n", (void *)object->car, object->car->type->string);
 #endif
         object->car = gcMoveObject(interp, object->car, &stats);
     }
 #if DEBUG_GC
-    fl_debug(interp, "gc traced objects: %lu, skipped %lu, constant %lu", stats.moved, stats.skipped, stats.constant);
+    fl_debug(interp, "gc traced objects: %lu, skipped %lu, constant %lu\n", stats.moved, stats.skipped, stats.constant);
 #endif
     interp->symbols = gcMoveObject(interp, interp->symbols, &stats);
     interp->global = gcMoveObject(interp, interp->global, &stats);
@@ -370,7 +369,7 @@ void gc(Interpreter *interp)
 
         if (object->type == type_stream) {
 #if DEBUG_GC
-            fl_debug(interp, "moving path %p/%s of stream %p", (void *)object->path, object->path->string, (void *)object);
+            fl_debug(interp, "moving path %p/%s of stream %p\n", (void *)object->path, object->path->string, (void *)object);
 #endif
             object->path = gcMoveObject(interp, object->path, &stats);
         } else if (object->type == type_cons) {
@@ -401,7 +400,7 @@ void gc(Interpreter *interp)
     interp->memory->toSpace = swap;
 
     /* report before overwriting offset difference */
-    fl_debug(interp, "collected %lu objects, skipped %lu, constants %lu, saved %lu bytes, memory: %lu/%lu free: %lu(%lu) bytes",
+    fl_debug(interp, "collected %lu objects, skipped %lu, constants %lu, saved %lu bytes, memory: %lu/%lu free: %lu(%lu) bytes\n",
              stats.moved, stats.skipped, stats.constant,
              interp->memory->fromOffset - interp->memory->toOffset,
              interp->memory->toOffset, interp->memory->capacity,
@@ -449,7 +448,7 @@ Object *memoryAllocObject(Interpreter *interp, Object *type, size_t size)
         || gc_always
 #endif
         ) {
-        fl_debug(interp, "memoryAllocObject: requesting %lu bytes", size);
+        fl_debug(interp, "memoryAllocObject: requesting %lu bytes\n", size);
         /* If not done already allocate to space */
         if (!interp->memory->toSpace) {
             if (!(interp->memory->toSpace = mmap(NULL, interp->memory->capacity, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0))) {
@@ -463,7 +462,7 @@ Object *memoryAllocObject(Interpreter *interp, Object *type, size_t size)
     if (interp->memory->fromOffset + size + EXCEPTION_MEM_RESERVE >= interp->memory->capacity) {
         int blocks = size / FLISP_MEMORY_INC_SIZE + 1;
         size_t memory = blocks * FLISP_MEMORY_INC_SIZE;
-        fl_debug(interp, "memoryAllocObject: %lu bytes needed, increasing memory by %lu", size, memory);
+        fl_debug(interp, "memoryAllocObject: %lu bytes needed, increasing memory by %lu\n", size, memory);
         /* Increase to space */
         void *new;
         new = mmap(NULL, interp->memory->capacity + FLISP_MEMORY_INC_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
@@ -1487,7 +1486,8 @@ Object *evalCatch(Interpreter *interp, Object **args, Object **env)
     interp->msg_buf[0] = '\0';
     interp->result = nil;
     if (setjmp(exceptionEnv)) {
-        fl_debug(interp, "catch: %s, '%s'", interp->result->string, interp->msg_buf);
+        fl_debug(interp, "catch: %s, '%s'\n", interp->result->string, interp->msg_buf);
+        interp->gcTop = nil;
     } else {
         do {
             interp->object = evalExpr(interp, &(*args)->car, env);
@@ -2558,7 +2558,7 @@ Interpreter *lisp_new(
         var = newSymbol(interp, "*OUTPUT*");
         (void)envSet(interp, &var, &val, &interp->global, true);
     }
-    fl_debug(interp, "lisp_init: %lu/%lu bytes allocated before gc", interp->memory->fromOffset, interp->memory->capacity);
+    fl_debug(interp, "lisp_init: %lu/%lu bytes allocated before gc\n", interp->memory->fromOffset, interp->memory->capacity);
 
 #if DEBUG_GC_ALWAYS
     gc_always = true;
@@ -2667,35 +2667,36 @@ Object *openInputStreamError(void)
 void lisp_eval(Interpreter *interp, char *input)
 {
     FILE *fd = NULL;
-    Object *result;
 
     if (input == NULL) {
-        fl_debug(interp, "lisp_eval()");
+        fl_debug(interp, "lisp_eval()\n");
         if (interp->input  == NULL) {
             interp->object = openInputStreamError();
             return;
         }
     } else {
-        fl_debug(interp, "lisp_eval(\"%s\")", input);
+        fl_debug(interp, "lisp_eval(\"%s\")\n", input);
         if (NULL == (fd = fmemopen(input, strlen(input), "r")))  {
             interp->object = openInputStreamError();
             return;
         }
     }
     interp->gcTop = nil;
-    interp->object = result = ok;
+    GC_CHECKPOINT;
+    GC_TRACE(gcResult, ok);
     for (;;) {
         cerf(interp, fd);
         if (interp->object->car == end_of_file) {
-            interp->object = result;
+            interp->object = *gcResult;
             break;
         }
         if (interp->object->car != nil)
             break;
         lisp_write_object(interp, interp->output, FLISP_RESULT_OBJECT, true);
-        result = interp->object;
+        *gcResult = interp->object;
         writeChar(interp, interp->output, '\n');
     }
+    GC_RELEASE;
     if (interp->output) fflush(interp->output);
     if (fd) fclose(fd);
 }

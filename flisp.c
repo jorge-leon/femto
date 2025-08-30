@@ -9,15 +9,6 @@
 #include <errno.h>
 #include "lisp.h"
 
-/* Specify in kByte. Less then 263 is too small for loading stdlib.lsp
- * and running the tests.
- */
-//
-//
-#define FLISP_MEMORY_SIZE 363
-//Note: debugging: #define FLISP_MEMORY_SIZE 263
-//Note: debugging: #define FLISP_MEMORY_SIZE 200
-
 #define CPP_XSTR(s) CPP_STR(s)
 #define CPP_STR(s) #s
 
@@ -88,7 +79,7 @@ int main(int argc, char **argv)
             fprintf(stderr, "failed to open debug file %s for writing: %d\n", debug_file, errno);
     }
 
-    interp = lisp_new(FLISP_MEMORY_SIZE*1024, argv, library_path, stdin, stdout, fd);
+    interp = lisp_new(argv, library_path, stdin, stdout, fd);
     if (interp == NULL)
         fatal("fLisp interpreter initialization failed");
 

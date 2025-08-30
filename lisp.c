@@ -478,16 +478,16 @@ Object *memoryAllocObject(Interpreter *interp, Object *type, size_t size)
         interp->memory->capacity += memory;
         gc(interp);
         /* Increase former from space */
-        new = mmap(NULL, interp->memory->capacity, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-        if (new == (void *) -1) {
-            interp->memory->capacity+= EXCEPTION_MEM_RESERVE;
-            exception(interp, out_of_memory, "OOM reallocating fromSpace: %s", strerror(errno));
-        }
+        //new = mmap(NULL, interp->memory->capacity, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+        //if (new == (void *) -1) {
+        //    interp->memory->capacity+= EXCEPTION_MEM_RESERVE;
+        //    exception(interp, out_of_memory, "OOM reallocating fromSpace: %s", strerror(errno));
+        //}
         if (munmap(interp->memory->toSpace, interp->memory->capacity - memory) == -1) {
             interp->memory->capacity+= EXCEPTION_MEM_RESERVE;
             exception(interp, out_of_memory, "munmap(fromSpace) failed: %s", strerror(errno));
         }
-        interp->memory->toSpace = new;
+        interp->memory->toSpace = NULL;
     }
     /* Allocate object in from-space */
     Object *object = (Object *) ((char *)interp->memory->fromSpace + interp->memory->fromOffset);
@@ -2447,7 +2447,7 @@ Memory *newMemory(size_t size)
     Memory *memory = malloc(sizeof(Memory));
     if (!memory) return NULL;
 
-    memory->capacity = size/2;
+    memory->capacity = size;
     memory->fromOffset = 0;
     memory->toOffset = 0;
     memory->fromSpace = NULL;
@@ -2477,7 +2477,7 @@ Memory *newMemory(size_t size)
  *
  */
 Interpreter *lisp_new(
-    size_t size, char **argv, char *library_path,
+    char **argv, char *library_path,
     FILE *input, FILE *output, FILE* debug)
 {
     Interpreter *interp;
@@ -2488,17 +2488,8 @@ Interpreter *lisp_new(
     interp = malloc(sizeof(Interpreter));
     if (interp == NULL) return NULL;
 
-    if (size/2 < FLISP_MIN_MEMORY) {
-        interp->result = invalid_value;
-        /* Note: obsolete error reporting - update needed */
-        strncpy(interp->msg_buf,
-                "fLisp needs at least" CPP_STR(FLISP_MIN_MEMORY)  "bytes to start up", sizeof(interp->msg_buf));
-        return NULL;
-    }
-
-    interp->debug = debug;
-
-    Memory *memory = newMemory(size);
+    /* Note: we might want to allocate more to take into account the size of argv and library_path */
+    Memory *memory = newMemory(FLISP_MIN_MEMORY);
     if (memory == NULL) {
         interp->result = out_of_memory;
         /* Note: obsolete error reporting - update needed */
@@ -2516,7 +2507,6 @@ Interpreter *lisp_new(
     interp->buf = NULL;
     resetBuf(interp);
 
-    interp->gcTop = nil;
     interp->catch = &interp->exceptionEnv;
 
     /*   symbols */
@@ -2527,6 +2517,9 @@ Interpreter *lisp_new(
 
     interp->next = interp;
     lisp_interpreters = interp;
+
+    /* enable debug output */
+    interp->debug = debug;
 
     /* global environment */
     initRootEnv(interp);

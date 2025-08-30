@@ -11,13 +11,14 @@
 #include <inttypes.h>
 
 #define FL_NAME     "fLisp"
-#define FL_VERSION  "0.11"
+#define FL_VERSION  "0.12"
 
 #define FL_INITFILE "flisp.rc"
 #define FL_LIBDIR "/usr/local/share/flisp"
 
 /* minimal Lisp object space size */
-#define FLISP_MIN_MEMORY  26624UL  /* currently ~26k */
+//#define FLISP_MIN_MEMORY  24576UL  /* currently ~21k for flisp */
+#define FLISP_MIN_MEMORY  40960UL  /* currently ~34k for femto */
 #define FLISP_MEMORY_INC_SIZE 8192UL  /* Resize by this amount */
 
 /* buffersize for Lisp eval input */
@@ -26,8 +27,9 @@
 #define WRITE_FMT_BUFSIZ 2048
 
 /* Debugging */
-#define DEBUG_GC 1
-#define DEBUG_GC_ALWAYS 1
+#define DEBUG_GC 0
+#define DEBUG_GC_ALWAYS 0
+#define FLISP_TRACE 0
 
 /* Lisp objects */
 
@@ -191,7 +193,7 @@ void fl_debug(Interpreter *, char *, ...);
                             SIGNATURE " expected %s, got: %s", TYPE->string, PARAM->type->string)
 
 // PUBLIC INTERFACE ///////////////////////////////////////////////////////
-extern Interpreter *lisp_new(size_t, char**, char*, FILE*, FILE*, FILE*);
+extern Interpreter *lisp_new(char **, char*, FILE*, FILE*, FILE*);
 extern void lisp_destroy(Interpreter *);
 extern void lisp_eval(Interpreter *, char *);
 extern void lisp_write_object(Interpreter *, FILE *, Object *, bool);

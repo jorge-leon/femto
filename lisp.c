@@ -1589,6 +1589,14 @@ Object *evalExpr(Interpreter *interp, Object ** object, Object **env)
                                                 (*flisp_object_type[primitive->type_check])->string,
                                                 args->car->type->string
                                 );
+#if FLISP_TRACE
+                fl_debug(interp, "(%s", primitive->name);
+                for (args = *gcArgs; args != nil; args = args->cdr, nArgs++) {
+                    fl_debug(interp, " ");
+                    lisp_write_object(interp, interp->debug, args->car, true);
+                }
+                fl_debug(interp, ")\n");
+#endif
                 GC_RETURN(primitive->eval(interp, gcArgs, gcEnv));
             }
         } else {

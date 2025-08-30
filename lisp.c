@@ -1479,20 +1479,21 @@ Object *evalList(Interpreter *interp, Object **args, Object **env)
 Object *evalCatch(Interpreter *interp, Object **args, Object **env)
 {
     jmp_buf exceptionEnv, *prevEnv;
-    Object *object;
+    Object *object, *gcTopPrev;
 
     prevEnv = interp->catch;
     interp->catch = &exceptionEnv;
     interp->msg_buf[0] = '\0';
     interp->result = nil;
+    gcTopPrev = interp->gcTop;
     if (setjmp(exceptionEnv)) {
         fl_debug(interp, "catch: %s, '%s'\n", interp->result->string, interp->msg_buf);
-        interp->gcTop = nil;
     } else {
         do {
             interp->object = evalExpr(interp, &(*args)->car, env);
         } while(0);
     }
+    interp->gcTop = gcTopPrev;
     interp->catch = prevEnv;
     GC_CHECKPOINT;
     object = newCons(interp, &interp->object, &nil);

@@ -91,15 +91,11 @@ typedef struct Memory {
 
 typedef struct Interpreter {
 
-    Object *object;                  /* catch result */
-
     /* private */
-    /* catch result: (error_type message result) */
-    Object error;                    /* error code cons */
-    Object _message;                 /* message cons */
+    Object *error;                   /* error code cons */
     struct { Object * type; size_t size; char string[WRITE_FMT_BUFSIZ]; } message;
-    Object result;                   /* result or error object cons */
-    
+    Object *result;                   /* result or error object */
+
     FILE *input;                     /* default input stream object */
     FILE *output;                    /* default output file descriptor */
     FILE *debug;                     /* debug stream */
@@ -164,7 +160,13 @@ extern Object *newStreamObject(Interpreter *, FILE *, char *);
 extern size_t addCharToBuf(Interpreter *, int);
 extern void resetBuf(Interpreter *);
 
-extern void exceptionWithObject(Interpreter *, Object *, Object *, char *, ...);
+extern void setInterpreterResult(Interpreter *, Object *, Object *, char *, ...);
+#define exceptionWithObject(interp, object, error, ...)           \
+    do {                                                          \
+        resetBuf(interp);                                         \
+        setInterpreterResult(interp, object, error, __VA_ARGS__); \
+        longjmp(*interp->catch, 2);                               \
+    } while(0)
 #define exception(interp, error, ...)       exceptionWithObject(interp, nil, error, __VA_ARGS__)
 
 #define GC_PASTE1(name, id)  name ## id
@@ -204,9 +206,9 @@ extern void lisp_eval(Interpreter *, char *);
 extern void lisp_write_object(Interpreter *, FILE *, Object *, bool);
 extern void lisp_write_error(Interpreter *, FILE *);
 
-#define FLISP_RESULT_CODE interp->object->car
-#define FLISP_RESULT_MESSAGE interp->object->cdr->car
-#define FLISP_RESULT_OBJECT interp->object->cdr->cdr->car
+#define FLISP_RESULT_CODE interp->error
+#define FLISP_RESULT_MESSAGE ((Object *)&interp->message)
+#define FLISP_RESULT_OBJECT interp->result
 
 #endif
 /*

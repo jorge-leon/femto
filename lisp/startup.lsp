@@ -4,19 +4,19 @@
   (cond ((eq "*scratch*" (get-buffer-name))
 	 (insert-string "\n\n\n\n")
 	 (insert-string " ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n")
-         (insert-string " ;\n")
-         (insert-string " ;\n")
-         (insert-string " ;\n")
+	 (insert-string " ;\n")
+	 (insert-string " ;\n")
+	 (insert-string " ;\n")
 	 (insert-string " ;  / _| ___ _ __ ___ | |_ ___     \n")
 	 (insert-string " ; | |_ / _ \ '_ ` _ \| __/ _ \    \n")
 	 (insert-string " ; |  _|  __/ | | | | | || (_) |   \n")
 	 (insert-string " ; |_|  \___|_| |_| |_|\__\___/'    \n")
-         (insert-string " ;\n")
-         (insert-string " ;\n")
-         (insert-string " ;\n")
-         (insert-string " ;\n")
+	 (insert-string " ;\n")
+	 (insert-string " ;\n")
+	 (insert-string " ;\n")
+	 (insert-string " ;\n")
 	 (insert-string " ; C-x h   for help\n")
-         (insert-string " ;\n")
+	 (insert-string " ;\n")
 	 (insert-string " ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n\n\n\n")
 	 (insert-string "  Tiny Emacs clone with Tiny-Lisp extension language\n  ")
 	 (insert-string (get-version-string))
@@ -36,7 +36,7 @@
 	(cond ((> pos 0) (goto-line pos)))
 	(getopts (cdr opts) 0))))
     (t (throw wrong-type-argument "(getopts opts pos) - opts must be list"))))
-  
+
 (defun confn(fn)
   (concat (os.getenv "HOME") "/" config_dir "/" fn))
 
@@ -109,5 +109,3 @@
 
 ;;(getopts argv 0)
 (log-debug (concat "getopts: " (catch (getopts argv 0))))
-
-

@@ -151,10 +151,10 @@ char *eval_string(bool do_format, char *format, ...)
     prev = interp->output;  // Note: save for double invocation with user defined functions.
     interp->output = open_memstream(&output, &len);
     lisp_eval(interp, input);
-    if (FLISP_RESULT_CODE == nil)
-        return output;
     if (interp->output)
         fflush(interp->output);
+    if (FLISP_RESULT_CODE == nil)
+        return output;
     msg_lisp_err(interp);
     if (debug_mode) {
         lisp_write_error(interp, debug_fp);

@@ -143,6 +143,12 @@ bool gc_always = false;
 Interpreter *lisp_interpreters = NULL;
 
 
+void fl_fatal(char *message, int code)
+{
+    fprintf(stderr, message);
+    exit(code);
+}
+
 // DEBUG LOG ///////////////////////////////////////////////////////////////////
 
 #ifdef __GNUC__
@@ -451,10 +457,8 @@ Object *memoryAllocObject(Interpreter *interp, Object *type, size_t size)
 
     /* If not done already allocate to space */
     if (!interp->memory->fromSpace) {
-        if (!(interp->memory->fromSpace = mmap(NULL, interp->memory->capacity, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0))) {
-            fprintf(stderr, "OOM, allocating from space, exiting\n");
-            exit(2);
-        }
+        if (!(interp->memory->fromSpace = mmap(NULL, interp->memory->capacity, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0)))
+            fl_fatal("OOM, allocating from space, exiting\n", 64);
     }
     /* Run garbage collection if capacity exceeded */
     if (
@@ -468,11 +472,8 @@ Object *memoryAllocObject(Interpreter *interp, Object *type, size_t size)
         if (!interp->memory->toSpace) {
             if (!(interp->memory->toSpace = mmap(NULL, interp->memory->capacity,
                                                  PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS,
-                                                 -1, 0))
-                ) {
-                fprintf(stderr, "OOM allocating to space, exiting\n");
-                exit(2);
-            }
+                                                 -1, 0)))
+                fl_fatal("OOM allocating to space, exiting\n", 65);
         }
         gc(interp);
     }
@@ -2599,7 +2600,7 @@ void lisp_destroy(Interpreter *interp)
 
     if (interp->memory->fromSpace)
         (void)munmap(interp->memory->fromSpace, interp->memory->capacity);
-    // Note: we do not know which one it is, so we free both.
+
     if (interp->memory->toSpace)
         (void)munmap(interp->memory->toSpace, interp->memory->capacity);
 

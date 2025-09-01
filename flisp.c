@@ -76,7 +76,7 @@ int main(int argc, char **argv)
     debug_file=getenv("FLISP_DEBUG");
     if (debug_file != NULL) {
         if (!(fd = fopen(debug_file, "w")))
-            fprintf(stderr, "failed to open debug file %s for writing: %d\n", debug_file, errno);
+            fprintf(stderr, "failed to open debug file %s for writing: %s\n", debug_file, strerror(errno));
     }
 
     interp = lisp_new(argv, library_path, stdin, stdout, fd);
@@ -85,7 +85,7 @@ int main(int argc, char **argv)
 
     if (strlen(init_file)) {
         if (!(fd = fopen(init_file, "r")))
-            fprintf(stderr, "failed to open inifile %s: %d\n", init_file, errno);
+            fprintf(stderr, "failed to open inifile %s: %s\n", init_file, strerror(errno));
         else {
             // load inifile
             interp->input = fd;
@@ -98,8 +98,7 @@ int main(int argc, char **argv)
             // Note: if we could implement the repl in fLisp itself we'd done here.
             }
             if (fclose(fd))
-                // Note: the error object can be printed with lisp_write_object
-                fprintf(stderr, "failed to close inifile %s %s\n", init_file, interp->msg_buf);
+                fprintf(stderr, "failed to close inifile %s %s\n", init_file, strerror(errno));
         }
     }
     // Start repl

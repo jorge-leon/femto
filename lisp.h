@@ -30,7 +30,7 @@
 #define DEBUG_GC 0
 #define DEBUG_GC_ALWAYS 0
 #define FLISP_TRACE 0
-#define FLISP_TRACK_GCTOP 1
+#define FLISP_TRACK_GCTOP 0
 
 /* Lisp objects */
 
@@ -91,12 +91,15 @@ typedef struct Memory {
 
 typedef struct Interpreter {
 
-    Object *object;                  /* result or error object */
+    Object *object;                  /* catch result */
 
     /* private */
-    Object *result;                  /* result symbol */
-    char msg_buf[WRITE_FMT_BUFSIZ];  /* error string */
-
+    /* catch result: (error_type message result) */
+    Object error;                    /* error code cons */
+    Object _message;                 /* message cons */
+    struct { Object * type; size_t size; char string[WRITE_FMT_BUFSIZ]; } message;
+    Object result;                   /* result or error object cons */
+    
     FILE *input;                     /* default input stream object */
     FILE *output;                    /* default output file descriptor */
     FILE *debug;                     /* debug stream */
@@ -162,7 +165,8 @@ extern size_t addCharToBuf(Interpreter *, int);
 extern void resetBuf(Interpreter *);
 
 extern void exceptionWithObject(Interpreter *, Object *, Object *, char *, ...);
-#define exception(interp, result, ...)       exceptionWithObject(interp, nil, result, __VA_ARGS__)
+#define exception(interp, error, ...)       exceptionWithObject(interp, nil, error, __VA_ARGS__)
+
 #define GC_PASTE1(name, id)  name ## id
 #define GC_PASTE2(name, id)  GC_PASTE1(name, id)
 #define GC_UNIQUE(name)      GC_PASTE2(name, __LINE__)

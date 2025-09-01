@@ -73,9 +73,6 @@ Object *type_env =               &(Object) { NULL, .string  = "type-env" };
 Object *type_moved =             &(Object) { NULL, .string  = "type-moved" };
 Object *empty =                  &(Object) { NULL, .string = "\0" };
 Object *one =                    &(Object) { NULL, .integer = 1 };
-Object *okObject =               &(Object) { NULL };
-Object *okMessage =              &(Object) { NULL };
-Object *ok =                     &(Object) { NULL };
 
 Constant flisp_constants[] = {
     /* Fundamentals */
@@ -183,42 +180,83 @@ void fl_debug(Interpreter *interp, char *format, ...)
 
 void resetBuf(Interpreter *);
 
+/** err() - set interpreter catch object to error
+ *
+ * @param interp  interpreter in which the error occured.
+ * @param object  object on which an error occured, set to nil if none.
+ * @param error   error type symbol
+ * @param format ... printf style human readable error message
+ *
+ * *object* and *error* are stored in the interpreter structure.
+ *
+ * The error message specified with *format* and it's va_args is
+ * formatted into the message object of the interpreter. If it is
+ * longer then WRITE_FMT_BUFSIZ - by default 2048 characters - it is
+ * truncated and the last three characters are overwritten with "..."
+ */
+#ifdef __GNUC__
+void err(Interpreter *, Object *, Object *, char *, ...)
+    __attribute__ ((format(printf, 4, 5)));
+#endif
+void err(Interpreter *interp, Object *object, Object *error, char *format, ...)
+{
+    size_t written;
+
+    interp->result.car = object;
+    interp->error.car = error;
+    resetBuf(interp);
+
+    size_t len = sizeof(interp->message.string);
+    va_list(args);
+    va_start(args, format);
+    written = vsnprintf(interp->message.string, len, format, args);
+    va_end(args);
+    if (written > len)
+        strcpy(interp->message.string+len-4, "...");
+    else if (written < 0)
+        strncpy(interp->message.string, "failed to format error message", len);
+}
+
+/* Note: this is really err(); longjmp(), but we could not make it
+ * into a macro yet.
+ */
 /** exceptionWithObject - break out of errors
  *
  * @param interp  interpreter in which the error occured.
  * @param object  object on which an error occured, set to nil if none.
- * @param result  result symbol corresponding to error type.
+ * @param error   error type symbol
  * @param format ... printf style human readable error message
  *
- * *object* and *result* are stored in the interpreter structure.
+ * *object* and *error* are stored in the interpreter structure.
  * The return code for longjmp is FLISP_ERROR
  *
- * The error message is formatted into the message buffer of the interpreter. If it has to
- * be truncated the last three characters are overwritten with "..."
+ * The error message is formatted into the message object of the
+ * interpreter. If it is longer then WRITE_FMT_BUFSIZ - by default
+ * 2047 characters - it is truncated and the last three characters are
+ * overwritten with "..."
  */
 #ifdef __GNUC__
-void exceptionWithObject(Interpreter *, Object *object, Object *result, char *format, ...)
+void exceptionWithObject(Interpreter *, Object *, Object *, char *, ...)
     __attribute__ ((noreturn, format(printf, 4, 5)));
 #endif
-void exceptionWithObject(Interpreter *interp, Object *object, Object *result, char *format, ...)
+void exceptionWithObject(Interpreter *interp, Object *object, Object *error, char *format, ...)
 {
     size_t written;
 
-    interp->object = object;
-    interp->result = result;
+    interp->result.car = object;
+    interp->error.car = error;
     resetBuf(interp);
 
-    size_t len = sizeof(interp->msg_buf);
+    size_t len = sizeof(interp->message.string);
     va_list(args);
     va_start(args, format);
-    written = vsnprintf(interp->msg_buf, len, format, args);
+    written = vsnprintf(interp->message.string, len, format, args);
     va_end(args);
     if (written > len)
-        strcpy(interp->msg_buf+len-4, "...");
+        strcpy(interp->message.string+len-4, "...");
     else if (written < 0)
-        strncpy(interp->msg_buf, "failed to format error message", len);
+        strncpy(interp->message.string, "failed to format error message", len);
 
-    assert(interp->catch != NULL);
     longjmp(*interp->catch, FLISP_ERROR);
 }
 
@@ -234,7 +272,6 @@ void exceptionWithObject(Interpreter *interp, Object *object, Object *result, ch
  * The error message is formatted into the message buffer of the interpreter. If it has to
  * be truncated the last three characters are overwritten with "..."
  */
-// #define exception(interp, result, ...)       exceptionWithObject(interp, nil, result, __VA_ARGS__)
 
 
 // GARBAGE COLLECTION /////////////////////////////////////////////////////////
@@ -1497,37 +1534,36 @@ Object *evalList(Interpreter *interp, Object **args, Object **env)
     }
 }
 
+
+Object *ok(Interpreter *interp, Object *object)
+{
+    interp->error.car = nil;
+    interp->message.string[0] = '\0';
+    interp->result.car = object;
+    return object;
+}
+
 Object *evalCatch(Interpreter *interp, Object **args, Object **env)
 {
     jmp_buf exceptionEnv, *prevEnv;
-    Object *object, *gcTopPrev;
 
     prevEnv = interp->catch;
     interp->catch = &exceptionEnv;
-    interp->msg_buf[0] = '\0';
-    interp->result = nil;
-    gcTopPrev = interp->gcTop;
+    ok(interp, nil);
+    GC_CHECKPOINT;
     if (setjmp(exceptionEnv)) {
-        fl_debug(interp, "catch: %s, '%s'\n", interp->result->string, interp->msg_buf);
+        fl_debug(interp, "catch:%s: '%s'\n", FLISP_RESULT_CODE->string, FLISP_RESULT_MESSAGE->string);
     } else {
-        do {
-            interp->object = evalExpr(interp, &(*args)->car, env);
+        do {            
+            ok(interp, evalExpr(interp, &(*args)->car, env));
+            fl_debug(interp, "eval result: ");
+            lisp_write_object(interp, interp->debug, FLISP_RESULT_OBJECT, true);
+            //ok(interp, nil);
         } while(0);
     }
-    interp->gcTop = gcTopPrev;
-    interp->catch = prevEnv;
-    GC_CHECKPOINT;
-    object = newCons(interp, &interp->object, &nil);
-    GC_TRACE(gcObj, object);
-    object = newString(interp, interp->msg_buf);
-    GC_TRACE(gcMessage, object);
-    *gcObj = newCons(interp, gcMessage, gcObj);
-    object = interp->result;
-    *gcObj = newCons(interp, &object, gcObj);
     GC_RELEASE;
-    interp->object = *gcObj;
-    interp->result = nil;
-    return *gcObj;
+    interp->catch = prevEnv;
+    return interp->object;
 }
 
 
@@ -2425,14 +2461,6 @@ void initRootEnv(Interpreter *interp)
 #ifdef FLISP_DOUBLE_EXTENSION
     double_one->type = type_double;
 #endif
-    okObject->type = type_cons;
-    okObject->car = okObject->cdr = nil;
-    okMessage->type = type_cons;
-    okMessage->car = empty;
-    okMessage->cdr = okObject;
-    ok->type = type_cons;
-    ok->car = nil;
-    ok->cdr = okMessage;
 
     // add primitives
     int nPrimitives = sizeof(primitives) / sizeof(primitives[0]);
@@ -2512,28 +2540,33 @@ Interpreter *lisp_new(
     interp = malloc(sizeof(Interpreter));
     if (interp == NULL) return NULL;
 
+    /* catch object */
+    interp->object = &interp->error;
+    interp->error.type = type_cons;
+    interp->error.cdr = &interp->_message;
+    interp->_message.type = type_cons;
+    interp->_message.car = (Object *)(&interp->message);
+    interp->_message.cdr = &interp->result;
+    interp->result.type = type_cons;
+    interp->result.cdr = nil;
+    interp->message.type = type_string;
+    ok(interp, nil);
+
     /* Note: we might want to allocate more to take into account the size of argv and library_path */
     Memory *memory = newMemory(FLISP_MIN_MEMORY);
     if (memory == NULL) {
-        interp->result = out_of_memory;
-        /* Note: obsolete error reporting - update needed */
-        strncpy(interp->msg_buf,
-                "failed to allocate memory for the interpreter",  sizeof(interp->msg_buf));
+        err(interp, nil, out_of_memory, "failed to allocate memory for the interpreter");
         return NULL;
     }
     interp->memory = memory;
 
-    /* Note: obsolete initialization - update needed */
-    interp->object = ok;
-    interp->msg_buf[0] = '\0';
-    interp->result = nil;
-
+    /* read buffer */
     interp->buf = NULL;
     resetBuf(interp);
 
     interp->catch = &interp->exceptionEnv;
 
-    /*   symbols */
+    /* symbols */
     Object *object;
     object = newCons(interp, &nil, &nil);
     object = newCons(interp, &t, &object);
@@ -2655,15 +2688,6 @@ void cerf(Interpreter *interp, FILE *fd)
     (void) evalCatch(interp, &evalApply, &interp->global);
 }
 
-Object *openInputStreamError(void)
-{
-    /* Note: find a way to not construct this all the time anew */
-    Object *m = &(Object) { type_string, .string = "cannot open input stream" };
-    Object *o = &(Object) { type_cons, .car = nil, .cdr = nil };
-    o =         &(Object) { type_cons, .car = m, .cdr = o };
-    return      &(Object) { type_cons, .car = io_error, .cdr = o };
-}
-
 /** lisp_eval() - interpret a string or file in Lisp
  *
  * @param interp  fLisp interpreter
@@ -2696,29 +2720,29 @@ void lisp_eval(Interpreter *interp, char *input)
     if (input == NULL) {
         fl_debug(interp, "lisp_eval()\n");
         if (interp->input  == NULL) {
-            interp->object = openInputStreamError();
+            err(interp, nil, invalid_value, "no input stream configured");
             return;
         }
     } else {
         fl_debug(interp, "lisp_eval(\"%s\")\n", input);
         if (NULL == (fd = fmemopen(input, strlen(input), "r")))  {
-            interp->object = openInputStreamError();
+            err(interp, nil, io_error, "fmemopen() for input string failed: %s", strerror(errno));
             return;
         }
     }
     interp->gcTop = nil;
     GC_CHECKPOINT;
-    GC_TRACE(gcResult, ok);
+    GC_TRACE(gcResult, nil);
     for (;;) {
         cerf(interp, fd);
-        if (interp->object->car == end_of_file) {
-            interp->object = *gcResult;
+        if (FLISP_RESULT_CODE == end_of_file) {
+            (void)ok(interp, *gcResult);
             break;
         }
-        if (interp->object->car != nil)
+        if (FLISP_RESULT_CODE != nil)
             break;
         lisp_write_object(interp, interp->output, FLISP_RESULT_OBJECT, true);
-        *gcResult = interp->object;
+        *gcResult = FLISP_RESULT_OBJECT;
         writeChar(interp, interp->output, '\n');
     }
     GC_RELEASE;

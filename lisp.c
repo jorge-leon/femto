@@ -2632,7 +2632,7 @@ void lisp_write_error(Interpreter *interp, FILE *fd)
 
 /** (catch (eval (read f))) or (catch (eval (read)))
  */
-void cerf(Interpreter *interp, FILE *fd)
+Object *cerf(Interpreter *interp, FILE *fd)
 {
     /* Note: find a way to not construct this all the time anew */
     Primitive readPrimitive =  { "read",  0, 2, 0, primitiveRead };
@@ -2650,7 +2650,7 @@ void cerf(Interpreter *interp, FILE *fd)
     Object evalCons =  (Object) { type_cons, .car = &eval, .cdr = &readApply };
     Object *evalApply = &(Object) { type_cons, .car = &evalCons, .cdr = nil };
 
-    (void) evalCatch(interp, &evalApply, &interp->global);
+    return evalCatch(interp, &evalApply, &interp->global);
 }
 
 /** lisp_eval() - interpret a string or file in Lisp
@@ -2698,17 +2698,18 @@ void lisp_eval(Interpreter *interp, char *input)
     interp->gcTop = nil;
     GC_CHECKPOINT;
     GC_TRACE(gcResult, nil);
+    Object *object;
     for (;;) {
-        cerf(interp, fd);
-        if (FLISP_RESULT_CODE == end_of_file) {
+        object = cerf(interp, fd);
+        if (object->car == end_of_file) {
             setInterpreterResult(interp, *gcResult, nil, NULL);
             break;
         }
-        if (FLISP_RESULT_CODE != nil)
+        if (object->car != nil)
             break;
-        lisp_write_object(interp, interp->output, FLISP_RESULT_OBJECT, true);
-        *gcResult = FLISP_RESULT_OBJECT;
+        lisp_write_object(interp, interp->output, object->cdr->cdr->car, true);
         writeChar(interp, interp->output, '\n');
+        *gcResult = object->cdr->cdr->car;
     }
     GC_RELEASE;
     if (interp->output) fflush(interp->output);

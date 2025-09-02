@@ -2253,27 +2253,34 @@ Object *stringAppend(Interpreter *interp, Object **args, Object **env)
     return str;
 }
 
-// (substring ...)
+/** (substring string [start [end]]) - return substring of string within range [start, end)
+ *
+ * @param string   Input string
+ * @param start    Start index, 0 based
+ * @param end      End index, not included
+ *
+ * @return Substring of string starting from end until character
+ * end-1. Length of string is default for *end*, 0 is default for
+ * *start*.
+ */
 Object *stringSubstring(Interpreter *interp, Object **args, Object **env)
 {
     int64_t start = 0, end, len;
 
-    if (FLISP_ARG_ONE->type != type_string)
-        exceptionWithObject(interp, FLISP_ARG_ONE, wrong_type_argument, "(substring str [start [end]]) - arg 1 expected %s, got: %s", type_string->string, FLISP_ARG_ONE->type->string);
-    len = strlen(FLISP_ARG_ONE->string);
+    CHECK_TYPE(FLISP_ARG_ONE, type_string, "(substring string [start [end]]) - string");
 
+    len = strlen(FLISP_ARG_ONE->string);
     if (len == 0)
         return empty;
-
     end = start + len;
 
-    if ((*args)->cdr != nil) {
-        CHECK_TYPE(FLISP_ARG_TWO, type_integer, "(substring str [start [end]]) - start");
+    if (FLISP_HAS_ARG_TWO) {
+        CHECK_TYPE(FLISP_ARG_TWO, type_integer, "(substring string [start [end]]) - start");
         start = (FLISP_ARG_TWO->integer);
         if (start < 0)
             start = end + start;
         if ((*args)->cdr->cdr != nil) {
-            CHECK_TYPE(FLISP_ARG_THREE, type_integer, "(substring str [start [end]]) - end");
+            CHECK_TYPE(FLISP_ARG_THREE, type_integer, "(substring string [start [end]]) - end");
             if (FLISP_ARG_THREE->integer < 0)
                 end = end + FLISP_ARG_THREE->integer;
             else
@@ -2282,21 +2289,20 @@ Object *stringSubstring(Interpreter *interp, Object **args, Object **env)
     }
 
     if (start < 0 || start > len)
-        exceptionWithObject(interp, FLISP_ARG_TWO, range_error, "(substring str [start [end]]) - start out of range");
+        exceptionWithObject(interp, FLISP_ARG_TWO, range_error,
+                            "(substring string [start [end]]) - start out of range");
     if (end < 0 || end > len)
-        exceptionWithObject(interp, FLISP_ARG_THREE, range_error, "(substring str [start [end]]) - end out of range");
+        exceptionWithObject(interp, FLISP_ARG_THREE, range_error,
+                            "(substring string [start [end]]) - end out of range");
     if (start > end)
-        exceptionWithObject(interp, FLISP_ARG_TWO, range_error, "(substring str [start [end]]) - end > start");
+        exceptionWithObject(interp, FLISP_ARG_TWO, range_error,
+                            "(substring string [start [end]]) - end > start");
     if (start == end)
         return empty;
-
-    char *sub = strdup(FLISP_ARG_ONE->string);
+    
     int newlen = end - start;
-
-    memcpy(sub, (FLISP_ARG_ONE->string + start), newlen+1);
-    *(sub + newlen + 1) = '\0';
-    Object * new = newStringWithLength(interp, sub, newlen);
-    free(sub);
+    Object *new = newStringWithLength(interp, (FLISP_ARG_ONE->string)+start, newlen+1);
+    new->string[newlen] = '\0';
 
     return new;
 }

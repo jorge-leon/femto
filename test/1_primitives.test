@@ -442,19 +442,19 @@ flisp_expr; ok substring-6 substring answer 1 -3 ns
 IN='(substring "answer" -3 -1)' OUT='"we"'
 flisp_expr; ok substring-6 substring answer -3 -1 we
 
-IN='(substring "answer" 7)' ERR='(substring str [start [end]]) - start out of range' OBJ=
+IN='(substring "answer" 7)' ERR='(substring string [start [end]]) - start out of range' OBJ=
 flisp_err; ok substring-7 substring answer 7 range-error
 
-IN='(substring "answer" -7)' ERR='(substring str [start [end]]) - start out of range' OBJ=
+IN='(substring "answer" -7)' ERR='(substring string [start [end]]) - start out of range' OBJ=
 flisp_err; ok substring-8 substring answer -7 range-error
 
-IN='(substring "answer" 1 7)' ERR='(substring str [start [end]]) - end out of range' OBJ=
+IN='(substring "answer" 1 7)' ERR='(substring string [start [end]]) - end out of range' OBJ=
 flisp_err; ok substring-9 substring answer 1 7 range-error
 
-IN='(substring "answer" 1 -7)' ERR='(substring str [start [end]]) - end out of range' OBJ=
+IN='(substring "answer" 1 -7)' ERR='(substring string [start [end]]) - end out of range' OBJ=
 flisp_err; ok substring-10 substring answer 1 7 range-error
 
-IN='(substring "answer" 2 1)' ERR='(substring str [start [end]]) - end > start' OBJ=
+IN='(substring "answer" 2 1)' ERR='(substring string [start [end]]) - end > start' OBJ=
 flisp_err; ok substring-11 substring answer 2 1 range-error
 
 IN='(string-search "" "")' OUT='0'

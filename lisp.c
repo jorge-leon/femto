@@ -2287,7 +2287,6 @@ Object *stringSubstring(Interpreter *interp, Object **args, Object **env)
                 end = FLISP_ARG_THREE->integer;
         }
     }
-
     if (start < 0 || start > len)
         exceptionWithObject(interp, FLISP_ARG_TWO, range_error,
                             "(substring string [start [end]]) - start out of range");
@@ -2299,7 +2298,7 @@ Object *stringSubstring(Interpreter *interp, Object **args, Object **env)
                             "(substring string [start [end]]) - end > start");
     if (start == end)
         return empty;
-    
+
     int newlen = end - start;
     Object *new = newStringWithLength(interp, (FLISP_ARG_ONE->string)+start, newlen+1);
     new->string[newlen] = '\0';
@@ -2637,6 +2636,10 @@ void lisp_write_error(Interpreter *interp, FILE *fd)
 }
 
 /** (catch (eval (read f))) or (catch (eval (read)))
+ *
+ * (eval (read f)) or (eval (read))
+ * (eval . (read . (f . nil)) or
+ * (eval . (read . nil)
  */
 Object *cerf(Interpreter *interp, FILE *fd)
 {

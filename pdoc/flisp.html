@@ -1251,7 +1251,7 @@
       
       <dd>
 	If no memory can be allocated for the input string or the input file descriptor is <code>NULL</code> no Lisp
-	evaluation takes place and the <code>object</code> field of the interpreter is set to an <code>io-error</code>.
+	evaluation takes place and <code>FLISP_RESULT_CODE</code> field of the interpreter is set to an <code>io-error</code>.
       </dd>
       <dt>
 	<code>void lisp_write_object(Interpreter *<var>interp</var>, FILE <var>*fd</var>, Object *<var>object</var>,

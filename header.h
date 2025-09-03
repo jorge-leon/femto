@@ -508,6 +508,8 @@ extern window_t *split_current_window(void);
 extern char *eval_string(bool, char *, ...);
 extern void free_lisp_output(void);
 
+#define FLISP_INITIAL_MEMORY 5242886UL  /* 256k Lisp object space, no gc on startup */
+
 /*
  * Local Variables:
  * c-file-style: "k&r"

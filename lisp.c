@@ -35,6 +35,11 @@
 
 /* No user servicable  parts inside */
 
+#ifndef FLISP_INITIAL_MEMORY
+#define FLISP_INITIAL_MEMORY 0
+#endif
+
+
 #if !defined(MAP_ANONYMOUS) && defined(MAP_ANON)
 #define MAP_ANONYMOUS        MAP_ANON
 #endif
@@ -1366,8 +1371,6 @@ Object *evalSetVar(Interpreter *interp, Object **args, Object **env, bool top)
 
     if (var->type != type_symbol)
         exceptionWithObject(interp, var, wrong_type_argument, "(setq/define name value) - name is not a symbol");
-    /* Note: we want to check for all constants here */
-    //if (var == nil || var == t)
     if (!gcCollectableObject(interp, var))
         exceptionWithObject(interp, var, wrong_type_argument, "(setq/define name value) name is a constant and cannot be redefined");
 
@@ -1940,7 +1943,7 @@ Object *primitiveCons(Interpreter *interp, Object **args, Object **env)
 // Introspection ///////
 Object *primitiveGc(Interpreter *interp, Object **args, Object **env)
 {
-    // Note:
+    // Note: we really want to return respective data
     gc(interp);
     return t;
 }
@@ -2568,9 +2571,6 @@ Interpreter *lisp_new(
 
     interp->next = interp;
     lisp_interpreters = interp;
-
-    /* enable debug output */
-    interp->debug = debug;
 
     /* global environment */
     initRootEnv(interp);

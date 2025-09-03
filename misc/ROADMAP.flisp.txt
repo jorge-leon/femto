@@ -11,6 +11,7 @@
 + Implement fstat.
 + Implement popen, pclose.
 - WIP: dynamic memory allocation
+  + Run with gc_always on
   - Cleanup cerf
   - Fix FLISP_RESULT macros: they must have interp as parameter.
   - Tune chunk size (and initial memory?)
@@ -32,6 +33,7 @@
 - Make extensions plugable.
 - Test more then one interpreter.
 - ? CSP between interpreters?
+- Add read and eval tracing.
 - Size reduction:
   - Make double extensions optional.
   - Replace string-contains with string-search.

@@ -338,7 +338,7 @@ void gc(Interpreter *interp)
         );
     interp->memory->toOffset = 0;
 
-    // move trace, symbols and root objects
+    // move trace, symbols, root and interp result objects
     for (object = interp->gcTop; object != nil; object = object->cdr) {
 #if DEBUG_GC | FLISP_TRACK_GCTOP
         fl_debug(interp, "moving gc traced object %p of type %s\n",
@@ -358,6 +358,8 @@ void gc(Interpreter *interp)
 #endif
     interp->symbols = gcMoveObject(interp, interp->symbols, &stats);
     interp->global = gcMoveObject(interp, interp->global, &stats);
+    interp->result = gcMoveObject(interp, interp->result, &stats);
+    interp->error = gcMoveObject(interp, interp->error, &stats);
 
     // iterate over objects in to-space and move all objects they reference
     for (object = interp->memory->toSpace;

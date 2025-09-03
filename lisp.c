@@ -2300,7 +2300,11 @@ Object *stringSubstring(Interpreter *interp, Object **args, Object **env)
         return empty;
 
     int newlen = end - start;
-    Object *new = newStringWithLength(interp, (FLISP_ARG_ONE->string)+start, newlen+1);
+    char *buf = strdup(FLISP_ARG_ONE->string);
+    if (buf == NULL)
+        fl_fatal("OOM allocating buffer for (substring)\n",67);
+    Object *new = newStringWithLength(interp, buf+start, newlen+1);
+    free(buf);
     new->string[newlen] = '\0';
 
     return new;

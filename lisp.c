@@ -547,7 +547,19 @@ Object *newInteger(Interpreter *interp, int64_t number)
     return object;
 }
 
-/** newObjectWithString - allocate a new variable size Object in the Lisp object store
+/** objectSize() - Calculate expected space to allocate for object with string
+ *
+ * @param size  length of string to store
+ *
+ * @returns Size of an object if string fits into it completely, the needed size otherwise.
+ */
+size_t objectSize(size_t size)
+{
+    return sizeof(Object) +
+        ((size > sizeof(((Object *) NULL)->string)) ? size - sizeof(((Object *) NULL)->string) : 0);
+}
+
+/** newObjectWithString() - allocate a new variable size Object in the Lisp object store
  *
  * @param interp  fLisp Interpreter
  * @param type    Object type of the new Object
@@ -560,13 +572,10 @@ Object *newInteger(Interpreter *interp, int64_t number)
  */
 Object *newObjectWithString(Interpreter *interp, Object *type, size_t size)
 {
-    size = (size > sizeof(((Object *) NULL)->string))
-        ? size - sizeof(((Object *) NULL)->string)
-        : 0;
-
-    return memoryAllocObject(interp, type, sizeof(Object) + size);
+    return memoryAllocObject(interp, type, objectSize(size));
 }
-/** unescapeString - copy a string, converting escaped symbols
+
+/** unescapeString() - copy a string, converting escaped symbols
  *
  * @param dst    destination
  * @param src    escaped string to copy
@@ -2521,6 +2530,8 @@ Interpreter *lisp_new(
     FILE *input, FILE *output, FILE* debug)
 {
     Interpreter *interp;
+    size_t count = 0;
+    char **s = argv;
 
     if (lisp_interpreters != NULL)
         return NULL;
@@ -2528,8 +2539,15 @@ Interpreter *lisp_new(
     interp = malloc(sizeof(Interpreter));
     if (interp == NULL) return NULL;
 
-    /* Note: we might want to allocate more to take into account the size of argv and library_path */
-    Memory *memory = newMemory(FLISP_MIN_MEMORY);
+    /* enable debug output */
+    interp->debug = debug;
+
+    /* Account for the size of argv and library_path objects and their symbols */
+    for (int i = 0; s[i]; count += objectSize(strlen(s[i++])));
+    count += objectSize(strlen(library_path));
+    count += 2*sizeof(Object);
+    fl_debug(interp, "lisp_new(): additional memory for argv and library path storage: %lu\n", count);
+    Memory *memory = newMemory(FLISP_MIN_MEMORY+count+FLISP_INITIAL_MEMORY);
     if (memory == NULL) {
         setInterpreterResult(interp, nil, out_of_memory, "failed to allocate memory for the interpreter");
         return NULL;
@@ -2565,11 +2583,10 @@ Interpreter *lisp_new(
     /* Add argv to the environement */
     var = newSymbol(interp, "argv");
     val = nil;
-    Object **i;
     /* Note: this can trigger a gc() if argv has many elements, check with max commandline length */
-    for (i = &val; *++argv; i = &(*i)->cdr) {
-        *i = newCons(interp, &nil, &nil);
-        (*i)->car = newString(interp, *argv);
+    for (Object **j = &val; *++argv; j = &(*j)->cdr) {
+        *j = newCons(interp, &nil, &nil);
+        (*j)->car = newString(interp, *argv);
     }
     (void)envSet(interp, &var, &val, &interp->global, true);
 

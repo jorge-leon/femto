@@ -2583,7 +2583,6 @@ Interpreter *lisp_new(
     /* Add argv to the environement */
     var = newSymbol(interp, "argv");
     val = nil;
-    /* Note: this can trigger a gc() if argv has many elements, check with max commandline length */
     for (Object **j = &val; *++argv; j = &(*j)->cdr) {
         *j = newCons(interp, &nil, &nil);
         (*j)->car = newString(interp, *argv);

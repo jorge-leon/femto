@@ -13,10 +13,10 @@
 - WIP: dynamic memory allocation
   + Run with gc_always on
   + Fix FLISP_RESULT macros: they must have interp as parameter.
-  - Cleanup cerf
-  - Tune chunk size (and initial memory?)
-  - Fix all related Note's.
-  - Update dokumentation.
+  + Tune chunk size (and initial memory?)
+  + Fix all related Note's.
+  + Update documentation.
+  - Cleanup cerf: not so easy to do
 - Make femto.rc use fstat.
 - Implement mkdir and fix file save bug.
 - Improve/support batch mode: output = stdout.

@@ -46,7 +46,7 @@
       <li><a href="https://www.scheme.org/">The Scheme Programming Language</a>.</li>
     </ul>
 
-    This manual refers to version 0.6 or later of fLisp.
+    This manual refers to version 0.12 or later of fLisp.
     
     <h3 id="toc">Table of Contents</h3>
     <ol>
@@ -521,7 +521,7 @@
       </dd>
     </dl>
 
-        <h4 id="bitwise_ops">Bitwise Integer Operations</h4>
+    <h4 id="bitwise_ops">Bitwise Integer Operations</h4>
 
     <dl>
       <dt><code>(& <var>i</var> <var>j</var>)</code></dt>
@@ -779,9 +779,18 @@
       of commonly used functions.
     </p>
     <dl>
-      <dt>listp</dt>
-      <dt>and</dt>
-      <dt>or</dt>
+      <dt><code>(listp <var>o</var>)</code> <u>D</u></dt>
+      <dd>Returns true if <var>o</var> is <code>nil</code> or a <i>cons</i>.</dd>
+      <dt><code>(and[ o..])</code></dt>
+      <dd>
+	Returns <code>t</code> or the last object <var>o</var> if none is given or all evaluate to non
+	<code>nil</code>, <code>nil</code> otherwise.
+      </dd>
+      <dt><code>(or[ o..])</code></dt>
+      <dd>
+	Returns <code>nil</code> if all objects <var></var>o are <code>nil</code>, otherwise returns the first object
+	which evaluates to non <code>nil</code>.
+      </dd>
       <dt><code>(reduce <var>func</var> <var>list</var> <var>start</var>)</code> <u>D</u></dt>
       <dd>
 	<code>reduce</code> applies the binary <var>func</var> to the first element of <var>list</var>
@@ -875,7 +884,7 @@
 	flags: <code>special</code>, <code>modified</code>.
       </dd>
       <dd>Mode flags determine the syntax highlighter mode: <code>cmode</code> and <code>lispmode</code> are
-      available. If none is set <code>text</code> mode is used for syntax hightlighting.</dd>
+	available. If none is set <code>text</code> mode is used for syntax hightlighting.</dd>
     </dl>
 
     <p>In the following, any mention to one of them refers to the respective current buffers property.</p>
@@ -1156,8 +1165,9 @@
     <p>
       Currently embedding can only be done by extending the build system.  Application specific binary Lisp extensions
       are stored in separated C files and the interface code is conditionally included into the <code>lisp.c</code>
-      file.  Two extensions are provided: the Femto extension which provides the editor functionality and the file
-      extension which provides access to the low level stream I/O functions and adds some more.
+      file.  Three extensions are provided: the Femto extension which provides the editor functionality, the file
+      extension which provides access to the low level stream I/O functions and others and the double extensions which
+      provides double float arithmetic.
     </p>
     <i>fLisp</i> exposes the following public interface functions:
     </p>
@@ -1177,65 +1187,72 @@
     <p>
       The <code>flisp</code> command line interpreter sets <code>stdout</code> as the default output file descriptors of
       the <i>fLisp</i> interpreter and feeds it with strings of lines read from the terminal. If the standard input is
-      not a terminal <code>stdin</code> is set as the default input file descriptor and <i>fLisp</i> reads it through
+      not a terminal <code>stdin</code> is set as the default input file descriptor and <i>fLisp</i> reads through it
       until end of file.
     </p>
     <p>
-      After processing the input, the interpreter puts a <a href="interp_ops"><code>catch</code></a> result in the
-      form <code>(<var>error_type</var> <var>message</var> <var>object</var>)</code> object into the <code>object</code>
-      field of the interpreter structure.  Upon success <var>error_type</var> is nil and the <var>object</var> element
-      is the result of the last evaluation. They can be accessed with the C-macros <code>FLISP_RESULT_CODE</code>
-      and <code>FLISP_RESULT_OBJECT</code>.
+      After processing the input, the interpreter holds the results corresponding to
+      a <a href="interp_ops"><code>catch</code></a> result in its internal structure. They can be accessed with the
+      following C-macros:
+    </p>
+    <dl>
+      <dt><var>error_type</var></dt>
+      <dd><code>FLISP_RESULT_CODE(interpreter)</code></dd>
+      <dt><var>message</var></dt>
+      <dd><code>FLISP_RESULT_MESSAGE(interpreter)</code></dd>
+      <dt><var>object</var></dt>
+      <dd><code>FLISP_RESULT_OBJECT(interpreter)</code></dd>
+    </dl>
+    <p>
+      Check for <code>(FLISP_RESULT_OBJECT(interpreter) != nil)</code> to find out if the result is an error. Then check
+      for <code>(FLISP_RESULT_OBJECT(interpreter) == out_of_memory)</code> to see if a fatal condition occured.
     </p>
     <p>
       On error use <code>lisp_write_error()</code> to write the standard error message to a file descriptor of choice,
-      or use the above C-macros and <code>FLISP_ERROR_MESSAGE</code> for taking specific action. Note that these macros
-      evaluate to a Lisp object, you have to dereference their content to used it.
+      or use the above C-macros and <code>FLISP_ERROR_MESSAGE(interpreter)->string</code> for executing a specific
+      action.
     </p>
     <p>
-      <i>fLisp</i> sends all output to the default output stream. If <code>NULL</code> is given on initialization, output is
-      suppressed altogether.
+      <i>fLisp</i> sends all output to the default output stream. If it is set to <code>NULL</code> on initialization,
+      output is suppressed altogether.
     </p>
     
     <h4 id="c_api">fLisp C Interface</h4>
     <dl>
-      <dt><code><var>Interpreter</var> *lisp_new(int <var>size</var>, char **<var>argv</var>, char
-	  *<var>library_path</var>, FILE *input, FILE *output, FILE* debug)</code></dt>
-      <dd>
-	<p><code>lisp_new()</code> creates and initializes an fLisp interpreter.  The initial environment contains the
-	  following symbols:
-	</p>
-	<dl>
-	  <dt><var>argv0</var></dt><dd>The string stored in <code>*<var>argv</var>[0]</code>, if any</dd>
-	  <dt><var>argv</var></dt><dd>The list of strings stored in <code><var>argv</var></code></dd>
-	  <dt><var>script_dir</var></dt><dd>The string stored in <code><var>library_path</var></code></dd>
-	</dl>
-	<p>A pointer to an <var>Interpreter</var> struct is returned, which is used to operate the interpreter.</p>
-      </dd>
+      <dt><code><var>Interpreter</var> *lisp_new(char **<var>argv</var>, char *<var>library_path</var>, FILE *input,
+	  FILE *output, FILE* debug)</code></dt>
       <dd>
 	<p>
-	  The other arguments to <code>lisp_new()</code> are:
-	  <dl>
-	    <dt><var>size</var></dt>
-	    <dd>
-	      Memory size to allocate for the Lisp objects.  This is divided into two pages for garbage
-	      collection. Only one page is used by the interpreter at any moment.
-	    </dd>
-	    <dt><var>input</var></dt>
-	    <dd>
-	      Default input stream. If <var>input</var> is set to <code>NULL</code>, the input stream has to be
-	      specified for each invocation of <code>lisp_eval()</code>.
-	    </dd>
-	    <dt><var>output</var></dt>
-	    <dd>
-	      Default output stream. If <var>output</var> is set to <code>NULL</code> a memory stream is created at the
-	      first invocation of the interpreter and set as the default output stream.
-	      <dt><var>debug</var></dt>
-	    <dd>Debug output stream. If set to <code>NULL</code> no debug information is generated.</dd>
-	  </dl>
+	  <code>lisp_new()</code> creates and initializes an fLisp interpreter and returns a pointer to
+	  an <var>Interpreter</var> struct to be used in the other functions. The arguments to <code>lisp_new()</code>
+	  are:
 	</p>
+      <dd>
+	<dl>
+	  <dt><var>argv</var></dt>
+	  <dt><var>library_path</var></dt>
+	  <dd>
+	    The fLisp environment is initialized with this two argument to contain the following symbols:
+	    <dl>
+	      <dt><var>argv0</var></dt><dd>The string stored in <code>*<var>argv</var>[0]</code>, if any</dd>
+	      <dt><var>argv</var></dt><dd>The list of strings stored in <code><var>argv</var></code></dd>
+	      <dt><var>script_dir</var></dt><dd>The string stored in <code><var>library_path</var></code></dd>
+	    </dl>
+	  </dd>
+	  <dt><var>input</var></dt>
+	  <dd>
+	    Default input stream. If <var>input</var> is set to <code>NULL</code>, the input stream has to be
+	    specified for each invocation of <code>lisp_eval()</code>.
+	  </dd>
+	  <dt><var>output</var></dt>
+	  <dd>
+	    Default output stream. If <var>output</var> is set to <code>NULL</code> a memory stream is created at the
+	    first invocation of the interpreter and set as the default output stream.
+	    <dt><var>debug</var></dt>
+	  <dd>Debug output stream. If set to <code>NULL</code> no debug information is generated.</dd>
+	</dl>
       </dd>
-
+      
       <dt><code>void lisp_destroy(Interpreter *<var>interp</var>)</code></dt>
       <dd>Frees all resources used by the interpreter.</dd>
       
@@ -1287,9 +1304,9 @@
       of <var>argMax</var> and the number of tuples is not restricted.
     </p>
     <p>
-      When type check is set to a type C-macro the interpreter assures that all arguments are of the given type and
-      creates a standardized exception otherwise. When type check is set to <code>0</code> the primitive has to take
-      care of type checking by itself. The C-macro <code>CHECK_TYPE</code> helps with this.
+      When type check is set to on of the <code>TYPE_*</code> C-macros the interpreter assures that all arguments are of
+      the given type and creates a standardized exception otherwise. When type check is set to <code>0</code> the
+      primitive has to take care of type checking by itself. The C-macro <code>CHECK_TYPE</code> helps with this.
     </p>
     <p>
       When creating more then one new objects within a primitive, care has to be taken to register them with the garbage
@@ -1307,7 +1324,6 @@
       <dt><code>FLISP_HAS_ARG_TWO</code></dt>
       <dt><code>FLISP_HAS_ARG_THREE</code></dt>
       <dd>Evaluate to true if there are arguments or the respective argument is available.</dd>
-      <dt><code>ONE_NUMBER_ARG(<var>name</var>)</code></dt>
       <dt><code>FLISP_ARG_ONE</code></dt>
       <dt><code>FLISP_ARG_TWO</code></dt>
       <dt><code>FLISP_ARG_THREE</code></dt>
@@ -1323,12 +1339,12 @@
     
     <nav><a href="#toc">^</a></nav>
     <h3 id="implementation">Implementation Details</h3>
-
+    
     <h4 id="gc">Garbage Collection</h4>
     <p>
       <i>fLisp</i> implements Cheney&apos;s copying garbage collector, with which memory is divided into two equal
       halves (semi spaces): from- and to-space. From-space is where new objects are allocated, whereas to-space is used
-      during garbage collection.
+      during garbage collection. The from-space part of the memory is also called the <dfn>Lisp object space</dfn>.
     </p>
     <p>
       When garbage collection is performed, objects that are still in use (live) are copied from from-space to
@@ -1369,30 +1385,43 @@
     <p>
       Information about the garbage collection process and memory status is written to the debug file descriptor.
     </p>
-    
-    <h4 id="memory">Memory Usage</h4>
+    <h4 id="memory">Memory Allocation</h4>
     <p>
-      Some compile time adjustable limits in <code>lisp.h</code>:
+      Object allocation adjusts the size of the Lisp object space on demand: If after garbage collection the free space
+      is less then the required memory plus some reserved space for exception reporting, the memory is increased by a
+      multiple of the amount specified in the C-macro <code>FLISP_MEMORY_INC</code>, defined in <code>lisp.h</code>. The
+      multiple is calculated to hold at least the additional requested space.
+    <p>
+      <code>lisp_new()</code> allocates <code>FLISP_MIN_MEMORY</code>, defined in <code>lisp.h</code>, and then
+      allocates all initial objects without taking care of garbage collection. Then it prints out the amount of Lisp
+      object space consumed to the debug file descriptor.  For <i>fLisp</i> this is currently about 21 kB,
+      for <i>femto</i> about 34 kB.
+    </p>
+    <p>
+      In order to reduce garbage collection frequency, especially during startup, one can
+      set <code>FLISP_INITIAL_MEMORY</code> to a desired additional amount of memory to allocate on startup.
+    <p>
+      Some other compile time adjustable limits in <code>lisp.h</code>:
     </p>
     <dl>
-      <dt>Input buffer</dt><dd>2048, <code>INPUT_FMT_BUFSIZ</code>, size of the formatting buffer for <code>lisp_eval()</code>.</dd>
+      <dt>Input buffer</dt>
+      <dd>
+	2048, <code>INPUT_FMT_BUFSIZ</code>, size of the formatting buffer for <code>lisp_eval()</code> and for the
+	input buffer of <code>(fgets)</code>.
+      </dd>
       <dt>Output buffer</dt><dd>2048, <code>WRITE_FMT_BUFSIZ</code>, size of the output and message formatting buffer.</dd>
     </dl>
     <p>
-      <i>fLisp</i> can live with as little as 400k object memory. The Femto editor requires 16M since the <q>OXO</q>
-      game requires a lot of memory.
+      <i>fLisp</i> can live with as little as 50k object memory up to startup. The Femto editor requires much more
+      memory because of the needs of the <q>OXO</q> game.
     </p>
 
     <h4 id="future">Future Directions</h4>
     <p>
-      The two memory pages should be separated and the second one should be allocated only during garbage collection.
-      When memory runs out, the garbage collection should be restarted with an increased capacity of the new page.
-    </p>
-    <p>
       It is now possible to catch exceptions within Lisp code and exceptions return differentiated error codes and use
       POSIX stream I/O.  This, together with the <code>(eval)</code> primitive would allow to write the repl directly in
       Lisp, and reading and eval&apos;ing until no more <q>incomplete
-      input</q> result codes are returned.
+	input</q> result codes are returned.
     </p>
     <p>
       Loops are availble via the labelled let macro and supported by <code>iota</code>. It could made easier, by any
@@ -1402,6 +1431,9 @@
       <li>loop/while/for macro</li>
       <li>Demoing hand crafted loops including breaking with throw.</li>
     </ul>
+    <p>Implement backquote and friends.</p>
+    <p>Pluggable extensions.</p>
+    <p>Take away more things.</p>
   </body>
 </html>
 <!--

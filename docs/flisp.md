@@ -32,7 +32,7 @@ use other resources eg.
   or
 - [The Scheme Programming Language](https://www.scheme.org/).
 
-This manual refers to version 0.6 or later of fLisp.
+This manual refers to version 0.12 or later of fLisp.
 
 ### Table of Contents
 
@@ -782,9 +782,17 @@ only one *num* is given they all return `t`.
 This library implements commonly excpected Lisp idioms. *fLisp*
 implements a carefully selected minimum set of commonly used functions.
 
-listp  
-and  
-or  
+`(listp «o»)` <u>D</u>  
+Returns true if *o* is `nil` or a *cons*.
+
+`(and[ o..])`  
+Returns `t` or the last object *o* if none is given or all evaluate to
+non `nil`, `nil` otherwise.
+
+`(or[ o..])`  
+Returns `nil` if all objects o are `nil`, otherwise returns the first
+object which evaluates to non `nil`.
+
 `(reduce «func» «list» «start»)` <u>D</u>  
 `reduce` applies the binary *func* to the first element of *list* and
 *start* and then recursively to the first element of the rest of the
@@ -1181,9 +1189,10 @@ interpreter.
 Currently embedding can only be done by extending the build system.
 Application specific binary Lisp extensions are stored in separated C
 files and the interface code is conditionally included into the `lisp.c`
-file. Two extensions are provided: the Femto extension which provides
-the editor functionality and the file extension which provides access to
-the low level stream I/O functions and adds some more.
+file. Three extensions are provided: the Femto extension which provides
+the editor functionality, the file extension which provides access to
+the low level stream I/O functions and others and the double extensions
+which provides double float arithmetic.
 
 *fLisp* exposes the following public interface functions:
 
@@ -1211,30 +1220,46 @@ pressed or upon explicit request via the editor interface.
 The `flisp` command line interpreter sets `stdout` as the default output
 file descriptors of the *fLisp* interpreter and feeds it with strings of
 lines read from the terminal. If the standard input is not a terminal
-`stdin` is set as the default input file descriptor and *fLisp* reads it
-through until end of file.
+`stdin` is set as the default input file descriptor and *fLisp* reads
+through it until end of file.
 
-After processing the input, the interpreter puts a [`catch`](interp_ops)
-result in the form `(«error_type» «message» «object»)` object into the
-`object` field of the interpreter structure. Upon success *error_type*
-is nil and the *object* element is the result of the last evaluation.
-They can be accessed with the C-macros `FLISP_RESULT_CODE` and
-`FLISP_RESULT_OBJECT`.
+After processing the input, the interpreter holds the results
+corresponding to a [`catch`](interp_ops) result in its internal
+structure. They can be accessed with the following C-macros:
+
+*error_type*  
+`FLISP_RESULT_CODE(interpreter)`
+
+*message*  
+`FLISP_RESULT_MESSAGE(interpreter)`
+
+*object*  
+`FLISP_RESULT_OBJECT(interpreter)`
+
+Check for `(FLISP_RESULT_OBJECT(interpreter) != nil)` to find out if the
+result is an error. Then check for
+`(FLISP_RESULT_OBJECT(interpreter) == out_of_memory)` to see if a fatal
+condition occured.
 
 On error use `lisp_write_error()` to write the standard error message to
 a file descriptor of choice, or use the above C-macros and
-`FLISP_ERROR_MESSAGE` for taking specific action. Note that these macros
-evaluate to a Lisp object, you have to dereference their content to used
-it.
+`FLISP_ERROR_MESSAGE(interpreter)->string` for executing a specific
+action.
 
-*fLisp* sends all output to the default output stream. If `NULL` is
-given on initialization, output is suppressed altogether.
+*fLisp* sends all output to the default output stream. If it is set to
+`NULL` on initialization, output is suppressed altogether.
 
 #### fLisp C Interface
 
-*Interpreter*` *lisp_new(int «size», char **«argv», char *«library_path», FILE *input, FILE *output, FILE* debug)`  
-`lisp_new()` creates and initializes an fLisp interpreter. The initial
-environment contains the following symbols:
+*Interpreter*` *lisp_new(char **«argv», char *«library_path», FILE *input, FILE *output, FILE* debug)`  
+`lisp_new()` creates and initializes an fLisp interpreter and returns a
+pointer to an *Interpreter* struct to be used in the other functions.
+The arguments to `lisp_new()` are:
+
+*argv*  
+*library_path*  
+The fLisp environment is initialized with this two argument to contain
+the following symbols:
 
 *argv0*  
 The string stored in `*«argv»[0]`, if any
@@ -1244,16 +1269,6 @@ The list of strings stored in *argv*
 
 *script_dir*  
 The string stored in *library_path*
-
-A pointer to an *Interpreter* struct is returned, which is used to
-operate the interpreter.
-
-The other arguments to `lisp_new()` are:
-
-*size*  
-Memory size to allocate for the Lisp objects. This is divided into two
-pages for garbage collection. Only one page is used by the interpreter
-at any moment.
 
 *input*  
 Default input stream. If *input* is set to `NULL`, the input stream has
@@ -1278,8 +1293,8 @@ field of the *fLisp* interpreter *interp* is evaluated until end of
 file.
 
 If no memory can be allocated for the input string or the input file
-descriptor is `NULL` no Lisp evaluation takes place and the `object`
-field of the interpreter is set to an `io-error`.
+descriptor is `NULL` no Lisp evaluation takes place and
+`FLISP_RESULT_CODE` field of the interpreter is set to an `io-error`.
 
 `void lisp_write_object(Interpreter *«interp», FILE «*fd», Object *«object», bool readably)`  
 Format *object* into a string and write it to *stream*. If *readably* is
@@ -1309,10 +1324,11 @@ number of arguments allowed for the function. If *argMax* is a negative
 number, arguments must be given in tuples of *argMax* and the number of
 tuples is not restricted.
 
-When type check is set to a type C-macro the interpreter assures that
-all arguments are of the given type and creates a standardized exception
-otherwise. When type check is set to `0` the primitive has to take care
-of type checking by itself. The C-macro `CHECK_TYPE` helps with this.
+When type check is set to on of the `TYPE_*` C-macros the interpreter
+assures that all arguments are of the given type and creates a
+standardized exception otherwise. When type check is set to `0` the
+primitive has to take care of type checking by itself. The C-macro
+`CHECK_TYPE` helps with this.
 
 When creating more then one new objects within a primitive, care has to
 be taken to register them with the garbage collector. Registration is
@@ -1331,7 +1347,6 @@ in primitives:
 Evaluate to true if there are arguments or the respective argument is
 available.
 
-`ONE_NUMBER_ARG(«name»)`  
 `FLISP_ARG_ONE`  
 `FLISP_ARG_TWO`  
 `FLISP_ARG_THREE`  
@@ -1353,7 +1368,8 @@ message.
 *fLisp* implements Cheney's copying garbage collector, with which memory
 is divided into two equal halves (semi spaces): from- and to-space.
 From-space is where new objects are allocated, whereas to-space is used
-during garbage collection.
+during garbage collection. The from-space part of the memory is also
+called the <span class="dfn">Lisp object space</span>.
 
 When garbage collection is performed, objects that are still in use
 (live) are copied from from-space to to-space. To-space then becomes the
@@ -1393,27 +1409,40 @@ points to the objects pointer inside the list.
 Information about the garbage collection process and memory status is
 written to the debug file descriptor.
 
-#### Memory Usage
+#### Memory Allocation
 
-Some compile time adjustable limits in `lisp.h`:
+Object allocation adjusts the size of the Lisp object space on demand:
+If after garbage collection the free space is less then the required
+memory plus some reserved space for exception reporting, the memory is
+increased by a multiple of the amount specified in the C-macro
+`FLISP_MEMORY_INC`, defined in `lisp.h`. The multiple is calculated to
+hold at least the additional requested space.
+
+`lisp_new()` allocates `FLISP_MIN_MEMORY`, defined in `lisp.h`, and then
+allocates all initial objects without taking care of garbage collection.
+Then it prints out the amount of Lisp object space consumed to the debug
+file descriptor. For *fLisp* this is currently about 21 kB, for *femto*
+about 34 kB.
+
+In order to reduce garbage collection frequency, especially during
+startup, one can set `FLISP_INITIAL_MEMORY` to a desired additional
+amount of memory to allocate on startup.
+
+Some other compile time adjustable limits in `lisp.h`:
 
 Input buffer  
 2048, `INPUT_FMT_BUFSIZ`, size of the formatting buffer for
-`lisp_eval()`.
+`lisp_eval()` and for the input buffer of `(fgets)`.
 
 Output buffer  
 2048, `WRITE_FMT_BUFSIZ`, size of the output and message formatting
 buffer.
 
-*fLisp* can live with as little as 400k object memory. The Femto editor
-requires 16M since the “OXO” game requires a lot of memory.
+*fLisp* can live with as little as 50k object memory up to startup. The
+Femto editor requires much more memory because of the needs of the “OXO”
+game.
 
 #### Future Directions
-
-The two memory pages should be separated and the second one should be
-allocated only during garbage collection. When memory runs out, the
-garbage collection should be restarted with an increased capacity of the
-new page.
 
 It is now possible to catch exceptions within Lisp code and exceptions
 return differentiated error codes and use POSIX stream I/O. This,
@@ -1426,3 +1455,9 @@ It could made easier, by any combination of:
 
 - loop/while/for macro
 - Demoing hand crafted loops including breaking with throw.
+
+Implement backquote and friends.
+
+Pluggable extensions.
+
+Take away more things.

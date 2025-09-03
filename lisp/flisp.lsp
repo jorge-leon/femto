@@ -4,7 +4,7 @@
 
 (require 'core)
 
-(defun listp (x) (cond ((null x)) ((consp x))))
+(defun listp (o) (cond ((null o)) ((consp o))))
 
 (defmacro and args
   (cond

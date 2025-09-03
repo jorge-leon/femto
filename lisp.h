@@ -206,9 +206,9 @@ extern void lisp_eval(Interpreter *, char *);
 extern void lisp_write_object(Interpreter *, FILE *, Object *, bool);
 extern void lisp_write_error(Interpreter *, FILE *);
 
-#define FLISP_RESULT_CODE interp->error
-#define FLISP_RESULT_MESSAGE ((Object *)&interp->message)
-#define FLISP_RESULT_OBJECT interp->result
+#define FLISP_RESULT_CODE(INTERPRETER) INTERPRETER->error
+#define FLISP_RESULT_MESSAGE(INTERPRETER) ((Object *)&INTERPRETER->message)
+#define FLISP_RESULT_OBJECT(INTERPRETER) INTERPRETER->result
 
 #endif
 /*

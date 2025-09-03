@@ -39,10 +39,10 @@ void load_file(char *file)
     interp->input = fd;
     interp->output = debug_fp;
     lisp_eval(interp, NULL);
-    if (FLISP_RESULT_CODE != nil) {
+    if (FLISP_RESULT_CODE(interp) != nil) {
         debug("failed to load file %s:\n", file);
         lisp_write_error(interp, debug_fp);
-        if (FLISP_RESULT_CODE == out_of_memory)
+        if (FLISP_RESULT_CODE(interp) == out_of_memory)
             fatal("OOM, exiting..");
     }
     if (fclose(fd))
@@ -52,7 +52,7 @@ void load_file(char *file)
 int main(int argc, char **argv)
 {
     char *envv, *library_path, *init_file;
-    
+
     batch_mode = ((envv=getenv("FEMTO_BATCH")) != NULL && strcmp(envv, "0"));
     debug_mode = ((envv=getenv("FEMTO_DEBUG")) != NULL && strcmp(envv, "0"));
 
@@ -153,14 +153,14 @@ char *eval_string(bool do_format, char *format, ...)
     lisp_eval(interp, input);
     if (interp->output)
         fflush(interp->output);
-    if (FLISP_RESULT_CODE == nil)
+    if (FLISP_RESULT_CODE(interp) == nil)
         return output;
     msg_lisp_err(interp);
     if (debug_mode) {
         lisp_write_error(interp, debug_fp);
         debug("=> %s\n", output);
     }
-    if (FLISP_RESULT_CODE == out_of_memory)
+    if (FLISP_RESULT_CODE(interp) == out_of_memory)
         fatal("OOM, exiting..");
     free_lisp_output();
     return NULL;

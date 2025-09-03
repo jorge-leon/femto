@@ -1536,7 +1536,7 @@ Object *evalCatch(Interpreter *interp, Object **args, Object **env)
     setInterpreterResult(interp, nil, nil, NULL);
     GC_CHECKPOINT;
     if (setjmp(exceptionEnv)) {
-        fl_debug(interp, "catch:%s: '%s'\n", FLISP_RESULT_CODE->string, FLISP_RESULT_MESSAGE->string);
+        fl_debug(interp, "catch:%s: '%s'\n", FLISP_RESULT_CODE(interp)->string, FLISP_RESULT_MESSAGE(interp)->string);
     } else {
         do {
             setInterpreterResult(interp, evalExpr(interp, &(*args)->car, env), nil, NULL);
@@ -2631,12 +2631,12 @@ void lisp_destroy(Interpreter *interp)
  */
 void lisp_write_error(Interpreter *interp, FILE *fd)
 {
-    if (FLISP_RESULT_OBJECT == nil)
-        fprintf(fd, "error: %s\n", FLISP_RESULT_MESSAGE->string);
+    if (FLISP_RESULT_OBJECT(interp) == nil)
+        fprintf(fd, "error: %s\n", FLISP_RESULT_MESSAGE(interp)->string);
     else {
         fprintf(fd, "error: '");
-        lisp_write_object(interp, fd, FLISP_RESULT_OBJECT, true);
-        fprintf(fd, "', %s\n", FLISP_RESULT_MESSAGE->string);
+        lisp_write_object(interp, fd, FLISP_RESULT_OBJECT(interp), true);
+        fprintf(fd, "', %s\n", FLISP_RESULT_MESSAGE(interp)->string);
     }
     fflush(fd);
 }
@@ -2688,9 +2688,9 @@ Object *cerf(Interpreter *interp, FILE *fd)
  *
  * The following macros can be used to access the list elements:
  *
- * - FLISP_RESULT_CODE
- * - FLISP_RESULT_MESSAGE
- * - FLISP_RESULT_OBJECT
+ * - FLISP_RESULT_CODE(INTERPRETER)
+ * - FLISP_RESULT_MESSAGE(INTERPRETER)
+ * - FLISP_RESULT_OBJECT(INTERPRETER)
  *
  */
 void lisp_eval(Interpreter *interp, char *input)

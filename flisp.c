@@ -50,12 +50,12 @@ void repl(Interpreter *interp)
         }
 
         lisp_eval(interp, input);
-        if (FLISP_RESULT_CODE != nil) {
+        if (FLISP_RESULT_CODE(interp) != nil) {
             lisp_write_error(interp, stderr);
-            if (FLISP_RESULT_CODE == out_of_memory) break;
+            if (FLISP_RESULT_CODE(interp) == out_of_memory) break;
         }
     }
-    if (FLISP_RESULT_CODE != nil) {
+    if (FLISP_RESULT_CODE(interp) != nil) {
         exit_code = 1;
     }
     return;
@@ -90,10 +90,10 @@ int main(int argc, char **argv)
             // load inifile
             interp->input = fd;
             lisp_eval(interp, NULL);
-            if (FLISP_RESULT_CODE != nil) {
+            if (FLISP_RESULT_CODE(interp) != nil) {
                 fprintf(stderr, "failed to load inifile %s:\n", init_file);
                 lisp_write_error(interp, stderr);
-                if (FLISP_RESULT_CODE == out_of_memory)
+                if (FLISP_RESULT_CODE(interp) == out_of_memory)
                     return 1;
             // Note: if we could implement the repl in fLisp itself we'd done here.
             }
@@ -110,10 +110,10 @@ int main(int argc, char **argv)
         // Just eval the standard input
         interp->input = stdin;
         lisp_eval(interp, NULL);
-        if (FLISP_RESULT_CODE != nil)
+        if (FLISP_RESULT_CODE(interp) != nil)
             lisp_write_error(interp, stderr);
     }
-    if (FLISP_RESULT_CODE != out_of_memory)
+    if (FLISP_RESULT_CODE(interp) != out_of_memory)
         lisp_destroy(interp);
     return exit_code;
 }

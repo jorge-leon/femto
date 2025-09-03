@@ -12,8 +12,8 @@
 + Implement popen, pclose.
 - WIP: dynamic memory allocation
   + Run with gc_always on
+  + Fix FLISP_RESULT macros: they must have interp as parameter.
   - Cleanup cerf
-  - Fix FLISP_RESULT macros: they must have interp as parameter.
   - Tune chunk size (and initial memory?)
   - Fix all related Note's.
   - Update dokumentation.

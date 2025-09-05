@@ -142,7 +142,7 @@ Interpreter *lisp_interpreters = NULL;
 
 void fl_fatal(char *message, int code)
 {
-    fprintf(stderr, message);
+    fprintf(stderr, "%s", message);
     exit(code);
 }
 

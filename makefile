@@ -7,7 +7,7 @@ CPP     = cpp
 #CPPFLAGS += -D_DEFAULT_SOURCE -D_BSD_SOURCE -DNDEBUG
 CPPFLAGS += -D_DEFAULT_SOURCE -D_BSD_SOURCE
 #CFLAGS += -O2 -std=c11 -Wall -pedantic -pedantic-errors
-CFLAGS += -O0 -std=c11 -Wall -pedantic -pedantic-errors -g
+CFLAGS += -O0 -std=c11 -Wall -pedantic -pedantic-errors -Werror=format-security -Wformat -g
 LD      = cc
 LDFLAGS =
 LIBS    = -lncursesw -lm

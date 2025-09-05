@@ -52,14 +52,15 @@ This manual refers to version 0.12 or later of fLisp.
     4.  [Arithmetic Operations](#arithmetic_ops)
     5.  [Bitwise Integer Operations](#bitwise_ops)
     6.  [String Operations](#string_ops)
-6.  [Double Extension](#double)
-7.  [Lisp Libraries](#libraries)
+6.  [File Extension](#file)
+7.  [Double Extension](#double)
+8.  [Lisp Libraries](#libraries)
     1.  [Library Loading](#startup)
     2.  [Core Library](#core_lib)
     3.  [fLlisp Library](#flisp_lib)
     4.  [Standard Library](#std_lib)
     5.  [Femto Library](#femto_lib)
-8.  [Editor Extension](#editor)
+9.  [Editor Extension](#editor)
     1.  [Buffers](#buffers)
         1.  [Text manipulation](#text)
         2.  [Selection](#selection)
@@ -70,11 +71,11 @@ This manual refers to version 0.12 or later of fLisp.
         2.  [Message Line](#message_line)
         3.  [Keyboard Handling](#keyboard)
         4.  [Programming and System Interaction](#programming_system)
-9.  [Embedding fLisp](#embedding)
+10. [Embedding fLisp](#embedding)
     1.  [Embedding Overview](#embedding)
     2.  [fLisp C Interface](#c_api)
     3.  [Building Extensions](#extensions)
-10. [Implementation Details](#implementation)
+11. [Implementation Details](#implementation)
     1.  [Garbage Collection](#gc)
     2.  [Memory Usage](#memory)
     3.  [Future Directions](#future)
@@ -567,6 +568,48 @@ to the ASCII representation of *integer*.
 `(ascii->number «string»)`  
 Converts the first character of *string* into an *integer* which
 corresponds to its ASCII value.
+
+[^](#toc)
+
+### File Extension
+
+<span class="mark">Tbd. carry over comprehensive documentation from
+`file.c`</span>
+
+`(fflush[ «stream»])`  
+Flush *stream*, output or all streams
+
+`(fseek «stream» «offset»[ «relativep»])`  
+Seek position *offset* in *stream* or input. If *offset* is negative
+seek from end, if *relativep* is not null seek from current position, be
+default seek from start
+
+`(ftell[ «stream»])`  
+Return current position in *stream* or input.
+
+`(feof[ «stream»])`  
+Return `end-of-file` if stream or input are exhausted, else `nil`
+
+`(fgetc[ «stream»])`  
+Return the next character from *stream* or input.
+
+`(fungetc «i»[ «stream»])`  
+`ungetc()` integer *i* as char to *stream* or input.
+
+`(fgets[ «stream»])`  
+Read a line or up to `INPUT_FMT_BUFSIZ` from *stream* or input.
+
+`(fstat «path»[ «linkp»])`  
+Get information about file at *path*.
+
+`(fmkdir «path»[ «mode»])`  
+Create directory at *path* with *mode*.
+
+`(popen «line»[ «mode»])`  
+Run command line and read from/write to it
+
+`(pclose «stream»)`  
+Close a *stream* opened with `(popen)`
 
 [^](#toc)
 

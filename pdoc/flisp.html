@@ -70,6 +70,7 @@
 	<li><a href="#bitwise_ops">Bitwise Integer Operations</a></li>
 	<li><a href="#string_ops">String Operations</a></li>
       </ol>
+      <li><a href="#file">File Extension</a></li>
       <li><a href="#double">Double Extension</a></li>
       <li><a href="#libraries">Lisp Libraries</a></li>
       <ol>
@@ -575,6 +576,36 @@
     </dl>
 
     <nav><a href="#toc">^</a></nav>
+    <h3 id="file">File Extension</h3>
+
+    <p><mark>Tbd. carry over comprehensive documentation from <code>file.c</code></mark></p>
+    <dl>
+      <dt><code>(fflush[ <var>stream</var>])</code></dt>
+      <dd>Flush <var>stream</var>, output or all streams</dd>
+      <dt><code>(fseek <var>stream</var> <var>offset</var>[ <var>relativep</var>])</code></dt>
+      <dd>Seek position <var>offset</var> in <var>stream</var> or input. If <var>offset</var> is negative seek from end,
+      if <var>relativep</var> is not null seek from current position, be default seek from start</dd>
+      <dt><code>(ftell[ <var>stream</var>])</code></dt>
+      <dd>Return current position in <var>stream</var> or input.</dd>
+      <dt><code>(feof[ <var>stream</var>])</code></dt>
+      <dd>Return <code>end-of-file</code> if stream or input are exhausted, else <code>nil</code></dd>
+      <dt><code>(fgetc[ <var>stream</var>])</code></dt>
+      <dd>Return the next character from <var>stream</var> or input.</dd>
+      <dt><code>(fungetc <var>i</var>[ <var>stream</var>])</code></dt>
+      <dd><code>ungetc()</code> integer <var>i</var> as char to <var>stream</var> or input.</dd>
+      <dt><code>(fgets[ <var>stream</var>])</code></dt>
+      <dd>Read a line or up to <code>INPUT_FMT_BUFSIZ</code> from <var>stream</var> or input.</dd>
+      <dt><code>(fstat <var>path</var>[ <var>linkp</var>])</code></dt>
+      <dd>Get information about file at <var>path</var>.</dd>
+      <dt><code>(fmkdir <var>path</var>[ <var>mode</var>])</code></dt>
+      <dd>Create directory at <var>path</var> with <var>mode</var>.</dd>
+      <dt><code>(popen <var>line</var>[ <var>mode</var>])</code></dt>
+      <dd>Run command line and read from/write to it</dd>
+      <dt><code>(pclose <var>stream</var>)</code></dt>
+      <dd>Close a <var>stream</var> opened with <code>(popen)</code></dd>
+    </dl>
+      
+      <nav><a href="#toc">^</a></nav>
     <h3 id="double">Double Extension</h3>
 
     <dl>

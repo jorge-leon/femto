@@ -47,37 +47,38 @@
 #define CPP_XSTR(s) CPP_STR(s)
 #define CPP_STR(s) #s
 
+#define COUNTFMT long unsigned int
 
 /* Constants */
 /* Fundamentals */
-Object *nil =                    &(Object) { NULL, .string = "nil" };
-Object *t =                      &(Object) { NULL, .string = "t" };
+Object *nil =                                   &(Object) { NULL, .string = "nil" };
+Object *t =                                     &(Object) { NULL, .string = "t" };
 /* Types */
-Object *type_integer =           &(Object) { NULL, .string  = "type-integer" };
-Object *type_string =            &(Object) { NULL, .string  = "type-string" };
-Object *type_symbol =            &(Object) { NULL, .string  = "type-symbol" };
-Object *type_cons =              &(Object) { NULL, .string  = "type-cons" };
-Object *type_lambda =            &(Object) { NULL, .string  = "type-lambda" };
-Object *type_macro =             &(Object) { NULL, .string  = "type-macro" };
-Object *type_primitive =         &(Object) { NULL, .string  = "type-primitive" };
-Object *type_stream =            &(Object) { NULL, .string  = "type-stream" };
+Object *type_integer =                          &(Object) { NULL, .string = "type-integer" };
+Object *type_string =                           &(Object) { NULL, .string = "type-string" };
+Object *type_symbol =                           &(Object) { NULL, .string = "type-symbol" };
+Object *type_cons =                             &(Object) { NULL, .string = "type-cons" };
+Object *type_lambda =                           &(Object) { NULL, .string = "type-lambda" };
+Object *type_macro =                            &(Object) { NULL, .string = "type-macro" };
+Object *type_primitive =            (Object *) (&(Symbol) { NULL, .string = "type-primitive" });
+Object *type_stream =                           &(Object) { NULL, .string = "type-stream" };
 /* Exceptions */
-Object *end_of_file =            &(Object) { NULL, .string = "end-of-file" };
-Object *read_incomplete =        &(Object) { NULL, .string = "read-incomplete" };
-Object *invalid_read_syntax =    &(Object) { NULL, .string = "invalid-read-syntax" };
-Object *range_error =            &(Object) { NULL, .string = "range-error" };
-Object *wrong_type_argument =    &(Object) { NULL, .string = "wrong-type-argument" };
-Object *invalid_value =          &(Object) { NULL, .string = "invalid-value" };
-Object *wrong_num_of_arguments = &(Object) { NULL, .string = "wrong-num-of-arguments" }; /* 'number' is two characters to long */
-Object *arith_error =            &(Object) { NULL, .string = "arith-error"};
-Object *io_error =               &(Object) { NULL, .string = "io-error" };
-Object *out_of_memory =          &(Object) { NULL, .string = "out-of-memory" };
-Object *gc_error =               &(Object) { NULL, .string = "gc-error" };
+Object *end_of_file =                           &(Object) { NULL, .string = "end-of-file" };
+Object *read_incomplete =           (Object *) (&(Symbol) { NULL, .string = "read-incomplete" });
+Object *invalid_read_syntax =       (Object *) (&(Symbol) { NULL, .string = "invalid-read-syntax" });
+Object *range_error =                           &(Object) { NULL, .string = "range-error" };
+Object *wrong_type_argument =       (Object *) (&(Symbol) { NULL, .string = "wrong-type-argument" });
+Object *invalid_value =             (Object *) (&(Symbol) { NULL, .string = "invalid-value" });
+Object *wrong_number_of_arguments = (Object *) (&(Symbol) { NULL, .string = "wrong-number-of-arguments" });
+Object *arith_error =                           &(Object) { NULL, .string = "arith-error"};
+Object *io_error =                              &(Object) { NULL, .string = "io-error" };
+Object *out_of_memory =             (Object *) (&(Symbol) { NULL, .string = "out-of-memory" });
+Object *gc_error =                              &(Object) { NULL, .string = "gc-error" };
 /* Internal */
-Object *type_env =               &(Object) { NULL, .string  = "type-env" };
-Object *type_moved =             &(Object) { NULL, .string  = "type-moved" };
-Object *empty =                  &(Object) { NULL, .string = "\0" };
-Object *one =                    &(Object) { NULL, .integer = 1 };
+Object *type_env =                              &(Object) { NULL, .string = "type-env" };
+Object *type_moved =                            &(Object) { NULL, .string = "type-moved" };
+Object *empty =                                 &(Object) { NULL, .string = "\0" };
+Object *one =                                   &(Object) { NULL, .integer = 1 };
 
 Constant flisp_constants[] = {
     /* Fundamentals */
@@ -102,7 +103,7 @@ Constant flisp_constants[] = {
     { &range_error, &range_error },
     { &wrong_type_argument, &wrong_type_argument },
     { &invalid_value, &invalid_value },
-    { &wrong_num_of_arguments, &wrong_num_of_arguments },
+    { &wrong_number_of_arguments, &wrong_number_of_arguments },
     { &arith_error, &arith_error },
     { &io_error, &io_error },
     { &out_of_memory, &out_of_memory },
@@ -338,8 +339,8 @@ void gc(Interpreter *interp)
     gcStats stats = {0};
 
     fl_debug(interp, "collecting garbage, memory: %lu/%lu, free %lu\n",
-             interp->memory->fromOffset, interp->memory->capacity,
-             interp->memory->capacity - interp->memory->fromOffset - EXCEPTION_MEM_RESERVE
+             (COUNTFMT) interp->memory->fromOffset, (COUNTFMT) interp->memory->capacity,
+             (COUNTFMT) interp->memory->capacity - interp->memory->fromOffset - EXCEPTION_MEM_RESERVE
         );
     interp->memory->toOffset = 0;
 
@@ -408,11 +409,11 @@ void gc(Interpreter *interp)
     /* report before overwriting offset difference */
     fl_debug(interp,  "collected %lu objects, skipped %lu, constants %lu, saved %lu bytes, "
              "memory: %lu/%lu free: %lu(%lu) bytes\n",
-             stats.moved, stats.skipped, stats.constant,
-             interp->memory->fromOffset - interp->memory->toOffset,
-             interp->memory->toOffset, interp->memory->capacity,
-             interp->memory->capacity - interp->memory->toOffset - EXCEPTION_MEM_RESERVE,
-             interp->memory->capacity - interp->memory->toOffset
+             (COUNTFMT) stats.moved, (COUNTFMT) stats.skipped, (COUNTFMT) stats.constant,
+             (COUNTFMT) interp->memory->fromOffset - interp->memory->toOffset,
+             (COUNTFMT) interp->memory->toOffset, (COUNTFMT) interp->memory->capacity,
+             (COUNTFMT) interp->memory->capacity - interp->memory->toOffset - EXCEPTION_MEM_RESERVE,
+             (COUNTFMT) interp->memory->capacity - interp->memory->toOffset
         );
 
     interp->memory->fromOffset = interp->memory->toOffset;
@@ -453,7 +454,7 @@ Object *memoryAllocObject(Interpreter *interp, Object *type, size_t size)
         || gc_always
 #endif
         ) {
-        fl_debug(interp, "memoryAllocObject: requesting %lu bytes\n", size);
+        fl_debug(interp, "memoryAllocObject: requesting %lu bytes\n", (COUNTFMT) size);
         /* If not done already allocate to space */
         if (!interp->memory->toSpace) {
             if (!(interp->memory->toSpace = mmap(NULL, interp->memory->capacity,
@@ -468,7 +469,7 @@ Object *memoryAllocObject(Interpreter *interp, Object *type, size_t size)
         int blocks = size / FLISP_MEMORY_INC_SIZE + 1;
         size_t memory = blocks * FLISP_MEMORY_INC_SIZE;
         fl_debug(interp, "memoryAllocObject: %lu bytes needed, increasing memory by %lu\n",
-                 size, memory
+                 (COUNTFMT) size, (COUNTFMT) memory
             );
         /* Increase to space */
         void *new;
@@ -739,10 +740,10 @@ Object *newEnv(Interpreter *interp, Object ** func, Object ** vals)
         else if (val != nil && val->type != type_cons)
             exceptionWithObject(interp, val, wrong_type_argument, "(env) is not a list: val %d", nArgs);
         else if (param == nil && val != nil)
-            exceptionWithObject(interp, *func, wrong_num_of_arguments, "(env) expects at most %d arguments", nArgs);
+            exceptionWithObject(interp, *func, wrong_number_of_arguments, "(env) expects at most %d arguments", nArgs);
         else if (param != nil && val == nil) {
             for (; param->type == type_cons; param = param->cdr, ++nArgs);
-            exceptionWithObject(interp, *func, wrong_num_of_arguments, "(env) expects at least %d arguments", nArgs);
+            exceptionWithObject(interp, *func, wrong_number_of_arguments, "(env) expects at least %d arguments", nArgs);
         }
     }
 
@@ -765,7 +766,7 @@ Object *newStreamObject(Interpreter *interp, FILE *fd, char *path)
     size_t len = strlen(path);
 
     if (!(buf = malloc(len+1)))
-        exception(interp, out_of_memory, "failed to allocate %lu bytes for stream path", len);
+        exception(interp, out_of_memory, "failed to allocate %lu bytes for stream path", (COUNTFMT) len);
     memcpy(buf, path, len+1);
 
     GC_CHECKPOINT;
@@ -947,7 +948,7 @@ size_t addCharToBuf(Interpreter *interp, int c)
     if (interp->len >= interp->capacity) {
         interp->capacity += BUFSIZ;
         if ((r = realloc(interp->buf, interp->capacity)) == NULL)
-            exception(interp, out_of_memory, "failed to allocate %ld bytes for readString buffer", interp->capacity);
+            exception(interp, out_of_memory, "failed to allocate %lu bytes for readString buffer", (COUNTFMT) interp->capacity);
         interp->buf = r;
     }
     interp->buf[interp->len++] = c;
@@ -1579,16 +1580,23 @@ Object *evalExpr(Interpreter *interp, Object ** object, Object **env)
 
             for (args = *gcArgs; args != nil; args = args->cdr, nArgs++) {
                 if (args->type != type_cons)
-                    exceptionWithObject(interp, args, wrong_type_argument, "(%s args) - args is not a list: arg %d", primitive->name, nArgs);
+                    exceptionWithObject(interp, args, wrong_type_argument,
+                                        "(%s args) - args is not a list: arg %d",
+                                        primitive->name, nArgs);
                 if (args->car->type == type_moved || args->cdr->type == type_moved)
-                    exceptionWithObject(interp, args->car, gc_error, "(%s args) - arg %d is already disposed off", primitive->name, nArgs);
+                    exceptionWithObject(interp, args->car, gc_error,
+                                        "(%s args) - arg %d is already disposed off",
+                                        primitive->name, nArgs);
             }
             if (nArgs < primitive->nMinArgs)
-                exceptionWithObject(interp, *gcFunc, wrong_num_of_arguments, "expects at least %d arguments", primitive->nMinArgs);
+                exceptionWithObject(interp, *gcFunc, wrong_number_of_arguments,
+                                    "expects at least %d arguments", primitive->nMinArgs);
             if (nArgs > primitive->nMaxArgs && primitive->nMaxArgs >= 0)
-                exceptionWithObject(interp, *gcFunc, wrong_num_of_arguments, "expects at most %d arguments", primitive->nMaxArgs);
+                exceptionWithObject(interp, *gcFunc, wrong_number_of_arguments,
+                                    "expects at most %d arguments", primitive->nMaxArgs);
             if (primitive->nMaxArgs < 0 && nArgs % -primitive->nMaxArgs)
-                exceptionWithObject(interp, *gcFunc, wrong_num_of_arguments, "expects a multiple of %d arguments", -primitive->nMaxArgs);
+                exceptionWithObject(interp, *gcFunc, wrong_number_of_arguments,
+                                    "expects a multiple of %d arguments", -primitive->nMaxArgs);
 
             switch ((uintptr_t)primitive->eval) {
             case PRIMITIVE_QUOTE:
@@ -1831,19 +1839,23 @@ Object *primitiveWrite(Interpreter *interp, Object **args, Object **env)
     for (;list != nil; list = list->cdr) {
         key = list->car;
         if (key->type != type_symbol)
-            exceptionWithObject(interp, *args, wrong_num_of_arguments, "(write obj [[key val] ..]) - key is not a symbol");
+            exceptionWithObject(interp, *args, wrong_number_of_arguments,
+                                "(write obj [[key val] ..]) - key is not a symbol");
         if (list->cdr == nil)
-            exceptionWithObject(interp, *args, wrong_num_of_arguments, "(write obj [[key val] ..]) - val is missing");
+            exceptionWithObject(interp, *args, wrong_number_of_arguments,
+                                "(write obj [[key val] ..]) - val is missing");
         list = list->cdr;
         value = list->car;
         if (!strcmp("stream", key->string)) {
             if (value->type != type_stream)
-                exceptionWithObject(interp, *args, wrong_num_of_arguments, "(write obj [[key val] ..]) - value of key stream is not a stream");
+                exceptionWithObject(interp, *args, wrong_number_of_arguments,
+                                    "(write obj [[key val] ..]) - value of key stream is not a stream");
             stream = value;
         } else if (!strcmp("readably", key->string)) {
             readably = (value != nil);
         } else
-            exceptionWithObject(interp, *args, wrong_num_of_arguments, "(write obj [[key val] ..]) - unknown key: %s", key->string);
+            exceptionWithObject(interp, *args, wrong_number_of_arguments,
+                                "(write obj [[key val] ..]) - unknown key: %s", key->string);
     }
 write:
 
@@ -2208,7 +2220,7 @@ Object *primitiveFclose(Interpreter *interp, Object**args, Object **env)
 {
     GC_CHECKPOINT;
     GC_TRACE(gcObject, (FLISP_ARG_ONE->fd == NULL) ?
-             nil : newInteger(interp, (int64_t)FLISP_ARG_ONE->fd));
+             nil : newInteger(interp, (int64_t)fileno(FLISP_ARG_ONE->fd)));
     *gcObject = newCons(interp, gcObject, &nil);
     GC_TRACE(gcBuffer, (FLISP_ARG_ONE->buf == NULL) ? nil : newString(interp, FLISP_ARG_ONE->buf));
     *gcObject = newCons(interp, gcBuffer, gcObject);
@@ -2530,7 +2542,7 @@ Interpreter *lisp_new(
     for (int i = 0; s[i]; count += objectSize(strlen(s[i++])));
     count += objectSize(strlen(library_path));
     count += 2*sizeof(Object);
-    fl_debug(interp, "lisp_new(): additional memory for argv and library path storage: %lu\n", count);
+    fl_debug(interp, "lisp_new(): additional memory for argv and library path storage: %lu\n", (COUNTFMT) count);
     Memory *memory = newMemory(FLISP_MIN_MEMORY+count+FLISP_INITIAL_MEMORY);
     if (memory == NULL) {
         setInterpreterResult(interp, nil, out_of_memory, "failed to allocate memory for the interpreter");
@@ -2589,7 +2601,8 @@ Interpreter *lisp_new(
         var = newSymbol(interp, "*OUTPUT*");
         (void)envSet(interp, &var, &val, &interp->global, true);
     }
-    fl_debug(interp, "lisp_init: %lu/%lu bytes allocated before gc\n", interp->memory->fromOffset, interp->memory->capacity);
+    fl_debug(interp, "lisp_init: %lu/%lu bytes allocated before gc\n",
+             (COUNTFMT) interp->memory->fromOffset, (COUNTFMT) interp->memory->capacity);
 
 #if DEBUG_GC_ALWAYS
     gc_always = true;

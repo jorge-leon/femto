@@ -149,6 +149,12 @@ extern Object *out_of_memory;
 extern Object *one;
 extern Object *empty;
 
+/* "Object" type for initializing constants with long names.
+ * Note: currently wrong-number-of-arguments is the longest, if you
+ *       need a longer put it here.
+ */
+typedef struct { Object *type; size_t size; char string[sizeof("wrong-number-of-arguments")]; } Symbol;
+
 extern Object *newObject(Interpreter *, Object *);
 extern Object *newObjectFrom(Interpreter *, Object **);
 extern Object *newInteger(Interpreter *, int64_t);

@@ -7,7 +7,7 @@
 #include "lisp.h"
 #include "file.h"
 
-Object *permission_denied = &(Object) { NULL, .string = "permission-denied" };
+Object *permission_denied =  (Object *) (&(Symbol) { NULL, .string = "permission-denied" });
 Object *not_found = &(Object) { NULL, .string = "not-found" };
 Object *file_exists = &(Object) { NULL, .string = "file-exists" };
 Object *read_only = &(Object) { NULL, .string = "read-only" };

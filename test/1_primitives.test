@@ -232,7 +232,7 @@ flisp_expr; ok catch-1_2  catch t
 IN='(catch (i+ 3 4))' OUT='(nil "" 7)'
 flisp_expr; ok catch-1_3  catch expr
 
-IN='(catch (i/))' OUT='(wrong-num-of-arguments "expects at least 2 arguments" #<Primitive i/>)'
+IN='(catch (i/))' OUT='(wrong-number-of-arguments "expects at least 2 arguments" #<Primitive i/>)'
 flisp_expr; ok catch-1_4  catch error
 
 # Primitives
@@ -331,19 +331,19 @@ flisp_expr
 [ -e _file_ ]; ok open-1 create file
 rm -f _file_
 
-echo '(open "empty.lsp")' | $FLISP | grep -q "#<Stream 0x............, empty.lsp>"
+RESULT=$(echo '(open "empty.lsp")' | $FLISP | grep -E '#<Stream 0x[0-9a-f]{1,16}, empty.lsp>')
 ok open-2 open file readonly
 
-echo '(open "<0")' | $FLISP | grep -q "#<Stream 0x............, <0>"
+RESULT=$(echo '(open "<0")' | $FLISP | grep -E "#<Stream 0x[0-9a-f]{1,16}, <0>")
 ok open-3 open readable file descriptor
 
-echo '(open ">1")' | $FLISP | grep -q "#<Stream 0x............, >1>"
+RESULT=$(echo '(open ">1")' | $FLISP | grep -E "#<Stream 0x[0-9a-f]{1,16}, >1>")
 ok open-4 open writeable file descriptor
 
-echo '(open "any text" "<")' | $FLISP | grep -q "#<Stream 0x............, <STRING>"
+RESULT=$(echo '(open "any text" "<")' | $FLISP | grep -E "#<Stream 0x[0-9a-f]{1,16}, <STRING>")
 ok open-5 open memory input stream
 
-echo '(open "" ">")' | $FLISP | grep -q "#<Stream 0x............, >STRING>"
+RESULT=$(echo '(open "" ">")' | $FLISP | grep -E "#<Stream 0x[0-9a-f]{1,16}, >STRING>")
 ok open-6 open memory output stream
 
 IN='(close (open "empty.lsp"))' OUT="0"

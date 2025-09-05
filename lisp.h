@@ -94,15 +94,15 @@ typedef struct Interpreter {
     /* private */
     Object *error;                   /* error code cons */
     struct { Object * type; size_t size; char string[WRITE_FMT_BUFSIZ]; } message;
-    Object *result;                   /* result or error object */
+    Object *result;                  /* result or error object */
 
-    FILE *input;                     /* default input stream object */
+    FILE *input;                     /* default input file descriptor */
     FILE *output;                    /* default output file descriptor */
-    FILE *debug;                     /* debug stream */
+    FILE *debug;                     /* debug file descriptor */
 
     /* globals */
     Object *symbols;                 /* symbols list */
-    Object *global;                   /* global environment */
+    Object *global;                  /* global environment */
     /* GC */
     Object *gcTop;                   /* dynamic gc trace stack */
     Memory *memory;                  /* memory available for object

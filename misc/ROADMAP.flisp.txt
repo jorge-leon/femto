@@ -10,15 +10,17 @@
 + Showcase lisp_eval2 with (catch (fread)) mechanism.
 + Implement fstat.
 + Implement popen, pclose.
++ Implement mkdir
 - WIP: dynamic memory allocation
   + Run with gc_always on
   + Fix FLISP_RESULT macros: they must have interp as parameter.
   + Tune chunk size (and initial memory?)
   + Fix all related Note's.
   + Update documentation.
-  - Cleanup cerf: not so easy to do
+  - Cleanup cerf: not so easy to do.
 - Make femto.rc use fstat.
-- Implement mkdir and fix file save bug.
+- Fix file save bug by using fmkdir.
+- Dokument file extension.
 - Improve/support batch mode: output = stdout.
 - Expose envSet to Lisp and move setq from C to Lisp.
 - Implement backquote and friends.

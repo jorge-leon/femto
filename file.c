@@ -66,34 +66,63 @@ Object *primitiveFeof(Interpreter *interp, Object** args, Object **env)
 Object *primitiveFgetc(Interpreter *interp, Object** args, Object **env)
 {
     char s[] = "\0\0";
+    int c;
+    FILE *fd = interp->input;
 
-    int c = getc(FLISP_ARG_ONE->fd);
+    if (FLISP_HAS_ARGS) {
+        CHECK_TYPE(FLISP_ARG_ONE, type_stream, "(fgetc[ stream] - stream)");
+        if (FLISP_ARG_ONE->fd == NULL)
+            exception(interp, invalid_value, "(fgetc[ stream]) - stream already closed");
+        fd = FLISP_ARG_ONE->fd;
+    }
+
+    c = streamGetc(interp, fd);
     if (c == EOF)
         return nil;
     s[0] = (char)c;
     return newString(interp, s);
 }
+Object *primitiveFungetc(Interpreter *interp, Object** args, Object **env)
+{
+    int c;
+    FILE *fd = interp->input;
+
+    CHECK_TYPE(FLISP_ARG_ONE, type_integer, "(fungetc char[ stream] - char)");
+    if (FLISP_HAS_ARG_TWO) {
+        CHECK_TYPE(FLISP_ARG_TWO, type_stream, "(fungetc char[ stream] - stream)");
+        if (FLISP_ARG_TWO->fd == NULL)
+            exception(interp, invalid_value, "(fungetc char [ stream]) - stream already closed");
+        fd = FLISP_ARG_TWO->fd;
+    }
+
+    c = ungetc((int)(FLISP_ARG_ONE->integer), fd);
+    return (c == EOF) ? end_of_file : FLISP_ARG_ONE;
+}
 Object *primitiveFgets(Interpreter *interp, Object** args, Object **env)
 {
     Object *string = nil;
     char *input;
+    FILE *fd = interp->input;
 
-    if (FLISP_ARG_ONE->fd == NULL)
-        exception(interp, invalid_value, "(fgets stream) - stream already closed");
-
+    if (FLISP_HAS_ARGS) {
+        CHECK_TYPE(FLISP_ARG_ONE, type_stream, "(fgets[ stream] - stream)");
+        if (FLISP_ARG_ONE->fd == NULL)
+            exception(interp, invalid_value, "(fgets[ stream]) - stream already closed");
+        fd = FLISP_ARG_ONE->fd;
+    }
     input = malloc(INPUT_FMT_BUFSIZ);
     if(input == NULL)
         exception(interp, out_of_memory, "fgets() failed, %s", strerror(errno));
 
     *input = '\0';
 
-    if(fgets(input, INPUT_FMT_BUFSIZ, FLISP_ARG_ONE->fd) != NULL) {
+    if(fgets(input, INPUT_FMT_BUFSIZ, fd) != NULL) {
         string = newString(interp, input);
         free(input);
         return string;
     }
     free(input);
-    if (!feof(FLISP_ARG_ONE->fd))
+    if (!feof(fd))
         exceptionWithObject(interp, FLISP_ARG_ONE, io_error, "fgetc() failed: %s", strerror(errno));
     return end_of_file;
 }
@@ -206,15 +235,16 @@ Object *primitiveFstat(Interpreter *interp, Object** args, Object **env)
 
 
 Primitive flisp_file_primitives[] = {
-    {"fflush", 1, 1, TYPE_STREAM, primitiveFflush},
-    {"fseek",  2, 3, 0,           primitiveFseek},
-    {"ftell",  1, 1, TYPE_STREAM, primitiveFtell},
-    {"feof",   1, 1, TYPE_STREAM, primitiveFeof},
-    {"fgetc",  1, 1, TYPE_STREAM, primitiveFgetc},
-    {"fgets",  1, 1, TYPE_STREAM, primitiveFgets},
-    {"popen",  2, 2, TYPE_STRING, primitivePopen},
-    {"pclose", 1, 1, TYPE_STREAM, primitivePclose},
-    {"fstat",  1, 2, 0,           primitiveFstat},
+    {"fflush",  1, 1, TYPE_STREAM, primitiveFflush},
+    {"fseek",   2, 3, 0,           primitiveFseek},
+    {"ftell",   1, 1, TYPE_STREAM, primitiveFtell},
+    {"feof",    1, 1, TYPE_STREAM, primitiveFeof},
+    {"fgetc",   0, 1, 0,           primitiveFgetc},
+    {"fungetc", 1, 2, 0,           primitiveFungetc},
+    {"fgets",   0, 1, 0,           primitiveFgets},
+    {"popen",   2, 2, TYPE_STRING, primitivePopen},
+    {"pclose",  1, 1, TYPE_STREAM, primitivePclose},
+    {"fstat",   1, 2, 0,           primitiveFstat},
 };
 
 

@@ -157,8 +157,9 @@ extern Object *newCons(Interpreter *, Object **, Object **);
 extern Object *newSymbol(Interpreter *, char *);
 extern Object *newStreamObject(Interpreter *, FILE *, char *);
 
-extern size_t addCharToBuf(Interpreter *, int);
+extern int streamGetc(Interpreter *interp, FILE *fd);
 extern void resetBuf(Interpreter *);
+extern size_t addCharToBuf(Interpreter *, int);
 
 extern void setInterpreterResult(Interpreter *, Object *, Object *, char *, ...);
 #define exceptionWithObject(interp, object, error, ...)           \

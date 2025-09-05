@@ -889,26 +889,9 @@ int streamGetc(Interpreter *interp, FILE *fd)
     int c;
     if ((c = fgetc(fd)) == EOF)
         if (ferror(fd))
-            exception(interp, io_error, "failed to fgetc, errno: %d", errno);
+            exception(interp, io_error, "failed to fgetc, errno: %s", strerror(errno));
     return c;
 }
-/** streamUngetc - push back the last streamGetc'd to file descriptor
- *
- * @param interp  fLisp interpreter
- * @param fd      open readable file descriptor
- *
- * returns: pushed back character or EOF on error
- *
- * throws: io-error
- *
- */
-int streamUngetc(Interpreter *interp, FILE *fd, int c)
-{
-    if ((c = ungetc(c, fd)) == EOF)
-        exception(interp, io_error, "failed to ungetc, errno: %d", errno);
-    return c;
-}
-
 
 // Begin helpers //////////
 int isSymbolChar(int ch)
@@ -1004,15 +987,13 @@ Object *readInteger(Interpreter *interp)
  * @param interp  fLisp interpreter
  * @param fd      open readable file descriptor
  *
- * returns: next character in stream or EOF
- *
- * throws: io-error
+ * @returns next character in stream or EOF
  */
 int streamPeek(Interpreter *interp, FILE *fd)
 {
     int c = streamGetc(interp, fd);
     if (c != EOF)
-        streamUngetc(interp, fd, c);
+        c = ungetc(c, fd);
     return c;
 }
 
@@ -1043,15 +1024,13 @@ int readNext(Interpreter *interp, FILE *fd)
  * @param interp  fLisp interpreter
  * @param fd      open readable file descriptor
  *
- * returns: next not space, not comment character
- *
- * throws: io-error
+ * @returns next not space, not comment character
  */
 int peekNext(Interpreter *interp, FILE *fd)
 {
     int c = readNext(interp, fd);
     if (c != EOF)
-        streamUngetc(interp, fd, c);
+        c = ungetc(c, fd);
     return c;
 }
 /** readWhile - skip to next charater not fullfilling a predicate in input file
@@ -1204,7 +1183,8 @@ Object *readList(Interpreter *interp, FILE *fd)
             (*gcList)->cdr = last;
             return list;
         } else {
-            streamUngetc(interp, fd, ch);
+            if (ungetc(ch, fd) == EOF)
+                exception(interp, io_error, "readList: failed to ungetc, errno: %s", strerror(errno));
             GC_CHECKPOINT;
             GC_TRACE(gcList, list);
             GC_TRACE(gcLast, last);
@@ -1278,7 +1258,8 @@ Object *readExpr(Interpreter *interp, FILE *fd)
         else if (ch == '(')
             return readList(interp, fd);
         else if (isSymbolChar(ch) && (ch != '.' || isSymbolChar(streamPeek(interp, fd)))) {
-            (void)streamUngetc(interp, fd, ch);
+            if (ungetc(ch, fd) == EOF)
+                exception(interp, io_error, "readExpr: failed to ungetc, errno: %s", strerror(errno));
             return readNumberOrSymbol(interp, fd);
         }
         else

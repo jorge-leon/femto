@@ -103,8 +103,8 @@
     ((eq o (car l)) l)
     (t (memq o (cdr l)))))
 
-(defun map1 (func xs)
-  (cond (xs (cons (func (car xs)) (map1 func (cdr xs))))))
+(defun mapcar (func xs)
+  (cond (xs (cons (func (car xs)) (mapcar func (cdr xs))))))
 
 ;;; Wrap all math to Integer operations
 (defun nfold (f i l);  (3)  (1 2 3)
@@ -146,8 +146,8 @@
 ;;; bindings: (car args)
 ;;; body:     (cdr args)
 	(cons ; apply
-	 (cons 'lambda (cons (map1 car (car args)) (cdr args))) ; (lambda (names) body)
-	 (map1 cadr (car args)))) ; (values)
+	 (cons 'lambda (cons (mapcar car (car args)) (cdr args))) ; (lambda (names) body)
+	 (mapcar cadr (car args)))) ; (values)
        (t (throw wrong-type-argument "let: first argument neither label nor binding" (car args)))))
     ((symbolp (car args))
 ;;; label:    (car args)
@@ -156,8 +156,8 @@
      (list
       (list 'lambda '()
 	    (list 'define (car args)
-		  (cons 'lambda (cons (map1 car (cadr args)) (cddr args))))
-	    (cons (car args) (map1 cadr (cadr args))))))
+		  (cons 'lambda (cons (mapcar car (cadr args)) (cddr args))))
+	    (cons (car args) (mapcar cadr (cadr args))))))
     (t (throw wrong-type-argument "let: first argument neither label nor binding" (car args)))))
 
 (defun prog1 (arg . args) arg)

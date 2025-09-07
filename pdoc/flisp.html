@@ -730,14 +730,31 @@
 	If <var>arg</var> is contained in <var>list</var>, returns the sub list of <var>list</var> starting with the
 	first occurrence of <var>arg</var>, otherwise returns <code>nil</code>.
       </dd>
-      <dt><code>(map1 <var>func</var> <var>list</var>)</code> <u>S: mapcar</u></dt>
-      <dd>Apply func to each element in list and return a list of the results.</dd>
-      <dd><code>map1</code> is a specialized form of <code>mapcar</code> restricted to one list only.</dd>
-      <dt><code>nfold</code></dt>
-      <dt><code>coerce</code></dt>
-      <dt><code>coercec</code></dt>
-      <dt><code>fold-leftp</code></dt>
-      <dd>Helper functions for n-ary generic number type arithmetic. See below.</dd>
+      <dt><code>(mapcar <var>func</var> <var>list</var>)</code> <u>Se, Dc</u></dt>
+      <dd>Apply <var>func</var> to each element in list and return the list of results.</dd>
+      <dd>In Elisp func has to be quoted, in CL variadic <var>func</var> operates on a list of lists.</dd>
+      <dt><code>(nfold <var>f</var> <var>i</var> <var>l</var>)</code></dt>
+      <dd>
+	<q>Number fold</q>: <code>left-fold</code>s binary function <var>f</var> on list <var>l</var> with initial
+	value <var>i</var>. Helper function for n-ary generic number type arithmetic.
+      </dd>     
+      <dt><code>(coerce ifunc dfunc x y)</code></dt>
+      <dd>
+	If <var>x</var> and <var>y</var> are <code>type-integer</code> apply binary integer arithmetic
+	function <var>ifunc</var> to them and return the result. If any of them is <code>type-double</code> apply binary
+	double arithmethich function <var>dfunc</var> instead. Helper function for n-ary generic number type arithmetic.
+      </dd>
+      <dt><code>(coercec <var>ifunc</var> <var>dfunc</var>)</code></dt>
+      <dd>
+	<q>Coerce curry</q>: return a lambda <code>coerce</code>ing parameters <var>x</var> and <var>y</var> and
+	applying <var>ifunc</var> or <var>dfunc</var> respectively. Helper function for n-ary generic number type arithmetic.
+      </dd>
+      <dt><code>(fold-leftp <var>predicate</var> <var>start</var> <var>list</var>)</code></dt>
+      <dd>
+	<q>Predicate fold</q>: <code>fold-left</code> binary function <var>predicate</var> to <var>list</var> with
+	initial value <var>start</var>. Returns <code>t</code> if <var>list</var> is empty. Helper functions for n-ary
+	generic number type comparison.
+      </dd>
       <dt><code>(let ((<var>name</var> <var>value</var>)[ (<var>name</var> <var>value</var>)..]) <var>body</var>)</code> <u>C</u></dt>
       <dd>Bind all <var>name</var>s to the respective <var>value</var>s then evaluate body.</dd>
       <dt><code>(let <var>label</var>((<var>name</var> <var>value</var>)[ (<var>name</var> <var>value</var>)..]) <var>body</var>)</code> <u>Cs</u></dt>

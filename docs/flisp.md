@@ -171,10 +171,9 @@ interpreter, extension functions behave the same as core functions.
 #### Syntax
 
 Program text is written as a sequence of symbolic expressions -
-<span class="abbr"><span class="dfn">sexp</span></span>'s - in
-parenthesized form. A [sexp](https://en.wikipedia.org/wiki/S-expression)
-is either a single symbol or a sequence of symbols or sexp's enclosed in
-parenthesis.
+<span class="dfn">sexp</span>'s - in parenthesized form. A
+[sexp](https://en.wikipedia.org/wiki/S-expression) is either a single
+symbol or a sequence of symbols or sexp's enclosed in parenthesis.
 
 The following characters are special to the reader:
 
@@ -186,8 +185,7 @@ Starts a function or macro invocation, a *list* or *cons* object (see
 Finishes a function invocation, *list* or *cons* object.
 
 `'` and `:`  
-With a single quote or a colon prefix before a
-<span class="abbr">sexp</span>, the <span class="abbr">sexp</span> is
+With a single quote or a colon prefix before a sexp, the sexp is
 expanded to `(quote «sexp»)` before it is evaluated.
 
 `.`  
@@ -751,16 +749,31 @@ Returns concatenation of all arguments converted to strings.
 If *arg* is contained in *list*, returns the sub list of *list* starting
 with the first occurrence of *arg*, otherwise returns `nil`.
 
-`(map1 «func» «list»)` <u>S: mapcar</u>  
-Apply func to each element in list and return a list of the results.
+`(mapcar «func» «list»)` <u>Se, Dc</u>  
+Apply *func* to each element in list and return the list of results.
 
-`map1` is a specialized form of `mapcar` restricted to one list only.
+In Elisp func has to be quoted, in CL variadic *func* operates on a list
+of lists.
 
-`nfold`  
-`coerce`  
-`coercec`  
-`fold-leftp`  
-Helper functions for n-ary generic number type arithmetic. See below.
+`(nfold «f» «i» «l»)`  
+“Number fold”: `left-fold`s binary function *f* on list *l* with initial
+value *i*. Helper function for n-ary generic number type arithmetic.
+
+`(coerce ifunc dfunc x y)`  
+If *x* and *y* are `type-integer` apply binary integer arithmetic
+function *ifunc* to them and return the result. If any of them is
+`type-double` apply binary double arithmethich function *dfunc* instead.
+Helper function for n-ary generic number type arithmetic.
+
+`(coercec «ifunc» «dfunc»)`  
+“Coerce curry”: return a lambda `coerce`ing parameters *x* and *y* and
+applying *ifunc* or *dfunc* respectively. Helper function for n-ary
+generic number type arithmetic.
+
+`(fold-leftp «predicate» «start» «list»)`  
+“Predicate fold”: `fold-left` binary function *predicate* to *list* with
+initial value *start*. Returns `t` if *list* is empty. Helper functions
+for n-ary generic number type comparison.
 
 `(let ((«name» «value»)[ («name» «value»)..]) «body»)` <u>C</u>  
 Bind all *name*s to the respective *value*s then evaluate body.

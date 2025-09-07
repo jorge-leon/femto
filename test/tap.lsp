@@ -5,7 +5,7 @@
 (setq reportFd (open ">3"))
 
 (defun pr args
-  (map1 (lambda (o) (write o :stream reportFd)) args)
+  (mapcar (lambda (o) (write o :stream reportFd)) args)
   (write "\n" :stream reportFd))
 
 ;(defmacro test (comment . body)

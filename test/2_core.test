@@ -4,7 +4,7 @@
 
 export FLISPRC=../lisp/core.lsp
 
-tap 88
+tap 89
 
 # list
 IN='(list)' OUT=nil
@@ -205,6 +205,9 @@ flisp_expr 1; ok memq-1 find object in list
 
 IN='(memq '\''a '\''(1 '\''two 3))' OUT=nil
 flisp_expr 1; ok memq-2 do not find object in list
+
+IN="(memq nil (list 0 nil 3))" OUT="(nil 3)"
+flisp_expr 1; ok memq-3 find nil object in list
 
 
 IN="(defun incr (x) (+ x 1)) (map1 incr '(1 2 3))" OUT="(2 3 4)"

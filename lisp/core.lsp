@@ -99,7 +99,6 @@
   ;; If object o in list l return sublist of l starting with o, else nil.
   ;; Elisp
   (cond
-    ((eq nil o) nil)
     ((eq nil l) nil)
     ((eq o (car l)) l)
     (t (memq o (cdr l)))))

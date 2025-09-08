@@ -106,7 +106,7 @@ Lisp object of any type:
 *object* *value* *o* *a* *b* *c*
 
 Program elements:  
-*params* *opt* *body* *expr* *pred*
+*arg* *args* *params* *opt* *body* *expr* *pred*
 
 Integer:  
 *i* *j* *k*
@@ -115,7 +115,7 @@ Double:
 *x* *y* *z*
 
 Any numeric type:  
-*num* *num1* *num2*
+*n* *n1* *n2*
 
 Symbol:  
 *symbol*
@@ -127,7 +127,10 @@ List/Cons:
 *cons* *l* *l1* *l2* …
 
 Stream:  
-*stream* *f*
+*stream* *f* *fd*
+
+Function/lambda:  
+*f*
 
 *fLisp* fancies to converge towards Emacs and Common Lisp, but includes
 also Scheme functions. Function descriptions are annotated according to
@@ -146,9 +149,10 @@ Lisp or Scheme.
 <u>B</u>  
 Buggy/incompatible implementation.
 
-By default compatibility with Common Lisp is annotated. The suffix
-<u>e</u> is used to indicate reference to Emacs Lisp, <u>s</u> for
-Scheme. *fLisp* specific function are annotated with <u>f</u>.
+Compatibility with Emacs is omitted. By default compatibility with
+Common Lisp is annotated. The suffix <u>e</u> is used to indicate
+reference to Emacs Lisp, <u>s</u> for Scheme. *fLisp* specific function
+are annotated with <u>f</u>.
 
 [^](#toc)
 
@@ -171,9 +175,10 @@ interpreter, extension functions behave the same as core functions.
 #### Syntax
 
 Program text is written as a sequence of symbolic expressions -
-<span class="dfn">sexp</span>'s - in parenthesized form. A
-[sexp](https://en.wikipedia.org/wiki/S-expression) is either a single
-symbol or a sequence of symbols or sexp's enclosed in parenthesis.
+<span class="abbr"><span class="dfn">sexp</span></span>'s - in
+parenthesized form. A [sexp](https://en.wikipedia.org/wiki/S-expression)
+is either a single symbol or a sequence of symbols or sexp's enclosed in
+parenthesis.
 
 The following characters are special to the reader:
 
@@ -185,7 +190,8 @@ Starts a function or macro invocation, a *list* or *cons* object (see
 Finishes a function invocation, *list* or *cons* object.
 
 `'` and `:`  
-With a single quote or a colon prefix before a sexp, the sexp is
+With a single quote or a colon prefix before a
+<span class="abbr">sexp</span>, the <span class="abbr">sexp</span> is
 expanded to `(quote «sexp»)` before it is evaluated.
 
 `.`  
@@ -704,6 +710,7 @@ Returns a lambda with one parameter which returns `(«func» «a» «b»)`.
 Returns true if *object* has *type*.
 
 `(integerp «object»)` <u>C</u>  
+`(doublep «object»)` <u>C</u>  
 `(stringp «object»)` <u>C</u>  
 `(symbolp «object»)` <u>C</u>  
 `(lamdap «object»)` <u>C</u>  
@@ -712,6 +719,8 @@ Returns true if *object* has *type*.
 Return `t` if *object* is of the respective type, otherwise `nil`.
 
 `(numberp «object»)` <u>C</u>  
+Return `t` if *object* is integer or double, otherwise `nil`.
+
 `(cadr «list»)` <u>C</u>  
 Return the second element in *list*, `(car (cdr «list»))`.  
 `(cddr «list»)` <u>C</u>  
@@ -724,8 +733,6 @@ Converts *integer* into a *string* object.
 `(eq «a» «b»)`  
 Returns `t` if *a* and *b* evaluate to the same object, number or
 string, `nil` otherwise.
-
-Synonym for `integerp`.
 
 `(not «object»)` <u>C</u>  
 Logical inverse. In Lisp a synonym for `null`
@@ -857,13 +864,30 @@ object which evaluates to non `nil`.
 Since `reduce` is right associative and *start* is not optional, it
 differs significantly both from Common Lisp and Scheme.
 
-max  
-min  
-nthcdr  
-nth  
-`(fold-right «func» «end» «list»)` <u>Cs</u>  
-`(unfold «func» «init» «pred»)` <u>Cs</u>  
+`(max «n»[ «n»..])`  
+`(min «n»[ «n»..])`  
+Return the biggest/smallest number of all given *n*s.
+
+`(nthcdr «i» «l»)`  
+Return sub list of *l* starting from zero-based *i*th element to the
+last.
+
+`(nth «i» «l»)`  
+Return zero-based *i*th element of list *l*
+
+`(fold-right «f» «o» «l»)` <u>Cs</u>  
+Apply binary function *f* to last element of *l* and *o*, then
+recursively to the previous element and the result.
+
+`(unfold «f» «o» «p»)` <u>Cs</u>  
+Create a list starting with *o* followed by the result of successive
+application of *f* to *o* until applying *p* to the result is not `nil`
+anymore.
+
 `(iota «count»[ «start»[ «step»]])` <u>Cs</u>  
+Create a list of *count* numbers starting with *start* or `0` if not
+given by successively adding *step* or `1` if not given.
+
 `(flip «func»)` <u>f</u>  
 Returns a lambda which calls binary *func* with it's two arguments
 reversed (flipped).
@@ -878,19 +902,33 @@ Returns a list with all elements of *l* in reverse order
 This library implements some Common Lisp functions, which are not used
 in the editor libraries. They are provided for reference.
 
-atom
+`(atom «o»)`  
+`t` if *o* is not a *cons*.
 
-zerop
+`(zerop «x»)`  
+`t` if number *x* is zero.
 
-if
+`(if «p» «then»[ «else»)`  
+Evaluate *then* if predicate *p* evaluates to not `nil`, else evaluate
+*else*.
 
-equal
+`(equal «o1» «o2»)`  
+Return `nil` if *o1* and *o2* are not isomorphic.
 
-append
+`(append [list ..][ a])`  
+Append all elements in all *list*s into a single list. If atom *a* is
+present, make it a dotted list terminating with *a*.
 
-print
+`(apply «f» [«arg» ..][ l])`  
+If *arg* is a single list call lambda *f* with all its elements as
+parameters, else call *f* with all *arg*s as parameters. If list *l* is
+present append all its elements to the parameter list.
 
-princ
+`(print «o»[ «fd»])`  
+`write` object *o* `:readably` to stream *fd* or output.
+
+`(princ «o»[ «fd»])`  
+`write` object *o* as is to stream *fd* or output.
 
 #### Femto Library
 

@@ -180,12 +180,12 @@ IN="(nthcdr 1 '(2 . 3))" OUT=3
 flisplib 1; ok nthcdr-6 of 1 of cons is cdr
 
 IN="(nthcdr 'a nil)"
-ERR="(nthcdr n l) - n expected type-integer, got: type-symbol"
+ERR="(nthcdr i l) - i expected type-integer, got: type-symbol"
 OBJ='a'
 flisplib_err 1; ok nthcdr-7 wrong index type fails
 
 IN="(nthcdr 1 'a)"
-ERR="(nthcdr n l) - l expected type-cons, got: type-symbol"
+ERR="(nthcdr i l) - l expected type-cons, got: type-symbol"
 OBJ='a'
 flisplib_err 1; ok nthcdr-8 wrong list type fails
 

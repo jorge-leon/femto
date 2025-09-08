@@ -136,13 +136,13 @@
       <dt>Lisp object of any type:</dt>
       <dd><var>object</var> <var>value</var> <var>o</var> <var>a</var> <var>b</var> <var>c</var></dd>
       <dt>Program elements:</dt>
-      <dd><var>params</var> <var>opt</var> <var>body</var> <var>expr</var> <var>pred</var></dd>
+      <dd><var>arg</var> <var>args</var> <var>params</var> <var>opt</var> <var>body</var> <var>expr</var> <var>pred</var></dd>
       <dt>Integer:</dt>
       <dd><var>i</var> <var>j</var> <var>k</var></dd>
       <dt>Double:</dt>
       <dd><var>x</var> <var>y</var> <var>z</var></dd>
       <dt>Any numeric type:</dt>
-      <dd><var>num</var> <var>num1</var> <var>num2</var></dd>
+      <dd><var>n</var> <var>n1</var> <var>n2</var></dd>
       <dt>Symbol:</dt>
       <dd><var>symbol</var></dd>
       <dt>String:</dt>
@@ -150,7 +150,9 @@
       <dt>List/Cons:</dt>
       <dd><var>cons</var> <var>l</var> <var>l1</var> <var>l2</var> …</dd>
       <dt>Stream:</dt>
-      <dd><var>stream</var> <var>f</var></dd>
+      <dd><var>stream</var> <var>f</var> <var>fd</var></dd>
+      <dt>Function/lambda:</dt>
+      <dd><var>f</var></dd>
     </dl>
     <p>
       <i>fLisp</i> fancies to converge towards Emacs and Common Lisp, but includes also Scheme functions.  Function
@@ -167,8 +169,9 @@
       <dd>Buggy/incompatible implementation.</dd>
     </dl>
     <p>
-      By default compatibility with Common Lisp is annotated. The suffix <u>e</u> is used to indicate reference to Emacs
-      Lisp, <u>s</u> for Scheme.  <var>fLisp</var> specific function are annotated with <u>f</u>.
+      Compatibility with Emacs is omitted. By default compatibility with Common Lisp is annotated. The suffix <u>e</u>
+      is used to indicate reference to Emacs Lisp, <u>s</u> for Scheme.  <var>fLisp</var> specific function are
+      annotated with <u>f</u>.
     </p>
     <nav><a href="#toc">^</a></nav>
 
@@ -690,6 +693,7 @@
       <dt><code>(typep (<var>type</var> <var>object</var>))</code> <u>C</u></dt>
       <dd>Returns true if <var>object</var> has <var>type</var>.</dd>
       <dt><code>(integerp <var>object</var>)</code> <u>C</u></dt>
+      <dt><code>(doublep <var>object</var>)</code> <u>C</u></dt>
       <dt><code>(stringp <var>object</var>)</code> <u>C</u></dt>
       <dt><code>(symbolp <var>object</var>)</code> <u>C</u></dt>
       <dt><code>(lamdap <var>object</var>)</code> <u>C</u></dt>
@@ -697,6 +701,7 @@
       <dt><code>(streamp <var>object</var>)</code> <u>C</u></dt>
       <dd>Return <code>t</code> if <var>object</var> is of the respective type, otherwise <code>nil</code>.</dd>
       <dt><code>(numberp <var>object</var>)</code> <u>C</u></dt>
+      <dd>Return <code>t</code> if <var>object</var> is integer or double, otherwise <code>nil</code>.</dd>
       <dt><code>(cadr <var>list</var>)</code> <u>C</u></dt>
       <dt>Return the second element in <var>list</var>, <code>(car (cdr <var>list</var>))</code>.</dt>
       <dt><code>(cddr <var>list</var>)</code> <u>C</u></dt>
@@ -710,8 +715,6 @@
 	Returns <code>t</code> if <var>a</var> and <var>b</var> evaluate to the same object, number or
 	string, <code>nil</code> otherwise.
       </dd>
-
-      <dd>Synonym for <code>integerp</code>.</dd>
       <dt><code>(not <var>object</var>)</code> <u>C</u></dt>
       <dd>Logical inverse. In Lisp a synonym for <code>null</code></dd>
       <dt><code>(fold-left <var>func</var> <var>init</var> <var>list</var>)</code> <u>Ss: fold-left</u></dt>
@@ -849,13 +852,28 @@
 	Since <code>reduce</code> is right associative and <var>start</var> is not optional, it differs significantly
 	both from Common Lisp and Scheme.
       </dd>
-      <dt>max</dt>
-      <dt>min</dt>
-      <dt>nthcdr</dt>
-      <dt>nth</dt>
-      <dt><code>(fold-right <var>func</var> <var>end</var> <var>list</var>)</code> <u>Cs</u></dt>
-      <dt><code>(unfold <var>func</var> <var>init</var> <var>pred</var>)</code> <u>Cs</u></dt>
+      <dt><code>(max <var>n</var>[ <var>n</var>..])</code></dt>
+      <dt><code>(min <var>n</var>[ <var>n</var>..])</code></dt>
+      <dd>Return the biggest/smallest number of all given <var>n</var>s.</dd>
+      <dt><code>(nthcdr <var>i</var> <var>l</var>)</code></dt>
+      <dd>Return sub list of <var>l</var> starting from zero-based <var>i</var>th element to the last.</dd>
+      <dt><code>(nth <var>i</var> <var>l</var>)</code></dt>
+      <dd>Return zero-based <var>i</var>th element of list <var>l</var></dd>
+      <dt><code>(fold-right <var>f</var> <var>o</var> <var>l</var>)</code> <u>Cs</u></dt>
+      <dd>
+	Apply binary function <var>f</var> to last element of <var>l</var> and <var>o</var>, then recursively to the
+	previous element and the result.
+      </dd>
+      <dt><code>(unfold <var>f</var> <var>o</var> <var>p</var>)</code> <u>Cs</u></dt>
+      <dd>
+	Create a list starting with <var>o</var> followed by the result of successive application of <var>f</var>
+	to <var>o</var> until applying <var>p</var> to the result is not <code>nil</code> anymore.
+      </dd>
       <dt><code>(iota <var>count</var>[ <var>start</var>[ <var>step</var>]])</code> <u>Cs</u></dt>
+      <dd>
+	Create a list of <var>count</var> numbers starting with <var>start</var> or <code>0</code> if not given by
+	successively adding <var>step</var> or <code>1</code> if not given.
+      </dd>
       <dt><code>(flip <var>func</var>)</code> <u>f</u></dt>
       <dd>Returns a lambda which calls binary <var>func</var> with it's two arguments reversed (flipped).</dd>
       <dt><code>(reverse <var>l</var>)</code></dt>
@@ -869,13 +887,32 @@
       for reference.
     </p>
     <dl>
-      <dt>atom</dt>
-      <dt>zerop</dt>
-      <dt>if</dt>
-      <dt>equal</dt>
-      <dt>append</dt>
-      <dt>print</dt>
-      <dt>princ</dt>
+      <dt><code>(atom <var>o</var>)</code></dt>
+      <dd><code>t</code> if <var>o</var> is not a <i>cons</i>.</dd>
+      <dt><code>(zerop <var>x</var>)</code></dt>
+      <dd><code>t</code> if number <var>x</var> is zero.</dd>
+      <dt><code>(if <var>p</var> <var>then</var>[ <var>else</var>)</code></dt>
+      <dd>
+	Evaluate <var>then</var> if predicate <var>p</var> evaluates to not <code>nil</code>, else
+	evaluate <var>else</var>.
+      </dd>
+      <dt><code>(equal <var>o1</var> <var>o2</var>)</code></dt>
+      <dd>Return <code>nil</code> if <var>o1</var> and <var>o2</var> are not isomorphic.</dd>
+      <dt><code>(append [list ..][ a])</code></dt>
+      <dd>
+	Append all elements in all <var>list</var>s into a single list. If atom <var>a</var> is present, make it a
+	dotted list terminating with <var>a</var>.
+      </dd>
+      <dt><code>(apply <var>f</var> [<var>arg</var> ..][ l])</code></dt>
+      <dd>
+	If <var>arg</var> is a single list call lambda <var>f</var> with all its elements as parameters, else
+	call <var>f</var> with all <var>arg</var>s as parameters. If list <var>l</var> is present append all its
+	elements to the parameter list.
+      </dd>
+      <dt><code>(print <var>o</var>[ <var>fd</var>])</code></dt>
+      <dd><code>write</code> object <var>o</var> <code>:readably</code> to stream <var>fd</var> or output.</dd>
+      <dt><code>(princ <var>o</var>[ <var>fd</var>])</code></dt>
+      <dd><code>write</code> object <var>o</var> as is to stream <var>fd</var> or output.</dd>
     </dl>
 
     <h4 id="femto_lib">Femto Library</h4>

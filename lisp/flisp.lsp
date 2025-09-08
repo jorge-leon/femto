@@ -35,32 +35,32 @@
     (t (reduce (lambda (a b) (cond ((< a b) a) (t b)))
 	args n)) ))
 
-(defun nthcdr (n l)
+(defun nthcdr (i l)
   (cond
-    ((not (integerp n))
+    ((not (integerp i))
      (throw wrong-type-argument
-       (concat "(nthcdr n l) - n expected type-integer, got: " (type-of n))
-       n))
-    ((< n 0) (throw range-error "negative index" n))
+       (concat "(nthcdr i l) - i expected type-integer, got: " (type-of i))
+       i))
+    ((< i 0) (throw range-error "negative index" i))
     ((null l) nil)
-    ((= 0 n) l)
+    ((= 0 i) l)
    ((not (consp l))
     (throw wrong-type-argument
-      (concat "(nthcdr n l) - l expected type-cons, got: " (type-of l))
+      (concat "(nthcdr i l) - l expected type-cons, got: " (type-of l))
       l))
-    (t (nthcdr (- n 1) (cdr l)))))
+    (t (nthcdr (- i 1) (cdr l)))))
 
 (defun nth (n list)
   (car (nthcdr n list)))
 
-(defun fold-right (f e l)
+(defun fold-right (f o l)
   (cond
-    ((null l) e)
-    (t (f (car l) (fold-right f e (cdr l))))))
+    ((null l) o)
+    (t (f (car l) (fold-right f o (cdr l))))))
 
-(defun unfold (func init pred)
-  (cond ((pred init) (cons init nil))
-	(t (cons init (unfold func (func init) pred)))))
+(defun unfold (func o p)
+  (cond ((p o) (cons o nil))
+	(t (cons o (unfold func (func o) p)))))
 
 (defun iota (count . args)
   (let (

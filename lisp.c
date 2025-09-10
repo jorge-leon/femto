@@ -2227,20 +2227,6 @@ Object *primitiveFclose(Interpreter *interp, Object**args, Object **env)
     GC_RETURN(newCons(interp, &(FLISP_ARG_ONE->path), gcObject));
 }
 
-/* OS interface */
-
-Object *fl_system(Interpreter *interp, Object **args, Object **env)
-{
-    return newInteger(interp, system(FLISP_ARG_ONE->string));
-}
-
-Object *os_getenv(Interpreter *interp, Object **args, Object **env)
-{
-    char *e = getenv(FLISP_ARG_ONE->string);
-    if (e == NULL) return nil;
-    return newStringWithLength(interp, e, strlen(e));
-}
-
 /* Strings */
 
 // (string-append s a)
@@ -2361,6 +2347,16 @@ Object *asciiToInteger(Interpreter *interp, Object **args, Object **env)
     return newInteger(interp, (int64_t)*FLISP_ARG_ONE->string);
 }
 
+/* OS interface */
+
+Object *os_getenv(Interpreter *interp, Object **args, Object **env)
+{
+    char *e = getenv(FLISP_ARG_ONE->string);
+    if (e == NULL) return nil;
+    return newStringWithLength(interp, e, strlen(e));
+}
+
+
 
 #ifdef FLISP_FEMTO_EXTENSION
 #include "femto.primitives.c"
@@ -2422,7 +2418,6 @@ Primitive primitives[] = {
     {"ascii",         1,  1, TYPE_INTEGER, asciiToString},
     {"ascii->number", 1,  1, TYPE_STRING, asciiToInteger},
     {"os.getenv",     1,  1, TYPE_STRING, os_getenv},
-    {"system",        1,  1, TYPE_STRING, fl_system},
 //    FLISP_REGISTER_FILE_EXTENSION
 #ifdef FLISP_FEMTO_EXTENSION
 #include "femto.register.c"

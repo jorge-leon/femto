@@ -445,6 +445,17 @@ Object *primitivePclose(Interpreter *interp, Object** args, Object **env)
 
     return newInteger(interp, result);
 }
+/** (system s) ⇒ i: run a command line in the system shell
+ *
+ * @param s .. Command line
+ *
+ * @returns The exit code of the shell.
+ */
+Object *fl_system(Interpreter *interp, Object **args, Object **env)
+{
+    return newInteger(interp, system(FLISP_ARG_ONE->string));
+}
+
 
 Primitive flisp_file_primitives[] = {
     {"fflush",  0, 1, 0,           primitiveFflush},
@@ -459,6 +470,7 @@ Primitive flisp_file_primitives[] = {
     {"fmkdir",  1, 2, 0,           primitiveMkdir},
     {"popen",   1, 2, TYPE_STRING, primitivePopen},
     {"pclose",  1, 1, TYPE_STREAM, primitivePclose},
+    {"system",  1, 1, TYPE_STRING, fl_system},
 };
 
 

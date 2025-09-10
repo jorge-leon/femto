@@ -88,6 +88,7 @@ In 2025 another set of changes were introduced:
 - Numbers are represented by 64 bit integers instead of double floats.
 - The Lisp libraries have been extended and functions have been
   improved for compatibilty.
+- Lisp object space adjusts dynamically when needed.
 
 ## Building
 
@@ -99,8 +100,7 @@ fLisp should be buildable with only the standard C libraries.
 
 ## Future
 
-- Expand Lisp garbage collected memory as needed.
-- Implement the backtick and comma reader macros. See [
+- Implement the backtick and comma reader macros. See [5]
 - Adapt build system to be able to un/install `flisp` binary. Includes  
   preparing a Lisp library and a startup file.
 - Extend file extension to be usable for Lisp programs.
@@ -117,3 +117,4 @@ fLisp should be buildable with only the standard C libraries.
 - [5] mal - quasiquote https://github.com/kanaka/mal
 - [6] Scheme  https://www.scheme.org/
 - [7] Scheme v7 Standard https://standards.scheme.org/official/r7rs.pdf
+- [8] TSPL2d https://www.scheme.com/tspl2d/

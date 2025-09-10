@@ -114,14 +114,14 @@ For a full version history please refer to the file [CHANGE.LOG.md](./CHANGE.LOG
 ## Comparisons with Other Emacs Implementations
 
 Femto has almost the same level of functionality as MicroEmacs 3.10
-for a codebase about 15% of the size.
+for a codebase less then half of the size.
 
 	Editor         Binary   BinSize     KLOC  Files
 
 	atto           atto       33002     1.9k      10
 	pEmacs         pe         59465     5.7K      16
 	Esatz-Emacs    ee         59050     5.7K      14
-	femto          femto     144008  8.4k/6.0k 24/36 **
+	femto          femto     162392  10.8k/7.6k   25/37 **
 	GNOME          GNOME      55922     9.8k      13
 	Zile           zile      257360    11.7k      48
 	Mg             mg        585313    16.5K      50
@@ -211,13 +211,13 @@ Usefull build targets:
 - deb: build Debian package
 - install/uninstall: install/uninstall locally
 
-To contribute code make sure you run:
+Make sure to run:
 
 	make clean test
 	make clean ftest
 	make clean doc
 
-Before commiting code to Github.
+before commiting code to Github.
 
 
 ## Copying

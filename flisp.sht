@@ -1,11 +1,11 @@
 ;; -*-Lisp-*-
 ;;
-;; flisp startup file
+;; fLisp startup file
 
 $(cat lisp/core.lsp)
 
 ;; flisp initialzation 
-(setq config_file (concat (os.getenv "HOME") "/" ".config/flisp/flisp.rc"))
+(setq config_file (concat (getenv "HOME") "/" ".config/flisp/flisp.rc"))
 
 (defun getopts (opts pos)
   (setq o (car opts))
@@ -18,5 +18,22 @@ $(cat lisp/core.lsp)
 (require 'flisp)
 (require 'stdlib)
 
-;; if not found we get not past this but rather err out: (load config_file)
-(getopts argv 0)
+(defun repl ()
+  (princ "\n> ")
+  (let ((result (catch (eval (read *INPUT*)))))
+    (cond ((car result)
+	   (princ "error: ")
+	   (print result)
+	   (princ "\n") )
+	  (t
+	   (print (caddr result))))
+    (cond ((feof *INPUT*))
+	  (t (repl)) )))
+
+(let ((result (catch (getopts argv 0))))
+  (cond ((car result) (princ "could not load rc file\n"))))
+(fflush)
+(cond ((fttyp *INPUT*)
+       (princ "fLisp 0.13\n")
+       (princ "exit with C-d")))
+(repl)

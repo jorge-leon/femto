@@ -14,7 +14,6 @@
 
 int exit_code = 0;
 
-// Note: wouldn't need, if we could implement the repl in fLisp
 #define INPUT_BUFSIZE 4095
 char input[INPUT_BUFSIZE+1]; // Note: termios paste limit or so
 
@@ -22,43 +21,6 @@ void fatal(char *msg)
 {
     fprintf(stderr, "\n%s %s:\n%s\n", FL_NAME, FL_VERSION, msg);
     exit(1);
-}
-
-// Note: we'd like to implement the repl() in fLisp itself, for this we'd need:
-// - isatty()
-// - exception handling in fLisp
-// - file output for error messages
-void repl(Interpreter *interp)
-{
-    size_t i;
-
-    puts(FL_NAME " " FL_VERSION);
-    puts("exit with Ctrl+D");
-    while (true) {
-        printf("> ");
-        fflush(stdout);
-
-        if (!fgets(input, sizeof(input), stdin)) break;
-        i=strlen(input);
-        //if (!i) continue;
-        if (input[i-1] == '\n')
-            input[i-1] = '\0';
-        else {
-            fprintf(stderr, "error: more then " CPP_STR(INPUT_BUFSIZ) "read, skipping...\n");
-            fflush(stderr);
-            continue;
-        }
-
-        lisp_eval(interp, input);
-        if (FLISP_RESULT_CODE(interp) != nil) {
-            lisp_write_error(interp, stderr);
-            if (FLISP_RESULT_CODE(interp) == out_of_memory) break;
-        }
-    }
-    if (FLISP_RESULT_CODE(interp) != nil) {
-        exit_code = 1;
-    }
-    return;
 }
 
 int main(int argc, char **argv)
@@ -95,27 +57,11 @@ int main(int argc, char **argv)
                 lisp_write_error(interp, stderr);
                 if (FLISP_RESULT_CODE(interp) == out_of_memory)
                     return 1;
-            // Note: if we could implement the repl in fLisp itself we'd done here.
             }
             if (fclose(fd))
                 fprintf(stderr, "failed to close inifile %s %s\n", init_file, strerror(errno));
         }
     }
-    // Start repl
-    //Note: could be omitted if we could implement the repl in fLisp itself.
-    if (isatty(0)) {
-        repl(interp);
-    } else {
-
-        // Just eval the standard input
-        interp->input = stdin;
-        lisp_eval(interp, NULL);
-        if (FLISP_RESULT_CODE(interp) != nil)
-            lisp_write_error(interp, stderr);
-    }
-    if (FLISP_RESULT_CODE(interp) != out_of_memory)
-        lisp_destroy(interp);
-    return exit_code;
 }
 
 /*

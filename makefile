@@ -177,9 +177,11 @@ measure: $(RC_FILES) $(BINARIES) strip FORCE
 	@echo "binsize:      " $$(set -- $$(ls -l flisp); echo $$5)
 	@echo "flisp:        " $$(cat flisp.c | wc -l)
 	@echo "flispsloc:    " $$(set -- $$(which sloccount >/dev/null && { sloccount flisp.c | grep ansic=; }); echo $$3)
-	@echo "linecount:    " $$(cat $(FLISPSOURCES) $(FLISPFILES) | wc -l)
+	@echo "C-lines:      " $$(cat $(FLISPSOURCES) | wc -l)
+	@echo "Lisp-lines:   " $$(cat $(FLISPFILES) | wc -l)
 	@echo "sloccount:    " $$(set -- $$(which sloccount >/dev/null && { sloccount flisp.lsp $(FLISPSOURCES) $(FLISPFILES) | grep ansic=; }); echo $$3)
-	@echo "files:        " $$(ls $(FLISPSOURCES) $(FLISPFILES) | wc -l)
+	@echo "C-files:      " $$(ls $(FLISPSOURCES) | wc -l)
+	@echo "Lisp-files:   " $$(ls $(FLISPFILES) | wc -l)
 	@rm femto.lsp flisp.lsp
 
 run: femto FORCE

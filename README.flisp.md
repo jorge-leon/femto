@@ -29,6 +29,10 @@ meant to be very small.
 - To be easy to understand without extensive study (to encourage further  
   experimentation).
 
+Size by version:
+
+	Version	Binary	C-Lines/sloc/Files	Lisp-Lines/sloc/Files
+	0.13	85584	3.6k/2.4k/6			373/272/3
 
 ## History
 

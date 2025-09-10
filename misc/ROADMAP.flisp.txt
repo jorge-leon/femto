@@ -1,26 +1,7 @@
-+ Bump fLisp version: reason: error type symbols instead of result codes.
-+ Add error type symbols to the top level environment.
-+ Change to 64 bit integers.
-+ Implement type-of, curry and move all type predicates except null and consp from C to Lisp.
-+ Add search to string library.
-+ Implement fold.
-+ start a test library.
-+ Move string-to-number to Lisp by using (read f) from a memory stream.
-+ Fix string library.
-+ Showcase lisp_eval2 with (catch (fread)) mechanism.
-+ Implement fstat.
-+ Implement popen, pclose.
-+ Implement mkdir
-- WIP: dynamic memory allocation
-  + Run with gc_always on
-  + Fix FLISP_RESULT macros: they must have interp as parameter.
-  + Tune chunk size (and initial memory?)
-  + Fix all related Note's.
-  + Update documentation.
-  - Cleanup cerf: not so easy to do.
+ROADMAP
+
 - Make femto.rc use fstat.
 - Fix file save bug by using fmkdir.
-- Dokument file extension.
 - Improve/support batch mode: output = stdout.
 - Expose envSet to Lisp and move setq from C to Lisp.
 - Implement backquote and friends.
@@ -33,6 +14,7 @@
 - Rename global argv to command-line-args, argv0 to invocation-name.
 - Rename os.env to getenv.
 - Make extensions plugable.
+- Cleanup cerf: not so easy to do.
 - Test more then one interpreter.
 - ? CSP between interpreters?
 - Add read and eval tracing.
@@ -41,3 +23,34 @@
   - Replace string-contains with string-search.
   - Make file extension optional.
   - Reduce binary operators to 'and' and 'xor' and write needed rest in Lisp.
+
+fLisp 0.12
+- dynamic memory allocation.
+- FLISP_RESULT macros have interp as parameter.
+- chunk size and initial memory allocations tuned to femto.
+- all memory allocation related Note's fixed.
+- optional primitive trace mechanism.
+- bitwise integer operations.
+- file: feof, fgets, popen, pclose, fstat, mkdir; documentation.
+- Poor man's unit test framework in Lisp.
+
+fLisp 0.11
+- Showcase lisp_eval2 with (catch (fread)) mechanism.
+- string search
+- string-to-number in Lisp by using (read f) from a memory stream.
+
+fLisp 0.10
+- double extension
+- variadic multi-typed arithmetic
+- (same) primitive, (eq) in Lisp
+- fold, unfold, iota
+
+fLisp 0.9
+- core uses only 64 bit integers.
+- string-search in core.
+- type-of
+- all type predicates except null and consp in Lisp.
+
+fLisp 0.8
+- error and object types are Lisp symbols instead of C-enums.
+

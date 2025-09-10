@@ -5,7 +5,7 @@
 
 export FLISPRC=
 
-tap 172
+tap 177
 
 [ -x ../femto ]
 ok femto-1 femto exists and is executable;
@@ -488,7 +488,12 @@ false; ok feof \# TODO
 false; ok fgetc \# TODO
 false; ok fungetc \# TODO
 false; ok fgets \# TODO
-false; ok fstat \# TODO
+
+IN='(type-of (fstat "five_lines.txt"))' OUT='type-cons'
+flisp_expr; ok file-fstat-1 existing file returns data
+
+IN='(fstat "_unknown_")' ERR='(fstat path[ linkp]): No such file or directory' OBJ='"_unknown_"'
+flisp_err; ok file-fstat-1 existing file returns data
 
 IN='(fttyp (open "/dev/tty"))' OUT='t'
 flisp_expr; ok file-fttyp-1 console is tty
@@ -499,3 +504,15 @@ flisp_expr; ok file-fttyp-2
 false; ok fmkdir \# TODO
 false; ok popen \# TODO
 false; ok pclose \# TODO
+
+IN='(system "true")' OUT='0'
+flisp_expr; ok file-system-1 shell command true returns successfully
+
+IN='(system "/..,")' OUT=32512
+flisp_expr 2>/dev/null; ok file-system-2 not existing shell command fails
+
+IN='(getenv "HOME")' OUT="\"$HOME\""
+flisp_expr; ok file-getenv-1 known variable returns value string
+
+IN='(getenv "?")' OUT=nil
+flisp_expr; ok file-getenv-2 unknown variable returns nil

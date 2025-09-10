@@ -32,7 +32,7 @@ use other resources eg.
   or
 - [The Scheme Programming Language](https://www.scheme.org/).
 
-This manual refers to version 0.12 or later of fLisp.
+This manual refers to version 0.13 or later of fLisp.
 
 ### Table of Contents
 
@@ -175,10 +175,9 @@ interpreter, extension functions behave the same as core functions.
 #### Syntax
 
 Program text is written as a sequence of symbolic expressions -
-<span class="abbr"><span class="dfn">sexp</span></span>'s - in
-parenthesized form. A [sexp](https://en.wikipedia.org/wiki/S-expression)
-is either a single symbol or a sequence of symbols or sexp's enclosed in
-parenthesis.
+<span class="dfn">sexp</span>'s - in parenthesized form. A
+[sexp](https://en.wikipedia.org/wiki/S-expression) is either a single
+symbol or a sequence of symbols or sexp's enclosed in parenthesis.
 
 The following characters are special to the reader:
 
@@ -190,8 +189,7 @@ Starts a function or macro invocation, a *list* or *cons* object (see
 Finishes a function invocation, *list* or *cons* object.
 
 `'` and `:`  
-With a single quote or a colon prefix before a
-<span class="abbr">sexp</span>, the <span class="abbr">sexp</span> is
+With a single quote or a colon prefix before a sexp, the sexp is
 expanded to `(quote «sexp»)` before it is evaluated.
 
 `.`  
@@ -456,16 +454,6 @@ the same object when read again. `write` returns the *object*.
 
 Evaluates *object* and returns the result.
 
-`(system «string»)`
-
-Executes the
-[system(1)](https://man7.org/linux/man-pages/man3/system.3.html)
-function with *string* as parameter.
-
-`(os.getenv «string») `
-
-Returns the value of the environment variable named *string*.
-
 #### Object Operations
 
 `(null «object»)`  
@@ -617,6 +605,15 @@ Run command line and read from/write to it
 
 `(pclose «stream»)`  
 Close a *stream* opened with `(popen)`
+
+`(system «string»)` ⇒ *exit_code*  
+Execute *string* as command line of a system shell subpprocess according
+to the [system(1)](https://man7.org/linux/man-pages/man3/system.3.html)
+and return the shell *exit_code* as integer.
+
+`(getenv «name»)` ⇒ *value*  
+Return the value of the environment variable *name* as string. If *name*
+does not exist return `nil`.
 
 [^](#toc)
 

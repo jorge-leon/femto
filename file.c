@@ -445,6 +445,9 @@ Object *primitivePclose(Interpreter *interp, Object** args, Object **env)
 
     return newInteger(interp, result);
 }
+
+/* OS interface */
+
 /** (system s) ⇒ i: run a command line in the system shell
  *
  * @param s .. Command line
@@ -456,21 +459,36 @@ Object *fl_system(Interpreter *interp, Object **args, Object **env)
     return newInteger(interp, system(FLISP_ARG_ONE->string));
 }
 
+/** (getenv name) ⇒ value: get value of environment variable 
+ *
+ * @param name .. Name of environment variable
+ *
+ * @returns *value* of environment variable *name* as string or `nil`
+ *          if *name* does not exit.
+ */
+Object *fl_getenv(Interpreter *interp, Object **args, Object **env)
+{
+    char *e = getenv(FLISP_ARG_ONE->string);
+    if (e == NULL) return nil;
+    return newStringWithLength(interp, e, strlen(e));
+}
+
 
 Primitive flisp_file_primitives[] = {
-    {"fflush",  0, 1, 0,           primitiveFflush},
-    {"fseek",   2, 3, 0,           primitiveFseek},
-    {"ftell",   0, 1, TYPE_STREAM, primitiveFtell},
-    {"feof",    0, 1, TYPE_STREAM, primitiveFeof},
-    {"fgetc",   0, 1, 0,           primitiveFgetc},
-    {"fungetc", 1, 2, 0,           primitiveFungetc},
-    {"fgets",   0, 1, 0,           primitiveFgets},
-    {"fstat",   1, 2, 0,           primitiveFstat},
-    {"fttyp",   1, 1, TYPE_STREAM, primitiveFttyP},
-    {"fmkdir",  1, 2, 0,           primitiveMkdir},
-    {"popen",   1, 2, TYPE_STRING, primitivePopen},
-    {"pclose",  1, 1, TYPE_STREAM, primitivePclose},
-    {"system",  1, 1, TYPE_STRING, fl_system},
+    {"fflush",    0, 1, 0,           primitiveFflush},
+    {"fseek",     2, 3, 0,           primitiveFseek},
+    {"ftell",     0, 1, TYPE_STREAM, primitiveFtell},
+    {"feof",      0, 1, TYPE_STREAM, primitiveFeof},
+    {"fgetc",     0, 1, 0,           primitiveFgetc},
+    {"fungetc",   1, 2, 0,           primitiveFungetc},
+    {"fgets",     0, 1, 0,           primitiveFgets},
+    {"fstat",     1, 2, 0,           primitiveFstat},
+    {"fttyp",     1, 1, TYPE_STREAM, primitiveFttyP},
+    {"fmkdir",    1, 2, 0,           primitiveMkdir},
+    {"popen",     1, 2, TYPE_STRING, primitivePopen},
+    {"pclose",    1, 1, TYPE_STREAM, primitivePclose},
+    {"system",    1, 1, TYPE_STRING, fl_system},
+    {"getenv",    1, 1, TYPE_STRING, fl_getenv},
 };
 
 

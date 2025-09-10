@@ -46,7 +46,7 @@
       <li><a href="https://www.scheme.org/">The Scheme Programming Language</a>.</li>
     </ul>
 
-    This manual refers to version 0.12 or later of fLisp.
+    This manual refers to version 0.13 or later of fLisp.
     
     <h3 id="toc">Table of Contents</h3>
     <ol>
@@ -467,13 +467,6 @@
       <dt><code>(eval <var>object</var>)</code></dt>
       <dd>Evaluates <var>object</var> and returns the result.</dd>
 
-      <dt><code>(system <var>string</var>)</code></dt>
-      <dd>
-	Executes the <a href="https://man7.org/linux/man-pages/man3/system.3.html">system(1)</a> function
-	with <var>string</var> as parameter.
-      </dd>
-      <dt><code>(os.getenv <var>string</var>) </code></dt>
-      <dd>Returns the value of the environment variable named <var>string</var>.</dd>
     </dl>    
 
     <h4 id="object_ops">Object Operations</h4>
@@ -608,6 +601,17 @@
       <dd>Run command line and read from/write to it</dd>
       <dt><code>(pclose <var>stream</var>)</code></dt>
       <dd>Close a <var>stream</var> opened with <code>(popen)</code></dd>
+      <dt><code>(system <var>string</var>)</code> ⇒ <var>exit_code</var></dt>
+      <dd>
+	Execute <var>string</var> as command line of a system shell subpprocess according to
+	the <a href="https://man7.org/linux/man-pages/man3/system.3.html">system(1)</a> and return the
+	shell <var>exit_code</var> as integer.
+      </dd>
+      <dt><code>(getenv <var>name</var>)</code> ⇒ <var>value</var></dt>
+      <dd>
+	Return the value of the environment variable <var>name</var> as string. If <var>name</var> does not exist
+	return <code>nil</code>.
+      </dd>
     </dl>
       
       <nav><a href="#toc">^</a></nav>

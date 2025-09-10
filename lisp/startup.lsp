@@ -45,7 +45,7 @@
  config_file "femto.rc")
 
 (defun confn(fn)
-  (concat (os.getenv "HOME") "/" config_dir "/" fn))
+  (concat (getenv "HOME") "/" config_dir "/" fn))
 
 (defun edit-config()
   (find-file (confn config_file)))

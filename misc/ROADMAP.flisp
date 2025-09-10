@@ -1,8 +1,8 @@
 -*- mode: markdown; fill-column: 80 -*-
 
-# ROADMAP #
+# ROADMAP
 
-## Next ##
+## Next
 
 - Implement simple repl in Lisp
   - needs getline.
@@ -12,9 +12,9 @@
   to Lisp.
 - Unify stdlib into flisp.lsp.
 - Rename global argv to command-line-args, argv0 to invocation-name.
-- Rename os.env to getenv.
 
-## Future ##
+
+## Future
 
 - Implement `(flisp subcommand[arg..])` introspection and configuration command.
   - (flisp version) => version string
@@ -56,7 +56,11 @@
 - Test more then one interpreter.
 - ? CSP between interpreters?
 
-## fLisp 0.12 ##
+## fLisp 0.13
+- Rename os.env to getenv and move to file extension
+- Move system to file extension
+
+## fLisp 0.12
 
 - dynamic memory allocation.
 - FLISP_RESULT macros have interp as parameter.
@@ -67,27 +71,27 @@
 - file: feof, fgets, popen, pclose, fstat, mkdir; documentation.
 - Poor man's unit test framework in Lisp.
 
-## fLisp 0.11 ##
+## fLisp 0.11
 
 - Showcase lisp_eval2 with (catch (fread)) mechanism.
 - string search
 - string-to-number in Lisp by using (read f) from a memory stream.
 
-## fLisp 0.10 ##
+## fLisp 0.10
 
 - double extension
 - variadic multi-typed arithmetic
 - (same) primitive, (eq) in Lisp
 - fold, unfold, iota
 
-## fLisp 0.9 ##
+## fLisp 0.9
 
 - core uses only 64 bit integers.
 - string-search in core.
 - type-of
 - all type predicates except null and consp in Lisp.
 
-## fLisp 0.8 ##
+## fLisp 0.8
 
 - error and object types are Lisp symbols instead of C-enums.
 

@@ -158,6 +158,7 @@ typedef struct { Object *type; size_t size; char string[sizeof("wrong-number-of-
 extern Object *newObject(Interpreter *, Object *);
 extern Object *newObjectFrom(Interpreter *, Object **);
 extern Object *newInteger(Interpreter *, int64_t);
+extern Object *newStringWithLength(Interpreter *, char *, size_t);
 extern Object *newString(Interpreter *, char *);
 extern Object *newCons(Interpreter *, Object **, Object **);
 extern Object *newSymbol(Interpreter *, char *);

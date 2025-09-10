@@ -1,5 +1,6 @@
 #include <errno.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -336,6 +337,17 @@ Object *primitiveFstat(Interpreter *interp, Object** args, Object **env)
 
     GC_RETURN(*gcResult);
 }
+/** (fttyp fd) - check if stream has a tty
+ *
+ * @param fd  stream
+ *
+ * @returns t if fd is associated with a tty.
+ *
+ */
+Object *primitiveFttyP(Interpreter *interp, Object** args, Object **env)
+{
+    return (isatty(fileno(FLISP_ARG_ONE->fd))) ? t : nil;
+}
 /** (fmkdir path[ mode]) - create directory
  *
  * @param path   String,  directory to create.
@@ -443,7 +455,8 @@ Primitive flisp_file_primitives[] = {
     {"fungetc", 1, 2, 0,           primitiveFungetc},
     {"fgets",   0, 1, 0,           primitiveFgets},
     {"fstat",   1, 2, 0,           primitiveFstat},
-    {"fmkdir",   1, 2, 0,           primitiveMkdir},
+    {"fttyp",   1, 1, TYPE_STREAM, primitiveFttyP},
+    {"fmkdir",  1, 2, 0,           primitiveMkdir},
     {"popen",   1, 2, TYPE_STRING, primitivePopen},
     {"pclose",  1, 1, TYPE_STREAM, primitivePclose},
 };

@@ -5,7 +5,7 @@
 
 export FLISPRC=
 
-tap 160
+tap 172
 
 [ -x ../femto ]
 ok femto-1 femto exists and is executable;
@@ -481,4 +481,21 @@ false; ok  'ascii->number' \# TODO
 false; ok os.getenv \# TODO
 
 # File extension
-false; ok file extension \# TODO
+false; ok fflush \# TODO
+false; ok fseek \# TODO
+false; ok ftell \# TODO
+false; ok feof \# TODO
+false; ok fgetc \# TODO
+false; ok fungetc \# TODO
+false; ok fgets \# TODO
+false; ok fstat \# TODO
+
+IN='(fttyp (open "/dev/tty"))' OUT='t'
+flisp_expr; ok file-fttyp-1 console is tty
+
+IN='(fttyp (open "answer" "<"))' OUT='nil'
+flisp_expr; ok file-fttyp-2
+
+false; ok fmkdir \# TODO
+false; ok popen \# TODO
+false; ok pclose \# TODO

@@ -1,8 +1,7 @@
 -*- mode: markdown; fill-column: 80 -*-
 
-Next:
+# Next
 
-- Make femto.rc use fstat.
 - Fix file save bug by using
   fmkdir. https://github.com/hughbarney/femto/issues/14
 - Make fLisp read from /dev/null to avoid:
@@ -15,7 +14,7 @@ Next:
 - Close:
   - https://github.com/hughbarney/femto/issues/1
 
-Future:
+# Future
 - Pipe a buffer through a shell command and read the output back into a
   different buffer.
 - Refactor include system
@@ -26,3 +25,7 @@ Future:
 - Improve/support batch mode: output = stdout.
 - Implement per buffer keymaps.
 - Write a test file for all lisp functions.
+
+# femto 2.24.2
+
+- Make femto.rc use fstat instead of (system "test -f")

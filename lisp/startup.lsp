@@ -28,6 +28,8 @@
     ((null opts))
     ((consp opts)
      (cond
+       ((string-equal "-" (substring (car opts) 0 1))
+	(throw wrong-type-argument "(getopts opts pos) - unknown option" (car opts)) )
        ((eq "+" (car opts)) (getopts (cdr opts) 0))
        ((eq "+" (substring (car opts) 0 1))
 	(getopts (cdr opts) (string-to-number (substring (car opts) 1))))
@@ -37,11 +39,21 @@
 	(getopts (cdr opts) 0))))
     (t (throw wrong-type-argument "(getopts opts pos) - opts must be list"))))
 
+;; Load and edit user specific config
+(setq
+ config_dir ".config/femto"
+ config_file "femto.rc")
+
 (defun confn(fn)
   (concat (os.getenv "HOME") "/" config_dir "/" fn))
 
 (defun edit-config()
   (find-file (confn config_file)))
+
+(defun log (level result . message)
+  (cond (result
+	 (log-debug (concat  level":"(car result)": "message" '"(caddr result)"' - "(cadr result)"\n")) )
+	 (t (log-debug (concat level": "message"\n"))) ))
 
 (provide 'startup)
 
@@ -53,12 +65,16 @@
 (require 'dired)
 (require 'grep)
 (require 'git)
-(require 'oxo)
+
+(defun oxo ()
+  ;; autoload info with c-x c-o
+  (require 'oxo)
+  (oxo) )
 
 (defun show-info ()
   ;; autoload info with c-x h
   (require 'info)
-  (show-info))
+  (show-info) )
 
 ;;
 ;;  Key Bindings, setkey is used to bind keys to user defined functions in lisp
@@ -85,7 +101,7 @@
 (show-startup-message)
 
 ;;
-;; this is used to set modes for different types of file when they get loaded
+;; This is used to set modes for different types of file when they get loaded
 ;;
 (defun read-hook (s)
   (cond
@@ -93,18 +109,25 @@
     ((string-search (get-buffer-file-extension) "|rc|lsp|")  (add-mode "lispmode"))
     ((string-search (get-buffer-file-extension) "|py|")      (add-mode "python"))))
 
-;; Load and edit user specific config
-(setq
- config_dir ".config/femto"
- config_file "femto.rc")
-
-(setq rc (system (concat "test -f " (confn config_file))))
-(cond ((= 0 rc) (load (confn config_file))))
-
-
-;; mark the scratch buffer as unmodified, set to lispmode so that the comment comes up green
+;;
+;; Mark the scratch buffer as unmodified, set to lispmode so that the comment comes up green
+;;
 (add-mode "lispmode")
 (delete-mode "modified")
 
-;;(getopts argv 0)
-(log-debug (concat "getopts: " (catch (getopts argv 0))))
+;;
+;; Try to load the user rc file
+;;
+(let ((rcfile (confn config_file)) (result nil))
+  (setq result (catch (fstat rcfile)))
+  (cond ((car result) (log 'ERROR result "locating rc file"))
+	(t
+	 (cond ((car (setq result (catch (load rcfile))))
+		(log 'ERROR result "rc file not loaded"))
+	       (t (log 'NOTICE nil "rc file '"rcfile"' loaded\n")) ))))
+
+;;
+;; Try to parse the commandline arguments
+;;
+(let ((result (catch (getopts argv 0))))
+  (cond ((car result) (log 'ERROR result "parsing command line"))))

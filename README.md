@@ -173,8 +173,6 @@ The following enhancements are envisaged.
 
 * Directory and file manegement (Dired) functionality.  A basic start has been made with dired.lsp
 
-* Ability to configure the syntax highlighter for python
-
 * Ability to load a file in read-only-mode
 
 * Ability to setup themes of colors that can be applied to different buffers

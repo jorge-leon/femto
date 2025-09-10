@@ -2155,7 +2155,7 @@ Object *file_fopen(Interpreter *interp, char *path, char* mode) {
             exception(interp, io_error, "failed to open I/O stream %ld for %s", d, c == '<' ? "reading" : "writing");
     } else {
         if (NULL == (fd = fopen(path, mode)))
-            exception(interp, io_error, "failed to open file '%s' with mode '%s', errno: %d", path, mode, errno);
+            exception(interp, io_error, "failed to open file '%s' with mode '%s': %s", path, mode, strerror(errno));
     }
     return newStreamObject(interp, fd, path);
 }

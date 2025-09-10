@@ -175,9 +175,10 @@ interpreter, extension functions behave the same as core functions.
 #### Syntax
 
 Program text is written as a sequence of symbolic expressions -
-<span class="dfn">sexp</span>'s - in parenthesized form. A
-[sexp](https://en.wikipedia.org/wiki/S-expression) is either a single
-symbol or a sequence of symbols or sexp's enclosed in parenthesis.
+<span class="abbr"><span class="dfn">sexp</span></span>'s - in
+parenthesized form. A [sexp](https://en.wikipedia.org/wiki/S-expression)
+is either a single symbol or a sequence of symbols or sexp's enclosed in
+parenthesis.
 
 The following characters are special to the reader:
 
@@ -189,7 +190,8 @@ Starts a function or macro invocation, a *list* or *cons* object (see
 Finishes a function invocation, *list* or *cons* object.
 
 `'` and `:`  
-With a single quote or a colon prefix before a sexp, the sexp is
+With a single quote or a colon prefix before a
+<span class="abbr">sexp</span>, the <span class="abbr">sexp</span> is
 expanded to `(quote «sexp»)` before it is evaluated.
 
 `.`  

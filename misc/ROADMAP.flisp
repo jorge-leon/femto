@@ -16,6 +16,14 @@
 
 ## Future ##
 
+- Implement `(flisp subcommand[arg..])` introspection and configuration command.
+  - (flisp version) => version string
+  - (flisp input[ fd])
+  - (flisp output[ fd])
+  - (flisp error[ fd])
+  - (flisp debug[ fd])
+  - (flisp types[ type..]) => list of types
+  - (flisp gc) => memory info
 - Implement backquote and friends.
   - The reader already implements '`', ',' and ',@' as `quasiquote`, `unquote`
     and `splice-unquote`.

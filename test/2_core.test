@@ -4,7 +4,7 @@
 
 export FLISPRC=../flisp.rc
 
-tap 89
+tap 108
 
 # list
 IN='(list)' OUT=nil
@@ -72,8 +72,11 @@ flisp_expr 1; ok streamp-2  streamp lambda is nil
 IN="(numberp 42)" OUT='t'
 flisp_expr 1; ok numberp-1  numberp number is t
 
-IN="(numberp numberp)" OUT='nil'
+IN="(numberp 3.7)" OUT='t'
 flisp_expr 1; ok numberp-2  numberp lambda is nil
+
+IN="(numberp numberp)" OUT='nil'
+flisp_expr 1; ok numberp-3  numberp lambda is nil
 
 IN="(cadr '(a b c d))" OUT="b"
 flisp_expr 1; ok cadr1-1 cadr returns second element
@@ -83,6 +86,51 @@ flisp_expr 1; ok cddr1-1 cddr returns list after second element
 
 IN="(caddr '(a b c d))" OUT="c"
 flisp_expr 1; ok caddr1-1 caddr returns third element
+
+# append
+IN='(append)' OUT="nil"
+flisp_expr 1; ok append-1 append nothing is nil
+
+IN='(append 1)' OUT="1"
+flisp_expr 1; ok append-2 append atom is atom
+
+IN="(append '(1 2 3))" OUT="(1 2 3)"
+flisp_expr 1; ok append-3 append list is list
+
+IN="(append '(1 2 3) 1)" OUT="(1 2 3 . 1)"
+flisp_expr 1; ok append-4 append list atom is dotted list
+
+IN="(append '(1 2 3) '(a b c))" OUT="(1 2 3 a b c)"
+flisp_expr 1; ok append-5 append list list is list
+
+IN="(append 1 1)" ERR="(append lists) - list expected type-list, got type-integer" OBJ=
+flisp_err 1; ok append-6 append atom any errs
+
+IN="(fold-left + 1 nil)" OUT=1
+flisp_expr 1;  ok fold-left-1 fold-left with empty list is init
+IN="(fold-left + 1 '(2 3))" OUT=6
+flisp_expr 1;  ok fold-left-2 fold-left with list folds
+
+IN="((flip -) 2 3)" OUT="1"
+flisp_expr 1; ok flip-1 flip - on '2-3' is 1
+
+IN="(reverse '(1 2 3))" OUT="(3 2 1)"
+flisp_expr 1; ok reverse-1 reverse 1 2 3 is 3 2 1
+
+IN="(apply +)" OUT="0"
+flisp_expr 1; ok apply-1 apply n-ary + to nothing is 0
+
+IN="(apply + 7)" OUT="7"
+flisp_expr 1; ok apply-2 apply n-ary + to 7 is 7
+
+IN="(apply + '(7 4))" OUT="11"
+flisp_expr 1; ok apply-3 apply n-ary + to list 7 4 is 11
+
+IN="(apply + 3 4 '(7 4))" OUT="18"
+flisp_expr 1; ok apply-4 apply n-ary + to 3 4  and final list 7 4 is 18
+
+false; ok print-1 \# TODO
+false; ok princ-1 \# TODO
 
 IN="(number-to-string 42)" OUT='"42"'
 flisp_expr 1; ok number-to-string-1 42 is string 42
@@ -133,11 +181,6 @@ flisp_expr 1;  ok not-2 not nil is t
 IN="(not 1)" OUT="nil"
 flisp_expr 1;  ok not-3 not number is nil
 
-IN="(fold-left + 1 nil)" OUT=1
-flisp_expr 1;  ok fold-left-1 fold-left with empty list is init
-IN="(fold-left + 1 '(2 3))" OUT=6
-flisp_expr 1;  ok fold-left-2 fold-left with list folds
-
 
 IN="(length nil)" OUT="0"
 flisp_expr 1; ok length-1 length of nil is zero
@@ -145,35 +188,12 @@ flisp_expr 1; ok length-1 length of nil is zero
 IN="(length '(a b c))" OUT="3"
 flisp_expr 1; ok length-2 length of triple list is three
 
-false; ok arith \# TODO  test all of integer, double and misc arith.
-IN='(+)' OUT='0' flisp_expr 1; ok add-1 add nothing is 0
-IN='(+ 42)' OUT='42' flisp_expr 1; ok add-2 add 42  is 42
-IN='(+ 1 2 3)' OUT='6' flisp_expr 1; ok add-4 add 1 2 3 is 6
-IN='(-)' OUT='0' flisp_expr 1; ok minus-1 minus nothing is 0
-IN='(- 42)' OUT='-42' flisp_expr 1; ok minus-2 minus 42  is -42
-IN='(- 1 2 3)' OUT='-4' flisp_expr 1; ok minus-4 minus 1 2 3 is -4
-IN='(*)' OUT='1' flisp_expr 1; ok times-1 times nothing is 1
-IN='(* 42)' OUT='42' flisp_expr 1; ok times-2 times 42  is 42
-IN='(* 1 2 3)' OUT='6' flisp_expr 1; ok times-4 times 1 2 3 is 6
-IN='(/ 42.0)' OUT='0.0238095' flisp_expr 1; ok divide-1 divide 42  is 1/42
-IN='(/ 42 7 6)' OUT='1' flisp_expr 1; ok divide-3 divide 42 7 6 is 1
-IN='(% 42)' OUT='1' flisp_expr 1; ok mod-1 mod 42  is 1
-IN='(% 11 6 3)' OUT='2' flisp_expr 1; ok mod-3 mod 11 6 3 is 2
-# IN='(= 42)' OUT='t' flisp_expr 1; ok arith-equal-1 arith-equal 42  is t
-# IN='(= 7 7 7)' OUT='t' flisp_expr 1; ok arith-equal-3 arith-equal 7 7 7 is t
-# IN='(= 7 7 8)' OUT='nil' flisp_expr 1; ok arith-equal-4 arith-equal 7 7 8 is nil
-# IN='(< 42)' OUT='t' flisp_expr 1; ok less-1 less 42  is t
-# IN='(< 7 7 7)' OUT='nil' flisp_expr 1; ok less-3 less 7 7 7 is nil
-# IN='(< 1 2 3)' OUT='t' flisp_expr 1; ok less-4 less 1 2 3 is t
-# IN='(<= 42)' OUT='t' flisp_expr 1; ok less-equal-1 less-equal 42  is t
-# IN='(<= 7 7 7)' OUT='t' flisp_expr 1; ok less-equal-3 less-equal 7 7 7 is t
-# IN='(<= 7 7 6)' OUT='nil' flisp_expr 1; ok less-equal-4 less-equal 7 7 6 is nil
-# IN='(> 42)' OUT='t' flisp_expr 1; ok greater-1 greater 42  is t
-# IN='(> 7 7 7)' OUT='nil' flisp_expr 1; ok greater-3 greater 7 7 7 is nil
-# IN='(> 7 7 6)' OUT='nil' flisp_expr 1; ok greater-4 greater 7 7 6 is nil
-# IN='(>= 42)' OUT='t' flisp_expr 1; ok greater-equal-1 greater-equal 42  is t
-# IN='(>= 7 7 7)' OUT='t' flisp_expr 1; ok greater-equal-3 greater-equal 7 7 7 is t
-# IN='(>= 7 7 6)' OUT='t' flisp_expr 1; ok greater-equal-4 greater-equal 7 7 6 is t
+
+IN='(length "")' OUT="0"
+flisp_expr 1; ok length-3 length of empty string is zero
+
+IN='(length "answer")' OUT="6"
+flisp_expr 1; ok length-1 length of answer is six
 
 # string
 IN="(string nil)" OUT='""'
@@ -215,14 +235,42 @@ flisp_expr 1; ok mapcar-1 mapcar incr elements in list
 IN="(mapcar / '())" OUT="nil"
 flisp_expr 1; ok mapcar-2 mapcar does nothing on empty list
 
+true; ok nfold \# TODO is tested by dynamic typed arithmetic
+true; ok coerce \# TODO is tested by dynamic typed arithmetic
+true; ok coercec \# TODO is tested by dynamic typed arithmetic
+true; ok fold-leftp \# TODO is tested by dynamic typed arithmetic
+
+false; ok arith \# TODO  test all of integer, double and misc arith.
+IN='(+)' OUT='0' flisp_expr 1; ok add-1 add nothing is 0
+IN='(+ 42)' OUT='42' flisp_expr 1; ok add-2 add 42  is 42
+IN='(+ 1 2 3)' OUT='6' flisp_expr 1; ok add-4 add 1 2 3 is 6
+IN='(-)' OUT='0' flisp_expr 1; ok minus-1 minus nothing is 0
+IN='(- 42)' OUT='-42' flisp_expr 1; ok minus-2 minus 42  is -42
+IN='(- 1 2 3)' OUT='-4' flisp_expr 1; ok minus-4 minus 1 2 3 is -4
+IN='(*)' OUT='1' flisp_expr 1; ok times-1 times nothing is 1
+IN='(* 42)' OUT='42' flisp_expr 1; ok times-2 times 42  is 42
+IN='(* 1 2 3)' OUT='6' flisp_expr 1; ok times-4 times 1 2 3 is 6
+IN='(/ 42.0)' OUT='0.0238095' flisp_expr 1; ok divide-1 divide 42  is 1/42
+IN='(/ 42 7 6)' OUT='1' flisp_expr 1; ok divide-3 divide 42 7 6 is 1
+IN='(% 42)' OUT='1' flisp_expr 1; ok mod-1 mod 42  is 1
+IN='(% 11 6 3)' OUT='2' flisp_expr 1; ok mod-3 mod 11 6 3 is 2
+# IN='(= 42)' OUT='t' flisp_expr 1; ok arith-equal-1 arith-equal 42  is t
+# IN='(= 7 7 7)' OUT='t' flisp_expr 1; ok arith-equal-3 arith-equal 7 7 7 is t
+# IN='(= 7 7 8)' OUT='nil' flisp_expr 1; ok arith-equal-4 arith-equal 7 7 8 is nil
+# IN='(< 42)' OUT='t' flisp_expr 1; ok less-1 less 42  is t
+# IN='(< 7 7 7)' OUT='nil' flisp_expr 1; ok less-3 less 7 7 7 is nil
+# IN='(< 1 2 3)' OUT='t' flisp_expr 1; ok less-4 less 1 2 3 is t
+# IN='(<= 42)' OUT='t' flisp_expr 1; ok less-equal-1 less-equal 42  is t
+# IN='(<= 7 7 7)' OUT='t' flisp_expr 1; ok less-equal-3 less-equal 7 7 7 is t
+# IN='(<= 7 7 6)' OUT='nil' flisp_expr 1; ok less-equal-4 less-equal 7 7 6 is nil
+# IN='(> 42)' OUT='t' flisp_expr 1; ok greater-1 greater 42  is t
+# IN='(> 7 7 7)' OUT='nil' flisp_expr 1; ok greater-3 greater 7 7 7 is nil
+# IN='(> 7 7 6)' OUT='nil' flisp_expr 1; ok greater-4 greater 7 7 6 is nil
+# IN='(>= 42)' OUT='t' flisp_expr 1; ok greater-equal-1 greater-equal 42  is t
+# IN='(>= 7 7 7)' OUT='t' flisp_expr 1; ok greater-equal-3 greater-equal 7 7 7 is t
+# IN='(>= 7 7 6)' OUT='t' flisp_expr 1; ok greater-equal-4 greater-equal 7 7 6 is t
+
 false; ok let-1 \# TODO
-
-IN='(length "")' OUT="0"
-flisp_expr 1; ok length-3 length of empty string is zero
-
-IN='(length "answer")' OUT="6"
-flisp_expr 1; ok length-1 length of answer is six
-
 
 IN="(prog1 'answer)" OUT="answer"
 flisp_expr 1; ok prog1-1 prog1 single arg is arg

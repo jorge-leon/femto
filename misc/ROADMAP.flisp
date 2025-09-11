@@ -4,13 +4,13 @@
 
 ## Next
 
-- Implement simple repl in Lisp
-  - needs getline.
-  - use (fttyp) for interactive mode
-  - rewrite flisp.c
+- fix write: must print smthg for evrthg
+- fix tap.lsp
+- Implement `(flisp subcommand[arg..])` introspection and configuration command.
+  - (flisp version) => version string
+  - (flisp input[ fd])
 - Expose envSet as `(bind symbol value[ globalp])` to Lisp and move setq from C
   to Lisp.
-- Unify stdlib into flisp.lsp.
 - Rename global argv to command-line-args, argv0 to invocation-name.
 
 
@@ -57,7 +57,10 @@
 - ? CSP between interpreters?
 
 ## fLisp 0.13
+- Implemented simple repl in Lisp and minimized flisp.c
+- Moved append, fold-left, flip, reverse, apply, print, princ to core.lsp
 - Rename os.env to getenv and move to file extension
+- Unify stdlib into flisp.lsp (again).
 - Move system to file extension
 
 ## fLisp 0.12

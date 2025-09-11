@@ -377,7 +377,7 @@ flisp_expr; ok eval-1 eval number is number
 IN='(write "ans\\wer")' OUT='ans\wer"ans\\wer"'
 flisp_expr; ok write-1 write string
 
-IN='(write "ans\\wer" :readably t)' OUT='"ans\\wer""ans\\wer"'
+IN='(write "ans\\wer" t)' OUT='"ans\\wer""ans\\wer"'
 flisp_expr; ok write-1 write string
 
 # throw

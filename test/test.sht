@@ -5,7 +5,6 @@
 $(cat lisp/core.lsp)
 
 (require 'flisp)
-(require 'stdlib)
 
 (load "tap.lsp") ; poor mans test framework
 

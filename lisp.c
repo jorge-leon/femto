@@ -1810,13 +1810,13 @@ void lisp_write_object(Interpreter *interp, FILE *fd, Object *object, bool reada
     fflush(fd);
 }
 
-/** (write object [[key value] ..]) - write object
+/** (write o[ p[ fd]]) - write object
  *
- * @param object         object to write.
- * @param key :stream    optional, use *value* as output stream.
- * @param key :readably  optional, if *value* not nil escape strings.
+ * @param o   Object to write.
+ * @param p   If not nil escape strings.
+ * @param fd  Stream to write to, else output stream.
  *
- * returns: object
+ * @returns: o
  *
  * throws: wrong-num-of-arguments, io-error, gc-error
  *
@@ -1825,48 +1825,21 @@ void lisp_write_object(Interpreter *interp, FILE *fd, Object *object, bool reada
  */
 Object *primitiveWrite(Interpreter *interp, Object **args, Object **env)
 {
-    Object *stream = nil;
     bool readably = false;
-    Object *obj = (*args)->car;
-    FILE *fd;
+    FILE *fd = interp->output;
 
-    if ((*args)->cdr == nil)
-        goto write;
+    if (FLISP_HAS_ARG_TWO) {
+        readably = (FLISP_ARG_TWO != nil);
 
-    Object *list = (*args)->cdr;
-    Object *key = nil;
-    Object *value = nil;
-    for (;list != nil; list = list->cdr) {
-        key = list->car;
-        if (key->type != type_symbol)
-            exceptionWithObject(interp, *args, wrong_number_of_arguments,
-                                "(write obj [[key val] ..]) - key is not a symbol");
-        if (list->cdr == nil)
-            exceptionWithObject(interp, *args, wrong_number_of_arguments,
-                                "(write obj [[key val] ..]) - val is missing");
-        list = list->cdr;
-        value = list->car;
-        if (!strcmp("stream", key->string)) {
-            if (value->type != type_stream)
-                exceptionWithObject(interp, *args, wrong_number_of_arguments,
-                                    "(write obj [[key val] ..]) - value of key stream is not a stream");
-            stream = value;
-        } else if (!strcmp("readably", key->string)) {
-            readably = (value != nil);
-        } else
-            exceptionWithObject(interp, *args, wrong_number_of_arguments,
-                                "(write obj [[key val] ..]) - unknown key: %s", key->string);
+        if (FLISP_HAS_ARG_THREE) {
+            CHECK_TYPE(FLISP_ARG_THREE, type_stream, "(write o [p [fd]]) - fd");
+            if (FLISP_ARG_THREE->fd == NULL)
+                exception(interp, invalid_value, "(write o[ p [fd]) - fd already closed");
+            fd = FLISP_ARG_THREE->fd;
+        }
     }
-write:
-
-    if (stream != nil)
-        fd = stream->fd;
-    else if (interp->output != NULL)
-        fd = interp->output;
-    else
-        return obj;
-    lisp_write_object(interp, fd, obj, readably);
-    return obj;
+    lisp_write_object(interp, fd, FLISP_ARG_ONE, readably);
+    return FLISP_ARG_ONE;
 }
 
 
@@ -2375,7 +2348,7 @@ Primitive primitives[] = {
     {"file-info",     1,  1, TYPE_STREAM, primitiveFinfo},
     {"read",          0,  2, 0,         primitiveRead},
     {"eval",          1,  1, 0,         primitiveEval},
-    {"write",         1, -1, 0,         primitiveWrite},
+    {"write",         1,  3, 0,         primitiveWrite},
 #if DEBUG_GC
     {"gc",            0,  0, 0,         primitiveGc},
     {"gctrace",       0,  0, 0,         primitiveGcTrace},

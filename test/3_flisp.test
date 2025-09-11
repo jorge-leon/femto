@@ -1,7 +1,8 @@
 #!./test# -*- mode: sh -*-
 # test the fLisp library
 # leg20231129: Femto
-tap 62
+
+tap 69
 
 export FLISPRC=../flisp.rc
 flisplib() { IN="(require 'flisp) $IN" flisp_expr "$@"; }
@@ -163,7 +164,7 @@ IN='(nthcdr -1 nil)'
 ERR="negative index"
 OBJ='-1'
 flisplib_err 1; ok nthcdr-1 negativ index fails
-return
+
 IN="(nthcdr 0 '(a b c))" OUT='(a b c)'
 flisplib 1; ok nthcdr-2 0 index is list
 
@@ -205,8 +206,31 @@ flisplib 1; ok iota-1 iota count start gives count from start
 IN="(iota 5 10 2)" OUT="(10 12 14 16 18)"
 flisplib 1; ok iota-1 iota count step gives count from start by step
 
-IN="((flip -) 2 3)" OUT="1"
-flisplib 1; ok flip-1 flip - on '2-3' is 1
+# atom
+IN='(atom 0)' OUT=t
+flisplib 1; ok atom-1 number is atom
 
-IN="(reverse '(1 2 3))" OUT="(3 2 1)"
-flisplib 1; ok reverse-1 reverse 1 2 3 is 3 2 1
+IN='(atom "a")' OUT=t
+flisplib 1; ok atom-2 string is atom
+
+IN="(atom 'symbol)" OUT=t
+flisplib 1; ok atom-3 symbol is atom
+
+IN='(atom nil)' OUT=t
+flisplib 1; ok atom-4 nil is atom
+
+IN="(atom '(0 'b))" OUT=nil
+flisplib 1; ok atom-5 list is not atom
+
+# zerop
+IN='(zerop 0)' OUT=t
+flisplib 1; ok zerop-1 0 is zero
+
+IN='(zerop 1)' OUT=nil
+flisplib 1; ok zerop-2 1 is not zero
+
+# if
+false; ok if \# TODO
+
+# equal
+false; ok equal \# TODO

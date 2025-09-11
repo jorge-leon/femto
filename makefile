@@ -40,7 +40,7 @@ LISPFILES = femto.rc lisp/startup.lsp lisp/defmacro.lsp			\
 	lisp/oxo.lsp lisp/flisp.lsp lisp/femto.lsp lisp/info.lsp        \
 	lisp/string.lsp
 
-FLISPFILES = flisp.rc lisp/flisp.lsp lisp/stdlib.lsp
+FLISPFILES = flisp.rc lisp/flisp.lsp
 FLISPSOURCES = lisp.c lisp.h double.c double.h file.c file.h
 
 DOCFILES = BUGS CHANGE.LOG.md README.md pdoc/flisp.html

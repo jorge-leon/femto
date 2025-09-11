@@ -449,19 +449,11 @@
 	read in object is returned.  If end of file is reached, an exception is raised, unless <var>eof-value</var> is
 	not <code>nil</code>. In that case <code>eof-value</code> is returned.
       </dd>
-      <dt><code>(write <var>object</var>[ <var>keys</var>..]]</code>
-      </dt>
-      <dd><code><var>keys</var></code>:</dd>
+      <dt><code>(write <var>object</var>[ <var>readably</var>[ <var>fd</var>]]</code> → object</dt>
       <dd>
-	<dl>
-	  <dt><code>:stream</code> <code><var>stream</var></code></dt>
-	  <dt><code>:readably</code> <code><var>flag</var></code></dt>
-	</dl>
-      </dd>
-      <dd>
-	Formats <var>object</var> into a string and writes it to the default output stream. With
-	key <code>:stream</code>  output is written to the given stream.  With key <code>:readable</code>
-	not <code>nil</code> output is formatted in a way which which gives the same object when read again.
+	Formats <var>object</var> into a string and writes it to the default output stream. When <var>readably</var> is
+	not <code>nil</code> output is formatted in a way which which gives the same object when read again.  When
+	stream <var>fd</var> is given output is written to the given stream else to the output stream.
 	<code>write</code> returns the <var>object</var>.
       </dd>
       <dt><code>(eval <var>object</var>)</code></dt>
@@ -553,11 +545,6 @@
       <dd>
 	Returns the position of <var>needle</var> if it is contained in <var>haystack</var>,
 	otherwise <code>nil</code>.
-      </dd>
-      <dt><code>(string-to-number <var>string</var>)</code></dt>
-      <dd>
-	Converts <var>string</var> into a corresponding <i>integer</i> object. String is interpreted as decimal based
-	integer.
       </dd>
       <dt><code>(ascii <var>integer</var>)</code></dt>
       <dd>
@@ -714,7 +701,37 @@
       <dt>Return all elements after the second one in <var>list</var>, <code>(cdr (cdr <var>list</var>))</code>.</dt>
       <dt><code>(caddr <var>list</var>)</code> <u>C</u></dt>
       <dt>Return the third element in list, <code>(car (cdr (cdr <var>list</var>)))</code>.</dt>
-      <dt><code>(number-to-string <var>number</var>)</code> <u>C</u></dt>
+      <dt><code>(append [list ..][ a])</code></dt>
+      <dd>
+	Append all elements in all <var>list</var>s into a single list. If atom <var>a</var> is present, make it a
+	dotted list terminating with <var>a</var>.
+      </dd>
+      <dt><code>(fold-left <var>func</var> <var>init</var> <var>list</var>)</code> <u>Ss: fold-left</u></dt>
+      <dd>
+	Apply the binary <var>func</var>tion to <var>start</var> and the first element of <var>list</var> and then
+	recursively to the result of the previous invocation and the first element of the rest
+	of <var>list</var>. If <var>list</var> is empty return <var>start</var>.
+      </dd>
+      <dt><code>(flip <var>func</var>)</code> <u>f</u></dt>
+      <dd>Returns a lambda which calls binary <var>func</var> with it's two arguments reversed (flipped).</dd>
+      <dt><code>(reverse <var>l</var>)</code></dt>
+      <dd>Returns a list with all elements of <var>l</var> in reverse order</dd>
+      <dt><code>(apply <var>f</var> [<var>arg</var> ..][ l])</code></dt>
+      <dd>
+	If <var>arg</var> is a single list call lambda <var>f</var> with all its elements as parameters, else
+	call <var>f</var> with all <var>arg</var>s as parameters. If list <var>l</var> is present append all its
+	elements to the parameter list.
+      </dd>
+      <dt><code>(print <var>o</var>[ <var>fd</var>])</code></dt>
+      <dd><code>write</code> object <var>o</var> <code>:readably</code> to stream <var>fd</var> or output.</dd>
+      <dt><code>(princ <var>o</var>[ <var>fd</var>])</code></dt>
+      <dd><code>write</code> object <var>o</var> as is to stream <var>fd</var> or output.</dd>
+
+      <dt><code>(string-to-number <var>string</var>)</code></dt>
+      <dd>
+	Converts <var>string</var> into a corresponding <i>integer</i> object. String is interpreted as decimal based
+	integer.
+      </dd>
       <dd>Converts <var>integer</var> into a <i>string</i> object.</dd>
       <dt><code>(eq <var>a</var> <var>b</var>)</code></dt>
       <dd>
@@ -723,11 +740,6 @@
       </dd>
       <dt><code>(not <var>object</var>)</code> <u>C</u></dt>
       <dd>Logical inverse. In Lisp a synonym for <code>null</code></dd>
-      <dt><code>(fold-left <var>func</var> <var>init</var> <var>list</var>)</code> <u>Ss: fold-left</u></dt>
-      <dd>
-	Apply the binary <var>func</var>tion to <var>start</var> and the first element of <var>list</var> and then
-	recursively to the result of the previous invocation and the first element of the rest of <var>list</var>. If <var>list</var> is empty return <var>start</var>.
-      </dd>
       <dt><code>(length <var>obj</var>)</code> <u>C</u></dt>
       <dd>Returns the length of <var>obj</var> if it is a string or a list, otherwise throws a type exception.</dd>
       <dt><code>(string <var>arg</var>)</code> <u>C</u></dt>
@@ -880,19 +892,6 @@
 	Create a list of <var>count</var> numbers starting with <var>start</var> or <code>0</code> if not given by
 	successively adding <var>step</var> or <code>1</code> if not given.
       </dd>
-      <dt><code>(flip <var>func</var>)</code> <u>f</u></dt>
-      <dd>Returns a lambda which calls binary <var>func</var> with it's two arguments reversed (flipped).</dd>
-      <dt><code>(reverse <var>l</var>)</code></dt>
-      <dd>Returns a list with all elements of <var>l</var> in reverse order</dd>
-    </dl>
-
-    <h4 id="std_lib">Standard Library</h4>
-    <p><mark>To be integrated into the flisp library</mark></p>
-    <p>
-      This library implements some Common Lisp functions, which are not used in the editor libraries.  They are provided
-      for reference.
-    </p>
-    <dl>
       <dt><code>(atom <var>o</var>)</code></dt>
       <dd><code>t</code> if <var>o</var> is not a <i>cons</i>.</dd>
       <dt><code>(zerop <var>x</var>)</code></dt>
@@ -904,22 +903,6 @@
       </dd>
       <dt><code>(equal <var>o1</var> <var>o2</var>)</code></dt>
       <dd>Return <code>nil</code> if <var>o1</var> and <var>o2</var> are not isomorphic.</dd>
-      <dt><code>(append [list ..][ a])</code></dt>
-      <dd>
-	Append all elements in all <var>list</var>s into a single list. If atom <var>a</var> is present, make it a
-	dotted list terminating with <var>a</var>.
-      </dd>
-      <dt><code>(apply <var>f</var> [<var>arg</var> ..][ l])</code></dt>
-      <dd>
-	If <var>arg</var> is a single list call lambda <var>f</var> with all its elements as parameters, else
-	call <var>f</var> with all <var>arg</var>s as parameters. If list <var>l</var> is present append all its
-	elements to the parameter list.
-      </dd>
-      <dt><code>(print <var>o</var>[ <var>fd</var>])</code></dt>
-      <dd><code>write</code> object <var>o</var> <code>:readably</code> to stream <var>fd</var> or output.</dd>
-      <dt><code>(princ <var>o</var>[ <var>fd</var>])</code></dt>
-      <dd><code>write</code> object <var>o</var> as is to stream <var>fd</var> or output.</dd>
-    </dl>
 
     <h4 id="femto_lib">Femto Library</h4>
     <p>

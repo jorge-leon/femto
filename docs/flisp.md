@@ -397,8 +397,7 @@ error type symbol, *message* is a human readable error string and
 
 #### Input / Output and Others
 
-`(open «path»[ «mode»])` <u>S: open</u>
-
+`(open «path»[ «mode»])` <u>S: open</u>  
 Open file at string *path* with string *mode* and return a stream
 object. *mode* is `"r"`ead only by default.
 
@@ -420,38 +419,28 @@ The name of the opened file is set to `<STRING`.
 For writing *path* is ignored, *mode* must be set to: `>`. The name of
 the opened file is set to `>STRING`.
 
-`(close «stream»)` <u>S: close</u>
-
+`(close «stream»)` <u>S: close</u>  
 Close *stream* object
 
-`(file-info «stream»)` <u>f</u>
-
+`(file-info «stream»)` <u>f</u>  
 Returns `(«path» «buf» «fd»)` for *stream*. *buf* is either `nil` or the
 text buffer of a memory stream. *fd* is either the integer
 representation of the file descriptor or `nil` when *stream* is already
 closed.
 
-`(read` *stream*`[ eof-value])` <u>S: read</u>
-
+`(read` *stream*`[ eof-value])` <u>S: read</u>  
 Reads the next complete Lisp expression from *stream*. The read in
 object is returned. If end of file is reached, an exception is raised,
 unless *eof-value* is not `nil`. In that case `eof-value` is returned.
 
-`(write «object»[ «keys»..]]`
-
-*keys*:
-
-`:stream` *stream*
-
-`:readably` *flag*
-
+`(write «object»[ «readably»[ «fd»]]` → object  
 Formats *object* into a string and writes it to the default output
-stream. With key `:stream` output is written to the given stream. With
-key `:readable` not `nil` output is formatted in a way which which gives
-the same object when read again. `write` returns the *object*.
+stream. When *readably* is not `nil` output is formatted in a way which
+which gives the same object when read again. When stream *fd* is given
+output is written to the given stream else to the output stream. `write`
+returns the *object*.
 
-`(eval «object»)`
-
+`(eval «object»)`  
 Evaluates *object* and returns the result.
 
 #### Object Operations
@@ -548,10 +537,6 @@ to the start of *string*.
 `(string-search «needle» «haystack»)` <u>C</u>  
 Returns the position of *needle* if it is contained in *haystack*,
 otherwise `nil`.
-
-`(string-to-number «string»)`  
-Converts *string* into a corresponding *integer* object. String is
-interpreted as decimal based integer.
 
 `(ascii «integer»)`  
 Converts *integer* into a *string* with one character, which corresponds
@@ -727,7 +712,37 @@ Return the second element in *list*, `(car (cdr «list»))`.
 Return all elements after the second one in *list*, `(cdr (cdr «list»))`.  
 `(caddr «list»)` <u>C</u>  
 Return the third element in list, `(car (cdr (cdr «list»)))`.  
-`(number-to-string «number»)` <u>C</u>  
+`(append [list ..][ a])`  
+Append all elements in all *list*s into a single list. If atom *a* is
+present, make it a dotted list terminating with *a*.
+
+`(fold-left «func» «init» «list»)` <u>Ss: fold-left</u>  
+Apply the binary *func*tion to *start* and the first element of *list*
+and then recursively to the result of the previous invocation and the
+first element of the rest of *list*. If *list* is empty return *start*.
+
+`(flip «func»)` <u>f</u>  
+Returns a lambda which calls binary *func* with it's two arguments
+reversed (flipped).
+
+`(reverse «l»)`  
+Returns a list with all elements of *l* in reverse order
+
+`(apply «f» [«arg» ..][ l])`  
+If *arg* is a single list call lambda *f* with all its elements as
+parameters, else call *f* with all *arg*s as parameters. If list *l* is
+present append all its elements to the parameter list.
+
+`(print «o»[ «fd»])`  
+`write` object *o* `:readably` to stream *fd* or output.
+
+`(princ «o»[ «fd»])`  
+`write` object *o* as is to stream *fd* or output.
+
+`(string-to-number «string»)`  
+Converts *string* into a corresponding *integer* object. String is
+interpreted as decimal based integer.
+
 Converts *integer* into a *string* object.
 
 `(eq «a» «b»)`  
@@ -736,11 +751,6 @@ string, `nil` otherwise.
 
 `(not «object»)` <u>C</u>  
 Logical inverse. In Lisp a synonym for `null`
-
-`(fold-left «func» «init» «list»)` <u>Ss: fold-left</u>  
-Apply the binary *func*tion to *start* and the first element of *list*
-and then recursively to the result of the previous invocation and the
-first element of the rest of *list*. If *list* is empty return *start*.
 
 `(length «obj»)` <u>C</u>  
 Returns the length of *obj* if it is a string or a list, otherwise
@@ -888,20 +898,6 @@ anymore.
 Create a list of *count* numbers starting with *start* or `0` if not
 given by successively adding *step* or `1` if not given.
 
-`(flip «func»)` <u>f</u>  
-Returns a lambda which calls binary *func* with it's two arguments
-reversed (flipped).
-
-`(reverse «l»)`  
-Returns a list with all elements of *l* in reverse order
-
-#### Standard Library
-
-<span class="mark">To be integrated into the flisp library</span>
-
-This library implements some Common Lisp functions, which are not used
-in the editor libraries. They are provided for reference.
-
 `(atom «o»)`  
 `t` if *o* is not a *cons*.
 
@@ -914,52 +910,6 @@ Evaluate *then* if predicate *p* evaluates to not `nil`, else evaluate
 
 `(equal «o1» «o2»)`  
 Return `nil` if *o1* and *o2* are not isomorphic.
-
-`(append [list ..][ a])`  
-Append all elements in all *list*s into a single list. If atom *a* is
-present, make it a dotted list terminating with *a*.
-
-`(apply «f» [«arg» ..][ l])`  
-If *arg* is a single list call lambda *f* with all its elements as
-parameters, else call *f* with all *arg*s as parameters. If list *l* is
-present append all its elements to the parameter list.
-
-`(print «o»[ «fd»])`  
-`write` object *o* `:readably` to stream *fd* or output.
-
-`(princ «o»[ «fd»])`  
-`write` object *o* as is to stream *fd* or output.
-
-#### Femto Library
-
-This library implements helper function required by the Femto editor. It
-is written only in Lisp idioms provided by fLisp itself plus the [fLisp
-Library](#flisp_lib).
-
-[^](#toc)
-
-### Editor Extension
-
-The editor extensions introduces several types of objects/functionality:
-
-- <span class="dfn">Buffers</span> hold text
-- <span class="dfn">Windows</span> display buffer contents to the user
-- <span class="dfn">Keyboard Input</span> allows the user to interact
-  with buffers and windows
-- The <span class="dfn">Message Line</span> gives feedback to the user
-- Several other function for operating system or user interaction
-
-#### Buffers
-
-This section describes the buffer related functions added by Femto to
-fLisp. The description is separated in function related to buffer
-management and text manipulation. Text manipulation always operates on
-the <span class="dfn">current buffer</span>. Buffer management creates,
-deletes buffers, or selects one of the existing buffers as the current
-buffer.
-
-Buffers store text and allow to manipulate it. A buffer has the
-following properties:
 
 *name*  
 Buffers are identified by their name. If a buffer name is enclosed in

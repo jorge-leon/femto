@@ -3,11 +3,21 @@
 ;; Core fLisp extensions
 ;;
 
-(setq list (lambda args args))
+(bind list (lambda args args) t)
 
-(setq defmacro
+(bind defmacro
       (macro (name params . body)
-	     (list (quote setq) name (list (quote macro) params . body))))
+	     (list 'bind name (list (quote macro) params . body) 't) )
+      t )
+
+(defmacro setq args
+  (cond (args
+	 (cond ((null (cdr (cdr args)))
+		(list 'bind (car args) (car (cdr args)) t) )
+	       (t
+		(list 'progn
+		      (list 'setq (car args) (car (cdr args)))
+		      (cons 'setq (cdr (cdr args))) ))))))
 
 (defmacro defun (name params . body)
   (list (quote setq) name (list (quote lambda) params . body)))
@@ -188,7 +198,8 @@
 ;;; body:     (cddr args)
      (list
       (list 'lambda '()
-	    (list 'define (car args)
+;;;	    (list 'define (car args)
+	    (list 'bind (car args)
 		  (cons 'lambda (cons (mapcar car (cadr args)) (cddr args))))
 	    (cons (car args) (mapcar cadr (cadr args))))))
     (t (throw wrong-type-argument "let: first argument neither label nor binding" (car args)))))

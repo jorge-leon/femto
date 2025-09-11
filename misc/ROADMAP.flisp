@@ -4,7 +4,6 @@
 
 ## Next
 
-- fix write: must print smthg for evrthg
 - fix tap.lsp
 - Implement `(flisp subcommand[arg..])` introspection and configuration command.
   - (flisp version) => version string

@@ -1314,8 +1314,8 @@ Object *primitiveRead(Interpreter *interp, Object **args, Object **env)
 // Special forms handled by evalExpr. Must be in the same order as above.
 enum {
     PRIMITIVE_QUOTE,
-    PRIMITIVE_SETQ,
-    PRIMITIVE_DEFINE,
+//    PRIMITIVE_SETQ,
+    PRIMITIVE_BIND,
     PRIMITIVE_PROGN,
     PRIMITIVE_COND,
     PRIMITIVE_LAMBDA,
@@ -1369,6 +1369,37 @@ Object *evalSetVar(Interpreter *interp, Object **args, Object **env, bool top)
     else
         return evalSetVar(interp, &(*gcRest)->cdr, gcEnv, top);
 }
+/** (bind symbol object[ globalb]) - creates or finds symbol and set's its value
+ *
+ * @param symbol  ..  Symbol to find or create.
+ * @param object  ..  Value to bind to symbol.
+ * @param globalp ..  If not nil create new objects in the root
+ *                    environment, else in the current environment.
+ *
+ * @returns value
+ *
+ * throws: wrong-type-argument
+ */
+Object *evalBind(Interpreter *interp, Object **args, Object **env)
+{
+    bool globalp = false;
+
+    CHECK_TYPE(FLISP_ARG_ONE, type_symbol, "(bind symbol object[ globalp]) - symbol");
+    if (!gcCollectableObject(interp, FLISP_ARG_ONE))
+        exceptionWithObject(interp, FLISP_ARG_ONE, wrong_type_argument,
+                            "(bind symbol object[ globalp] - symbol: is a constant and cannot be redefined");
+    if (FLISP_HAS_ARG_THREE)
+        globalp = (FLISP_ARG_THREE != nil);
+    
+    GC_CHECKPOINT;
+    GC_TRACE(gcEnv, *env);
+    GC_TRACE(gcVar, FLISP_ARG_ONE);
+    GC_TRACE(gcVal, FLISP_ARG_TWO);
+    *gcVal = evalExpr(interp, gcVal, gcEnv);
+    envSet(interp, gcVar, gcVal, gcEnv, globalp);
+    GC_RETURN(*gcVal);
+}
+
 
 Object *evalProgn(Interpreter *interp, Object **args, Object **env)
 {
@@ -1601,10 +1632,10 @@ Object *evalExpr(Interpreter *interp, Object ** object, Object **env)
             switch ((uintptr_t)primitive->eval) {
             case PRIMITIVE_QUOTE:
                 GC_RETURN((*gcArgs)->car);
-            case PRIMITIVE_SETQ:
-                GC_RETURN(evalSetVar(interp, gcArgs, gcEnv, true));
-            case PRIMITIVE_DEFINE:
-                GC_RETURN(evalSetVar(interp, gcArgs, gcEnv, false));
+//            case PRIMITIVE_SETQ:
+//                GC_RETURN(evalSetVar(interp, gcArgs, gcEnv, true));
+            case PRIMITIVE_BIND:
+                GC_RETURN(evalBind(interp, gcArgs, gcEnv));
             case PRIMITIVE_PROGN:
                 *gcObject = evalProgn(interp, gcArgs, gcEnv);
                 break;
@@ -2327,14 +2358,15 @@ Object *asciiToInteger(Interpreter *interp, Object **args, Object **env)
 
 Primitive primitives[] = {
     {"quote",         1,  1, 0, (LispEval) PRIMITIVE_QUOTE /* special form */ },
-    {"setq",          0, -2, 0, (LispEval) PRIMITIVE_SETQ  /* special form */ },
-    {"define",        0, -2, 0, (LispEval) PRIMITIVE_DEFINE /* special form */ },
+//    {"setq",          0, -2, 0, (LispEval) PRIMITIVE_SETQ  /* special form */ },
+    {"bind",          2,  3, 0, (LispEval) PRIMITIVE_BIND  /* special form */ },
     {"progn",         0, -1, 0, (LispEval) PRIMITIVE_PROGN /* special form */ },
     {"cond",          0, -1, 0, (LispEval) PRIMITIVE_COND  /* special form */ },
     {"lambda",        1, -1, 0, (LispEval) PRIMITIVE_LAMBDA /* special form */ },
     {"macro",         1, -1, 0, (LispEval) PRIMITIVE_MACRO  /* special form */ },
     {"macroexpand-1", 1,  2, 0, (LispEval) PRIMITIVE_MACROEXPAND /* special form */ },
     {"catch",         1,  1, 0, (LispEval) PRIMITIVE_CATCH  /*special form */ },
+//    {"bind",          2,  3, 0,         primitiveBind},
     {"null",          1,  1, 0,         primitiveNullP},
     {"type-of",       1,  1, 0,         primitiveTypeOf},
     {"consp",         1,  1, 0,         primitiveConsP},

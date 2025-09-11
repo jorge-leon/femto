@@ -8,8 +8,6 @@
 - Implement `(flisp subcommand[arg..])` introspection and configuration command.
   - (flisp version) => version string
   - (flisp input[ fd])
-- Expose envSet as `(bind symbol value[ globalp])` to Lisp and move setq from C
-  to Lisp.
 - Rename global argv to command-line-args, argv0 to invocation-name.
 
 
@@ -57,6 +55,7 @@
 
 ## fLisp 0.13
 - Implemented simple repl in Lisp and minimized flisp.c
+- Replace setq and define with bind in the core. setq is defined in core.lsp
 - Moved append, fold-left, flip, reverse, apply, print, princ to core.lsp
 - Renamed os.env to getenv and move to file extension.
 - Unified stdlib into flisp.lsp (again).

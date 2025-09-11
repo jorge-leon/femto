@@ -5,7 +5,7 @@
 
 export FLISPRC=
 
-tap 177
+tap 175
 
 [ -x ../femto ]
 ok femto-1 femto exists and is executable;
@@ -90,27 +90,20 @@ flisp_err; ok reader-16 read list without end
 IN='(quote)' ERR='expects at least 1 arguments' OBJ='#<Primitive quote>'
 flisp_err; ok quote-1 w/o arg error message
 
-IN="(setq var 'val)" OUT=val
-flisp_expr; ok setq-1 assignment returns value
+IN="(bind var 'val)" OUT=val
+flisp_expr; ok bind-2 assignment returns value
 
-IN="(setq var 'val) var" OUT="val"
-flisp_expr 1; ok setq-2 var evaluates to val
+IN="(bind var 'val) var" OUT="val"
+flisp_expr 1; ok bind-3 var evaluates to val
 
-IN='(setq)' OUT=nil
-flisp_expr; ok setq-3 no args evaluate to nil
+IN='(bind var1)' OBJ='#<Primitive bind>' ERR='expects at least 2 arguments'
+flisp_err; ok bind-4 one arg fails
 
-IN='(setq var1)' OBJ='#<Primitive setq>' ERR='expects a multiple of 2 arguments'
-flisp_err; ok setq-4 one arg fails
+IN="(bind var1 3) ((lambda () (bind var1 2))) var1" OUT=3
+flisp_expr 1; ok setq-5 local bind does not set outer variable.
 
-EXPR="(setq var1 'val1  var2 'val2)"
-IN="$EXPR" OUT=val2
-flisp_expr 1; ok setq-5 four args returns last value
-
-IN="$EXPR var1" OUT=val1
-flisp_expr 1; ok setq-6 four args first var evaluates to first value
-
-IN="$EXPR var2" OUT=val2
-flisp_expr 1; ok setq-7 four args second var evaluates to second value
+IN="(bind var1 3) ((lambda () (bind var1 2 t))) var1" OUT=2
+flisp_expr 1; ok setq-4 global bind does not set outer variable.
 
 IN='(progn)' OUT=nil
 flisp_expr; ok progn-1 no args evaluate to nil
@@ -358,10 +351,10 @@ flisp_expr; ok close-3 close memory input stream
 IN='(close (open "" ">"))' OUT="0"
 flisp_expr; ok close-4 close memory output stream
 
-IN='(setq f (open "abc" "<")) (cons (car (file-info f)) (car (cdr (file-info f))))' OUT='("<STRING" . "abc")'
+IN='(bind f (open "abc" "<")) (cons (car (file-info f)) (car (cdr (file-info f))))' OUT='("<STRING" . "abc")'
 flisp_expr 1; ok file-info-1 file-info of memory stream contains string
 
-IN='(setq f (open "" ">")) (close f) (file-info f)' OUT='(">STRING" nil nil)'
+IN='(bind f (open "" ">")) (close f) (file-info f)' OUT='(">STRING" nil nil)'
 flisp_expr 1; ok file-info-2 file-info of closed memory stream contains nil
 
 IN='(read (open "1" "<"))' OUT="1"

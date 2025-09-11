@@ -12,7 +12,9 @@
 
 (defmacro setq args
   (cond (args
-	 (cond ((null (cdr (cdr args)))
+	 (cond ((null (cdr args))
+		(throw wrong-number-of-arguments "(setq [s v ..]) expects a multiple of 2 arguments") )
+	       ((null (cdr (cdr args)))
 		(list 'bind (car args) (car (cdr args)) t) )
 	       (t
 		(list 'progn

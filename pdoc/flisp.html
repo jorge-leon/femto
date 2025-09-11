@@ -351,11 +351,13 @@
 	no <var>action</var> the value of <var>pred</var> is returned, otherwise <code>(progn <var>action</var> ..)</code>
 	is returned and no more <var>clause</var>s are evaluated.
       </dd>
-      <dt><code>(setq <var>symbol</var> <var>value</var>[ <var>symbol</var> <var>value</var>..])</code></dt>
+      <dt><code>(bind <var>symbol</var> <var>value</var>[ <var>globalp</var>)</code> ⇒ <var>value</var></dt>
       <dd>
-	Create or update named objects: If <var>symbol</var> is the name of an existing named object in the current or a
-	parent environment the named object is set to <var>value</var>, if no symbol with this name exists, a new one is
-	created in the top level environment. <code>setq</code> returns the last <var>value</var>.
+	Create or update <var>symbol</var> and bind it to <var>value</var>. Return value.  First <var>symbol</var> is
+	looked up in the current environment, then recursively in the parent environments. If it is not found, it is
+	created in the current environment as long as <var>globalp</var> is <code>nil</code> or
+	omitted. If <var>globalp</var> is not <code>nil</code> <var>symbol</var> is always created in the global (top
+	level) environment.
       </dd>
       <dt><code>(define <var>symbol</var> <var>value</var>[ <var>symbol</var> <var>value</var>..])</code> <u>Ss: define, let</u></dt>
       <dd>
@@ -679,6 +681,12 @@
       <dt><code>(defmacro <var>name</var> <var>params</var> <var>body</var>)</code> <u>C</u></dt>
       <dt><code>(defun <var>name</var> <var>params</var> <var>body</var>)</code> <u>C</u></dt>
       <dd>Defines and returns a macro or function, respectively.</dd>
+      <dt><code>(setq <var>symbol</var> <var>value</var>[ <var>symbol</var> <var>value</var>..])</code></dt>
+      <dd>
+	Create or update named objects: If <var>symbol</var> is the name of an existing named object in the current or a
+	parent environment the named object is set to <var>value</var>, if no symbol with this name exists, a new one is
+	created in the top level environment. <code>setq</code> returns the last <var>value</var>.
+      </dd>
       <dt><code>(curry (<var>func</var> <var>a</var>))</code></dt>
       <dd>
 	Returns a lambda with one parameter which returns <code>(<var>func</var> <var>a</var> <var>b</var>)</code>.

@@ -341,11 +341,13 @@ is tested. If *pred* evaluates not to `nil` and if there is no *action*
 the value of *pred* is returned, otherwise `(progn «action» ..)` is
 returned and no more *clause*s are evaluated.
 
-`(setq «symbol» «value»[ «symbol» «value»..])`  
-Create or update named objects: If *symbol* is the name of an existing
-named object in the current or a parent environment the named object is
-set to *value*, if no symbol with this name exists, a new one is created
-in the top level environment. `setq` returns the last *value*.
+`(bind «symbol» «value»[ «globalp»)` ⇒ *value*  
+Create or update *symbol* and bind it to *value*. Return value. First
+*symbol* is looked up in the current environment, then recursively in
+the parent environments. If it is not found, it is created in the
+current environment as long as *globalp* is `nil` or omitted. If
+*globalp* is not `nil` *symbol* is always created in the global (top
+level) environment.
 
 `(define «symbol» «value»[ «symbol» «value»..])` <u>Ss: define, let</u>  
 Create or update named objects: If *symbol* is the name of an existing
@@ -687,6 +689,12 @@ Returns the list of all provided elements.
 `(defmacro «name» «params» «body»)` <u>C</u>  
 `(defun «name» «params» «body»)` <u>C</u>  
 Defines and returns a macro or function, respectively.
+
+`(setq «symbol» «value»[ «symbol» «value»..])`  
+Create or update named objects: If *symbol* is the name of an existing
+named object in the current or a parent environment the named object is
+set to *value*, if no symbol with this name exists, a new one is created
+in the top level environment. `setq` returns the last *value*.
 
 `(curry («func» «a»))`  
 Returns a lambda with one parameter which returns `(«func» «a» «b»)`.

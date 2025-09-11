@@ -78,19 +78,6 @@
     ((null fd) (write o nil))
     (t (write o nil (car fd))) ))
 
-(defun number-to-string (num)
-  (cond
-    ((numberp num)
-     (let ((f (open "" ">")))
-       (princ num f)
-       (prog1
-	   (cadr (file-info f))
-	 (close f))))
-    (t 	(throw wrong-type-argument
-	  (concat "(number-to-string number) - number: expected " type-integer " got " (type-of num))
-	  num
-	  ))))
-
 (defun string-to-number (string)
   (let ((f (open string "<")) (result nil))
     (setq  result (catch (read f)))
@@ -119,16 +106,19 @@
     (t (throw wrong-type-argument "(length object) - expected type-cons or type-string" o))))
 
 
-(defun string (s)
+(defun string (o)
   ;; Convert argument to string.
   ;; Common Lisp
   (cond
-    ((eq nil s) "")
-    ((numberp s) (number-to-string s))
-    ((stringp s) s)
-    ((symbolp s) (symbol-name s))
-    ((consp s) (string-append (string (car s)) (string (cdr s))))
-    (t (throw wrong-type-argument "cannot convert to string" s))))
+    ((eq nil o) "")
+    ((stringp o) o)
+    ((symbolp o) (symbol-name o))
+    ((consp o) (string-append (string (car o)) (string (cdr o))))
+    (t (let ((f (open "" ">")))
+	 (write o t f)
+	 (prog1
+	     (cadr (file-info f))
+	   (close f) )))))
 
 (defun concat args
   ;; Concatenate all arguments to a string.

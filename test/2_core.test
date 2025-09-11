@@ -132,12 +132,6 @@ flisp_expr 1; ok apply-4 apply n-ary + to 3 4  and final list 7 4 is 18
 false; ok print-1 \# TODO
 false; ok princ-1 \# TODO
 
-IN="(number-to-string 42)" OUT='"42"'
-flisp_expr 1; ok number-to-string-1 42 is string 42
-
-IN='(number-to-string "a")' ERR='(number-to-string number) - number: expected type-integer got type-string' OBJ=
-flisp_err 1; ok number-to-string-2 not a number fails
-
 IN='(string-to-number "42")' OUT='42'
 flisp_expr 1; ok string-to-number-1 string 42 is 42
 
@@ -199,22 +193,33 @@ flisp_expr 1; ok length-1 length of answer is six
 IN="(string nil)" OUT='""'
 flisp_expr 1; ok string-1 nil is empty string
 
+IN="(string 42)" OUT='"42"'
+flisp_expr 1; ok string-2 42 is string 42
+
 IN="(string +03)" OUT='"3"'
-flisp_expr 1; ok string-2 number converts to number string
+flisp_expr 1; ok string-3 octal number converts to number string
 
 IN='(string "a")' OUT='"a"'
-flisp_expr 1; ok string-3 string returns itself
+flisp_expr 1; ok string-4 string returns itself
 
 IN="(string 'a)" OUT='"a"'
-flisp_expr 1; ok string-4 symbols converts to its name
+flisp_expr 1; ok string-5 symbols converts to its name
 
 IN="(string (cons 'a  2))" OUT='"a2"'
-flisp_expr 1; ok string-5 cons converts to concatenated strings of elements
+flisp_expr 1; ok string-6 cons converts to concatenated strings of elements
 
-IN="(string car)" OBJ='#<Primitive car>'  ERR="cannot convert to string"
-flisp_err 1; ok string-6 lambda err\'s
-false; ok string-7 macro errs \# TODO
-false; ok string-8 stream errs \# TODO
+IN="(string car)" OUT='"#<Primitive car>"'
+flisp_expr 1; ok string 7 primitive prints reader macro and name
+
+IN="(string (lambda (a b)))" OUT='"#<Lambda (a b)>"'
+flisp_expr 1; ok string-8 lambda prints reader macro and parameters
+
+IN="(string (macro (a b)))" OUT='"#<Macro (a b)>"'
+flisp_expr 1; ok string-9 macro prints reader macro and parameters
+
+IN='(setq f (open "" "<"))(close f)(string f)' OUT='"#<Stream (nil), <STRING>"'
+flisp_expr 1; ok string-10 closed stream prints reader macro nil as fd and type
+
 # concat
 IN="(concat 1 'a \"?\")" OUT='"1a?"'
 flisp_expr 1; ok concat-1 simple string concatenation

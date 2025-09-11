@@ -59,9 +59,9 @@
 ## fLisp 0.13
 - Implemented simple repl in Lisp and minimized flisp.c
 - Moved append, fold-left, flip, reverse, apply, print, princ to core.lsp
-- Rename os.env to getenv and move to file extension
-- Unify stdlib into flisp.lsp (again).
-- Move system to file extension
+- Renamed os.env to getenv and move to file extension.
+- Unified stdlib into flisp.lsp (again).
+- Moved (system) to file extension.
 
 ## fLisp 0.12
 

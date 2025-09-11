@@ -47,7 +47,7 @@
    ((not (consp l))
     (throw wrong-type-argument
       (concat "(nthcdr i l) - l expected type-cons, got: " (type-of l))
-      l))
+      l ))
     (t (nthcdr (- i 1) (cdr l)))))
 
 (defun nth (n list)

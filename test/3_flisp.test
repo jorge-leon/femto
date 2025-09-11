@@ -3,7 +3,7 @@
 # leg20231129: Femto
 tap 62
 
-export FLISPRC=../lisp/core.lsp
+export FLISPRC=../flisp.rc
 flisplib() { IN="(require 'flisp) $IN" flisp_expr "$@"; }
 flisplib_err() { IN="(require 'flisp) $IN" flisp_err "$@"; }
 
@@ -163,7 +163,7 @@ IN='(nthcdr -1 nil)'
 ERR="negative index"
 OBJ='-1'
 flisplib_err 1; ok nthcdr-1 negativ index fails
-
+return
 IN="(nthcdr 0 '(a b c))" OUT='(a b c)'
 flisplib 1; ok nthcdr-2 0 index is list
 

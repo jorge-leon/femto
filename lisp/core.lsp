@@ -33,16 +33,63 @@
 (defun cddr (l) (cdr (cdr l)))
 (defun caddr (l) (car (cdr (cdr l))))
 
+;;; https://www.scheme.com/tspl2d/objects.html#g2052
+(defun append lists
+  (let f ((ls nil) (lists lists))
+       (cond
+	 ((null lists) ls)
+         (t
+	  (let g ((ls ls))
+	       (cond
+		 ((null ls) (f (car lists) (cdr lists)))
+                 (t
+		  (cond ((not (consp ls))
+			 (throw invalid-value
+			   (concat "(append lists) - list expected type-list, got " (type-of ls))
+			   ls)))
+		  (cons (car ls) (g (cdr ls)))) ))))))
+
+
+(defun fold-left (f i l)
+  (cond ((null l) i)
+	(t (fold-left f (f i (car l)) (cdr l))) ))
+
+(defun flip (func)  (lambda (o1 o2) (func o2 o1)))
+(defun reverse (l)  (fold-left (flip cons) nil l))
+
+(defun apply (f . args)
+  (cond
+    ((null args) (f))
+    (t
+     (let ((rev (reverse args)))
+       (cond
+	 ((consp (car rev))
+          ;; if last element is list splice it
+	  (eval (cons f (append (reverse (cdr rev)) (car rev)))) )
+	 (t (f . args)) )))))
+
+(defun print (o . fd)
+  (cond
+    ((null fd) (write o t))
+    (t (write o t car fd)) ))
+
+(defun princ (o . fd)
+  (cond
+    ((null fd) (write o nil))
+    (t (write o nil (car fd))) ))
+
 (defun number-to-string (num)
   (cond
     ((numberp num)
      (let ((f (open "" ">")))
-       (write num :stream f)
+       (princ num f)
        (prog1
 	   (cadr (file-info f))
 	 (close f))))
     (t 	(throw wrong-type-argument
-	  (concat "(number-to-string number) - number expected " type-integer " got: " (type-of num))))))
+	  (concat "(number-to-string number) - number: expected " type-integer " got " (type-of num))
+	  num
+	  ))))
 
 (defun string-to-number (string)
   (let ((f (open string "<")) (result nil))
@@ -62,10 +109,6 @@
        ((doublep o1) (d= o1 o2))))))
 
 (setq not null)
-
-(defun fold-left (f i l)
-  (cond ((null l) i)
-	(t (fold-left f (f i (car l)) (cdr l))) ))
 
 (defun length (o)
   (cond

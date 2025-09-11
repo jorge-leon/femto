@@ -3,7 +3,7 @@
 # leg20231128: Femto
 
 
-export FLISPRC=../lisp/core.lsp
+export FLISPRC=../flisp.rc
 
 tap 28
 

@@ -3,65 +3,46 @@
  */
 
 #include <stdlib.h>
-#include <stdarg.h>
-#include <unistd.h>
-#include <string.h>
-#include <errno.h>
 #include "lisp.h"
-
-#define CPP_XSTR(s) CPP_STR(s)
-#define CPP_STR(s) #s
-
-int exit_code = 0;
-
-#define INPUT_BUFSIZE 4095
-char input[INPUT_BUFSIZE+1]; // Note: termios paste limit or so
 
 void fatal(char *msg)
 {
-    fprintf(stderr, "\n%s %s:\n%s\n", FL_NAME, FL_VERSION, msg);
+    fputs("\n" FL_NAME " " FL_VERSION ": ", stderr);
+    fputs(msg, stderr);
+    fputc('\n', stderr);
     exit(1);
 }
 
 int main(int argc, char **argv)
 {
-    char *library_path, *init_file, *debug_file;
-    FILE *fd = NULL;
+    char *library_path, *rcfile, *debug_file;
+    FILE *debug_fd = NULL, *input_fd = stdin;
     Interpreter *interp;
 
-    if ((init_file = getenv("FLISPRC")) == NULL)
-        init_file = FL_LIBDIR "/" FL_INITFILE;
+    if ((rcfile = getenv("FLISPRC")) == NULL)
+        rcfile = FL_LIBDIR "/" FL_RCFILE;
+
+    if (*rcfile != '\0')
+        if (!(input_fd = fopen(rcfile, "r")))
+            fatal("failed to open rcfile");
+
+    if ((debug_file=getenv("FLISP_DEBUG")) != NULL)
+        if ((debug_fd = fopen(debug_file, "w")) == NULL)
+            fatal("failed to open debug file");
 
     if ((library_path=getenv("FLISPLIB")) == NULL)
         library_path = FL_LIBDIR;
 
-    debug_file=getenv("FLISP_DEBUG");
-    if (debug_file != NULL) {
-        if (!(fd = fopen(debug_file, "w")))
-            fprintf(stderr, "failed to open debug file %s for writing: %s\n", debug_file, strerror(errno));
-    }
-
-    interp = lisp_new(argv, library_path, stdin, stdout, fd);
+    interp = lisp_new(argv, library_path, input_fd, stdout, debug_fd);
     if (interp == NULL)
         fatal("fLisp interpreter initialization failed");
 
-    if (strlen(init_file)) {
-        if (!(fd = fopen(init_file, "r")))
-            fprintf(stderr, "failed to open inifile %s: %s\n", init_file, strerror(errno));
-        else {
-            // load inifile
-            interp->input = fd;
-            lisp_eval(interp, NULL);
-            if (FLISP_RESULT_CODE(interp) != nil) {
-                fprintf(stderr, "failed to load inifile %s:\n", init_file);
-                lisp_write_error(interp, stderr);
-                if (FLISP_RESULT_CODE(interp) == out_of_memory)
-                    return 1;
-            }
-            if (fclose(fd))
-                fprintf(stderr, "failed to close inifile %s %s\n", init_file, strerror(errno));
-        }
+    lisp_eval(interp, NULL);
+    if (FLISP_RESULT_CODE(interp) != nil) {
+        lisp_write_error(interp, stderr);
+        return 1;
     }
+    return 0;
 }
 
 /*

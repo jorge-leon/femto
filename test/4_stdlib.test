@@ -4,7 +4,7 @@
 # leg20231129
 tap 21
 
-export FLISPRC=../lisp/core.lsp
+export FLISPRC=../flisp.rc
 # Note: nested requiring stopped working
 stdlib() { IN="(require 'stdlib) $IN" flisp_expr "$@"; }
 stdlib() { IN="(require 'flisp) (require 'stdlib) $IN" flisp_expr "$@"; }
@@ -71,7 +71,7 @@ IN="(apply + 3 4 '(7 4))" OUT="18"
 stdlib 1; ok apply-4 apply n-ary + to 3 4  and final list 7 4 is 18
 
 # print
-IN='(write "ans\\wer" :readably t)' OUT='"ans\\wer""ans\\wer"'
+IN='(write "ans\\wer" t)' OUT='"ans\\wer""ans\\wer"'
 stdlib 1; ok print-1 write string escaped
 
 # princ

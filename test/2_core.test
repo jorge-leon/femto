@@ -2,7 +2,7 @@
 # test the fLisp core library
 # leg20231129: Femto
 
-export FLISPRC=../lisp/core.lsp
+export FLISPRC=../flisp.rc
 
 tap 89
 
@@ -85,9 +85,9 @@ IN="(caddr '(a b c d))" OUT="c"
 flisp_expr 1; ok caddr1-1 caddr returns third element
 
 IN="(number-to-string 42)" OUT='"42"'
-flisp_expr 1; ok number-to-string-1 42 is string 42 \# TODO segfaults unless used with flisp.rc
+flisp_expr 1; ok number-to-string-1 42 is string 42
 
-IN='(number-to-string "a")' ERR='(number-to-string number) - number expected type-integer got: type-string' OBJ=
+IN='(number-to-string "a")' ERR='(number-to-string number) - number: expected type-integer got type-string' OBJ=
 flisp_err 1; ok number-to-string-2 not a number fails
 
 IN='(string-to-number "42")' OUT='42'
@@ -180,7 +180,7 @@ IN="(string nil)" OUT='""'
 flisp_expr 1; ok string-1 nil is empty string
 
 IN="(string +03)" OUT='"3"'
-flisp_expr 1; ok string-2 number converts to number string \# TODO segfaults unless used with flisp.rc
+flisp_expr 1; ok string-2 number converts to number string
 
 IN='(string "a")' OUT='"a"'
 flisp_expr 1; ok string-3 string returns itself
@@ -259,10 +259,8 @@ flisp_err 1; ok require-1 requiring nothing errs
 IN="(require '_no_file)" OUT="nil"
 flisp_expr 1; ok require-2 requiring not existing features returns nil
 
-IN="(require 'core)" OUT="(core)
-core"
-flisp_expr 2; ok require-3 requiring existing feature returns feature
+IN="(require 'core)" OUT="core"
+flisp_expr 1; ok require-3 requiring existing feature returns feature
 
-IN="(require 'flisp)" OUT="(core)
-flisp"
-flisp_expr 2; ok require-4 requiring new feature returns feature
+IN="(require 'flisp)" OUT="flisp"
+flisp_expr 1; ok require-4 requiring new feature returns feature

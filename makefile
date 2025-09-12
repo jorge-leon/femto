@@ -49,9 +49,10 @@ MOREDOCS = README.html docs/flisp.md docs/develop.md docs/femto.md
 FLISP_DOCFILES = README.flisp.md docs/flisp.md pdoc/flisp.html docs/develop.md pdoc/develop.html
 
 
-.SUFFIXES: .rc .sht
+.SUFFIXES: .rc .sht  .md .html
 .sht.rc:
 	./sht $*.sht >$@
+
 
 # Artifacts
 all: femto
@@ -143,6 +144,9 @@ docs/flisp.md: pdoc/flisp.html pdoc/h2m.lua
 	pandoc -o $@ -t gfm -L pdoc/h2m.lua $<
 
 docs/develop.md: pdoc/develop.html pdoc/h2m.lua
+	pandoc -o $@ -t gfm -L pdoc/h2m.lua $<
+
+docs/editor.md: pdoc/editor.html pdoc/h2m.lua
 	pandoc -o $@ -t gfm -L pdoc/h2m.lua $<
 
 docs/femto.md: pdoc/femto.html pdoc/h2m.lua

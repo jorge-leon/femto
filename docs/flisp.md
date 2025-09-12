@@ -8,20 +8,20 @@
 > — Antoine de Saint-Exupery
 
 *fLisp* is a tiny yet practical interpreter for a dialect of the Lisp
-programming language. It is used as extension language for the
-[Femto](https://github.com/hughbarney/femto) text editor.
+programming language. It can be embedded into other applications and is
+extensible via C libraries. *fLisp* is used as extension language for
+the *Femto* text editor, see the [editor extension
+manual](editor.html) [(Markdown)](editor.md) for details.
 
-*fLisp* is hosted in the Femto
-[Github](https://github.com/hughbarney/femto) repository, it is released
-to the public domain.
+*fLisp* is hosted in the *Femto*
+[Github](https://github.com/hughbarney/femto) repository and released to
+the public domain.
 
 *fLisp* is a Lisp-1 interpreter with Scheme like lexical scoping,
-tailcall optimization and other Scheme influences.
-
-*fLisp* originates from [Tiny-Lisp by
-matp](https://github.com/matp/tiny-lisp) (pre 2014), was integrated into
-[Femto](https://github.com/hughbarney/femto) by Hugh Barney (pre 2016)
-and compacted by Georg Lehner in 2023.
+tailcall optimization and other Scheme influences. *fLisp* originates
+from [Tiny-Lisp by matp](https://github.com/matp/tiny-lisp) (pre 2014),
+was integrated into [Femto](https://github.com/hughbarney/femto) by Hugh
+Barney (pre 2016) and extended by Georg Lehner since 2023.
 
 This is a reference manual. If you want to learn about Lisp programming
 use other resources eg.
@@ -52,26 +52,14 @@ This manual refers to version 0.13 or later of fLisp.
     4.  [Arithmetic Operations](#arithmetic_ops)
     5.  [Bitwise Integer Operations](#bitwise_ops)
     6.  [String Operations](#string_ops)
-6.  [File Extension](#file)
-7.  [Double Extension](#double)
-8.  [Lisp Libraries](#libraries)
+6.  [Extensions](#extend)
+    1.  [File Extension](#file)
+    2.  [Double Extension](#double)
+7.  [Lisp Libraries](#libraries)
     1.  [Library Loading](#startup)
     2.  [Core Library](#core_lib)
     3.  [fLlisp Library](#flisp_lib)
-    4.  [Standard Library](#std_lib)
-    5.  [Femto Library](#femto_lib)
-9.  [Editor Extension](#editor)
-    1.  [Buffers](#buffers)
-        1.  [Text manipulation](#text)
-        2.  [Selection](#selection)
-        3.  [Cursor Movement](#cursor)
-        4.  [Buffer management](#buffer_management)
-    2.  [User Interaction](#ui)
-        1.  [Window Handling"](#windows)
-        2.  [Message Line](#message_line)
-        3.  [Keyboard Handling](#keyboard)
-        4.  [Programming and System Interaction](#programming_system)
-10. [fLisp Embedding and
+8.  [fLisp Embedding and
     Development](develop.html) [(Markdown)](develop.md)
 
 #### Notation Convention
@@ -94,13 +82,13 @@ A single space is used to denote an arbitrary sequence of whitespace.
 *fLisp* does not use `[`square brackets`]` and double-dots `..` as
 syntactical elements.
 
-Variables names convey the following context:
+Variable names convey the following context:
 
 Lisp object of any type:  
 *object* *value* *o* *a* *b* *c*
 
 Program elements:  
-*arg* *args* *params* *opt* *body* *expr* *pred*
+*arg* *args* *params* *opt* *body* *expr* *pred* *p*
 
 Integer:  
 *i* *j* *k*
@@ -655,7 +643,7 @@ allows to load Lisp files from the library path conveniently and without
 repetition. The command to load the file `example.lsp` from the library
 is `(require 'example)`.
 
-Femto provides the following set of libraries:
+*fLisp* provides the following set of libraries:
 
 core  
 Integrated in the `.rc` files, always loaded. The core library
@@ -668,14 +656,8 @@ Implements expected standard Lisp functions and additions expected by
 string  
 String manipulation library.
 
-femto  
-`femto` editor specific functions.
-
-bufmenu, defmacro, dired, info  
-`femto` editor utilities
-
-git, grep, oxo  
-`femto` editor modules
+The *Femto* specific libraries are described together with the
+[editor](editor.html) [(Markdown)](editor.md) extension.
 
 #### Core Library
 
@@ -859,18 +841,22 @@ only one *num* is given they all return `t`.
 This library implements commonly excpected Lisp idioms. *fLisp*
 implements a carefully selected minimum set of commonly used functions.
 
-`(listp «o»)` <u>D</u>  
+`(listp «o»)` <u>D</u>
+
 Returns true if *o* is `nil` or a *cons*.
 
-`(and[ o..])`  
+`(and[ o..])`
+
 Returns `t` or the last object *o* if none is given or all evaluate to
 non `nil`, `nil` otherwise.
 
-`(or[ o..])`  
+`(or[ o..])`
+
 Returns `nil` if all objects o are `nil`, otherwise returns the first
 object which evaluates to non `nil`.
 
-`(reduce «func» «list» «start»)` <u>D</u>  
+`(reduce «func» «list» «start»)` <u>D</u>
+
 `reduce` applies the binary *func* to the first element of *list* and
 *start* and then recursively to the first element of the rest of the
 *list* and the result of the previous invocation: it is “right binding”.
@@ -878,350 +864,52 @@ object which evaluates to non `nil`.
 Since `reduce` is right associative and *start* is not optional, it
 differs significantly both from Common Lisp and Scheme.
 
-`(max «n»[ «n»..])`  
-`(min «n»[ «n»..])`  
+`(max «n»[ «n»..])`
+
+`(min «n»[ «n»..])`
+
 Return the biggest/smallest number of all given *n*s.
 
-`(nthcdr «i» «l»)`  
+`(nthcdr «i» «l»)`
+
 Return sub list of *l* starting from zero-based *i*th element to the
 last.
 
-`(nth «i» «l»)`  
+`(nth «i» «l»)`
+
 Return zero-based *i*th element of list *l*
 
-`(fold-right «f» «o» «l»)` <u>Cs</u>  
+`(fold-right «f» «o» «l»)` <u>Cs</u>
+
 Apply binary function *f* to last element of *l* and *o*, then
 recursively to the previous element and the result.
 
-`(unfold «f» «o» «p»)` <u>Cs</u>  
+`(unfold «f» «o» «p»)` <u>Cs</u>
+
 Create a list starting with *o* followed by the result of successive
 application of *f* to *o* until applying *p* to the result is not `nil`
 anymore.
 
-`(iota «count»[ «start»[ «step»]])` <u>Cs</u>  
+`(iota «count»[ «start»[ «step»]])` <u>Cs</u>
+
 Create a list of *count* numbers starting with *start* or `0` if not
 given by successively adding *step* or `1` if not given.
 
-`(atom «o»)`  
+`(atom «o»)`
+
 `t` if *o* is not a *cons*.
 
-`(zerop «x»)`  
+`(zerop «x»)`
+
 `t` if number *x* is zero.
 
-`(if «p» «then»[ «else»)`  
+`(if «p» «then»[ «else»)`
+
 Evaluate *then* if predicate *p* evaluates to not `nil`, else evaluate
 *else*.
 
-`(equal «o1» «o2»)`  
+`(equal «o1» «o2»)`
+
 Return `nil` if *o1* and *o2* are not isomorphic.
-
-*name*  
-Buffers are identified by their name. If a buffer name is enclosed in
-`*`asterisks`*` the buffer receives special treatment.
-
-*text*  
-zero or more characters.
-
-*point*  
-The position in the text where text manipulation takes place. The first
-position in the text is 0. Note: in Emacs the first position is 1.
-
-*mark*  
-An optional second position in the text. If the *mark* is set, the text
-between *point* and *mark* is called the
-<span class="dfn">selection</span> or <span class="dfn">region</span>.
-
-*filename*  
-If set the buffer is associated with the respective file.
-
-*flags*  
-Different flags determine the behavior of the buffer. Editor specific
-flags: `special`, `modified`.
-
-Mode flags determine the syntax highlighter mode: `cmode` and `lispmode`
-are available. If none is set `text` mode is used for syntax
-hightlighting.
-
-In the following, any mention to one of them refers to the respective
-current buffers property.
-
-##### Text manipulation
-
-`(insert-string «string»)`  
-Inserts *string* before *point*. <u>S: insert</u>.
-
-`(insert-file-contents-literally «string» `\[*flag*\]`)`  
-Inserts the file *string* after *point*. If *flag* is not nil the buffer
-is marked as not modified. <u>B</u>
-
-Note: Currently the flag is forced to nil. The function should return
-`(«filename» «count»)` but it returns a flag indicating if the operation
-succeeded.
-
-`(erase-buffer)`  
-Erases all text in the current buffer. <u>C</u>
-
-`(delete)`  
-Deletes the character after *point*. <u>S: delete-char</u>
-
-`(backspace)`  
-Deletes the character to the left of *point*. <u>S:
-delete-backward-char</u>
-
-`(get-char)`  
-Returns the character at *point*. <u>S: get-byte</u>
-
-`(copy-region)`  
-Copies *region* to the *clipboard*. <u>S: copy-region-as-kill</u>
-
-`(kill-region)`  
-Deletes the text in the *region* and copies it to the *clipboard*.
-<u>D</u>
-
-`(yank)`  
-Pastes the *clipboard* before *point*. <u>C</u>
-
-##### Selection
-
-`(set-mark)`  
-Sets *mark* to *point*. <u>D</u>
-
-`(get-mark)`  
-Returns the position of *mark*, -1 if *mark* is unset. <u>S: mark</u>
-
-`(get-point)`  
-Returns the position of *point*. <u>S: point</u>
-
-`(get-point-max)`  
-Returns the maximum accessible value of point in the current buffer.
-<u>S: point-max</u>
-
-`(set-clipboard «variable»)`  
-`Sets «clipboard» to the contents of «variable».` <u>S:
-gui-set-selection</u>
-
-`(get-clipboard)`  
-Returns the *clipboard* contents. <u>S: gui-get-selection</u>
-
-##### Cursor Movement
-
-`(set-point «number»)`  
-Sets the point to in the current buffer to the position *number*. <u>S:
-goto-char</u>
-
-`(goto-line «number»)`  
-Sets the point in the current buffer to the first character on line
-*number*. <u>S: goto-line</u>, not an Elisp function.
-
-`(search-forward «string»)`  
-Searches for *string* in the current buffer, starting from point
-forward. If string is found, sets the point after the first occurrence
-of *string* and returns `t`, otherwise leaves point alone and returns
-`nil`. <u>D</u>
-
-`(search-backward «string»)`  
-Searches for *string* in the current buffer, starting from point
-backwards. If string is found, sets the point before the first
-occurrence of *string* and returns `t`, otherwise leaves point alone and
-returns `nil`. <u>D</u>
-
-`(beginning-of-buffer)`  
-Sets the point in the current buffer to the first buffer position,
-leaving mark in its current position. <u>C</u>
-
-`(end-of-buffer)`  
-Sets the point in the current buffer to the last buffer position,
-leaving mark in its current position. <u>C</u>
-
-`(beginning-of-line)`  
-Sets point before the first character of the current line, leaving mark
-in its current position. <u>S: move-beginning-of-line</u>
-
-`(end-of-line)`  
-Sets point after the last character of the current line, i.e. before the
-end-of-line character sequence, leaving mark in its current position.
-<u>S: move-end-of-line</u>
-
-`(forward-word)`  
-Moves the point in the current buffer forward before the first char of
-the next word. If there is no word left the point is set to the end of
-the buffer. If the point is already at the start or within a word, the
-current word is skipped. <u>D</u>: **Note**: Elisp moves to the *end* of
-the the next word.
-
-`(backward-word)`  
-Moves the point in the current buffer backward after the last char of
-the previous word. If there is no word left the point is set to the
-beginning of the buffer. If the point is already at the end or within a
-word, the current word is skipped. <u>D</u>: **Note**: Elisp moves to
-the *beginning* of the previous word.
-
-`(forward-char)`  
-Moves the point in the current buffer one character forward, but not
-past the end of the buffer. <u>C</u>
-
-`(backward-char)`  
-Moves the point in the current buffer one character backward, but not
-before the end of the buffer. <u>C</u>
-
-`(forward-page)`  
-Moves the point of the current buffer to the beginning of the last
-visible line of the associated screen and scrolls the screen up to show
-it as the first line. <u>S: scroll-up</u>
-
-`(backward-page)`  
-Moves the point of the current buffer to the beginning of the first
-visible line of the associated screen and scrolls the screen down to
-show it as the last line. <u>S: scroll-down</u>
-
-`(next-line)`  
-Moves the point in the current buffer to the same character position in
-the next line, or to the end of the next line if there are not enough
-characters. In the last line of the buffer moves the point to the end of
-the buffer. <u>C</u>
-
-`(previous-line)`  
-Moves the point in the current buffer to the same character position in
-the previous line, or to the end of the previous line if there are not
-enough characters. In the first line of the buffer the point is not
-moved. <u>C</u>
-
-##### Buffer management
-
-`(list-buffers)`  
-Lists all the buffers in a buffer called `*buffers*`.
-
-`(get-buffer-count)`  
-Returns the number of buffers, includes all special buffers and
-`*buffers*`.
-
-`(select-buffer «string»)`  
-Makes the buffer named *string* the current buffer. Note: <u>C</u> to
-`set-buffer` in Elisp.
-
-`(rename-buffer «string»)`  
-Rename the current buffer to *string*. <u>C</u>
-
-`(kill-buffer «string»)`  
-Kill the buffer names *string*. Unsaved changes are discarded. <u>C</u>
-
-`(get-buffer-name)`  
-Return the name of the current buffer. Note: <u>C</u> to `buffer-name`
-in Elisp.
-
-`(add-mode-global «string»)`  
-Sets global mode *string* for all buffers. Currently the only global
-mode is <span class="kbd">undo</span>.
-
-`(add-mode «string»)`  
-Set a flag for the current buffer.
-
-`(delete-mode «string»)`  
-Reset a flag for the current buffer.
-
-`(find-file «string»)`  
-Loads file with path *string* into a new buffer. After loading
-`(read-hook «string»)` is called. <u>C</u>
-
-`(save-buffer «string»)`  
-Saves the buffer named *string* to disk. <u>C</u>
-
-#### User Interaction
-
-This section lists function related to window and message line
-manipulation, keyboard input and system interaction.
-
-##### Window Handling
-
-`(delete-other-windows)`  
-Make current window the only window. <u>C</u>
-
-`(split-window)`  
-Splits the current window. Creates a new window for the current buffer.
-<u>C</u>
-
-`(other-window)`  
-Moves the cursor to the next window down on the screen. Makes the buffer
-in that window the current buffer. <u>D</u>
-
-Note: Elisp `other-window` has a required parameter *count*, which
-specifies the number of windows to move down or up.
-
-`(update-display)`  
-Updates all modified windows.
-
-`(refresh)`  
-Updates all windows by marking them modified and calling
-`update-display`.
-
-##### Message Line
-
-`(message «string»)`  
-Displays *string* in the message line. <u>D</u>
-
-`(clear-message-line)`  
-Displays the empty string in the message line.
-
-`(prompt «prompt» «default»)`  
-Displays *prompt* in the command line and sets *default* as initial
-value for the user response. The user can edit the response. When
-hitting return, the final response is returned.
-
-`(show-prompt «prompt» «default»)`  
-Displays *prompt* and *default* in the command line, but does not allow
-editing. Returns `t`.
-
-`(prompt-filename «prompt»)`  
-Displays *prompt* in the command line and allows to enter or search for
-a file name. Returns the relative path to the selected file name or the
-response typed by the user.
-
-##### Keyboard Handling
-
-`(set-key «key-name» «lisp-func»)`  
-Binds key key-name to the lisp function *lisp-func*.
-
-`(get-key-name)`  
-Returns the name of the currently pressed key, eg: `c-k` for control-k.
-
-`(get-key-funcname)`  
-Return the name of the function bound to the currently pressed key.
-
-`(execute-key)`  
-Executes the function of the last bound key. <span class="mark">Tbd.
-bound or pressed?</span>
-
-`(describe-bindings)`  
-Creates a listing of all current key bindings, in a buffer named
-`*help*` and displays it in a new window. <u>C</u>
-
-`(describe-functions)`  
-Creates a listing of all functions bound to keys in a buffer named
-`*help*` and displays it in a new window.
-
-`(getch)`  
-Waits for a key to be pressed and returns the key as string. See also
-`get-key-name`, `get-key-funcname` and `execute-key`.
-
-##### Programming and System Interaction
-
-`(exit)`  
-Exit Femto without saving modified buffers.
-
-`(eval-block)`  
-Evaluates the *region* in the current buffer, inserts the result at
-*point* and returns it. If *mark* in the current buffer is before
-*point* `eval-block` evaluates this *region* and inserts the result at
-*point*. If *point* is before *mark* `eval-block` does nothing but
-returning `t`.
-
-`(log-message «string»)`  
-Logs *string* to the `*messages*` buffer.
-
-`(log-debug «string»)`  
-Logs string to the file `debug.out`.
-
-`(get-version-string)`  
-Returns the complete version string of Femto, including the copyright.
 
 [^](#toc)

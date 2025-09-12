@@ -4,7 +4,6 @@
 
 ## Next
 
-- fix tap.lsp
 - Rename global argv to command-line-args, argv0 to invocation-name.
 
 

@@ -5,7 +5,7 @@
 (setq reportFd (open ">3"))
 
 (defun pr args
-  (mapcar (lambda (o) (princ reportFd)) args)
+  (mapcar (lambda (o) (princ o reportFd)) args)
   (princ "\n" reportFd))
 
 ;(defmacro test (comment . body)

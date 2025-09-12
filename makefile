@@ -44,9 +44,9 @@ FLISPFILES = flisp.rc lisp/flisp.lsp
 FLISPSOURCES = lisp.c lisp.h double.c double.h file.c file.h
 
 DOCFILES = BUGS CHANGE.LOG.md README.md pdoc/flisp.html
-MOREDOCS = README.html docs/flisp.md docs/femto.md
+MOREDOCS = README.html docs/flisp.md docs/implementation.md docs/femto.md
 
-FLISP_DOCFILES = README.flisp.md docs/flisp.md pdoc/flisp.html
+FLISP_DOCFILES = README.flisp.md docs/flisp.md pdoc/flisp.html docs/implementation.md pdoc/implementation.html
 
 
 .SUFFIXES: .rc .sht
@@ -140,6 +140,9 @@ window.o: window.c header.h
 doc: $(MOREDOCS)
 
 docs/flisp.md: pdoc/flisp.html pdoc/h2m.lua
+	pandoc -o $@ -t gfm -L pdoc/h2m.lua $<
+
+docs/implementation.md: pdoc/implementation.html pdoc/h2m.lua
 	pandoc -o $@ -t gfm -L pdoc/h2m.lua $<
 
 docs/femto.md: pdoc/femto.html pdoc/h2m.lua

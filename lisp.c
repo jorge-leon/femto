@@ -2346,11 +2346,25 @@ Object *asciiToString(Interpreter *interp, Object **args, Object **env)
 Object *asciiToInteger(Interpreter *interp, Object **args, Object **env)
 {
     if (strlen(FLISP_ARG_ONE->string) < 1)
-        exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(ascii->number string) - string is empty");
+        exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value,
+                            "(ascii->number string) - string is empty");
 
     return newInteger(interp, (int64_t)*FLISP_ARG_ONE->string);
 }
 
+// Interpreter introspection and configuration
+
+/** (flisp cmd[ arg..]) - query or set interpreter internals */
+Object *primitiveFlisp(Interpreter *interp, Object **args, Object **env)
+{
+    CHECK_TYPE(FLISP_ARG_ONE, type_symbol, "(flisp cmd[ arg..])");
+
+    if (!strcmp(FLISP_ARG_ONE->string, "version")) {
+        return newString(interp, FL_NAME " " FL_VERSION);
+    }
+    exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value,
+                            "(flisp cmd[ arg..]) - unknown command");
+}
 
 #ifdef FLISP_FEMTO_EXTENSION
 #include "femto.primitives.c"
@@ -2403,13 +2417,14 @@ Primitive primitives[] = {
     {"<<",            2,  2, TYPE_INTEGER, integerShiftLeft},
     {">>",            2,  2, TYPE_INTEGER, integerShiftRight},
     {"~",             1,  1, TYPE_INTEGER, integerNot},
-    {"string-equal",  2,  2, TYPE_STRING, stringEqual},
-    {"string-length", 1,  1, TYPE_STRING, stringLength},
-    {"string-append", 2,  2, TYPE_STRING, stringAppend},
-    {"substring",     1,  3, 0,           stringSubstring},
-    {"string-search", 2,  2, TYPE_STRING, stringSearch},
+    {"string-equal",  2,  2, TYPE_STRING,  stringEqual},
+    {"string-length", 1,  1, TYPE_STRING,  stringLength},
+    {"string-append", 2,  2, TYPE_STRING,  stringAppend},
+    {"substring",     1,  3, 0,            stringSubstring},
+    {"string-search", 2,  2, TYPE_STRING,  stringSearch},
     {"ascii",         1,  1, TYPE_INTEGER, asciiToString},
-    {"ascii->number", 1,  1, TYPE_STRING, asciiToInteger},
+    {"ascii->number", 1,  1, TYPE_STRING,  asciiToInteger},
+    {"flisp",         1, -1, 0,            primitiveFlisp},
 //    FLISP_REGISTER_FILE_EXTENSION
 #ifdef FLISP_FEMTO_EXTENSION
 #include "femto.register.c"

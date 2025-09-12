@@ -34,7 +34,7 @@ $(cat lisp/core.lsp)
 (setq *INPUT* (open "<0"))
 
 (progn
-  (prompt "fLisp 0.13")
+  (prompt (flisp 'version))
   (prompt "exit with C-d")
   (let ((result (repl nil)))
     (cond ((car result) (apply throw result))

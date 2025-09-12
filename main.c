@@ -36,7 +36,7 @@ void load_file(char *file)
         debug("failed to open file %s: %d", file, errno);
         return;
     }
-    interp->input = fd;
+    interp->input.fd = fd;
     interp->output = debug_fp;
     lisp_eval(interp, NULL);
     if (FLISP_RESULT_CODE(interp) != nil) {

@@ -367,6 +367,7 @@ void gc(Interpreter *interp)
     interp->global = gcMoveObject(interp, interp->global, &stats);
     interp->result = gcMoveObject(interp, interp->result, &stats);
     interp->error = gcMoveObject(interp, interp->error, &stats);
+    interp->input.path = gcMoveObject(interp, interp->input.path, &stats);
 
     // iterate over objects in to-space and move all objects they reference
     for (object = interp->memory->toSpace;
@@ -1283,7 +1284,7 @@ Object *primitiveRead(Interpreter *interp, Object **args, Object **env)
 {
     Object *eofv = nil;
     Object *stream = nil;
-    FILE *fd = interp->input;
+    FILE *fd = interp->input.fd;
 
     GC_CHECKPOINT;
     if (FLISP_HAS_ARGS) {
@@ -2354,13 +2355,23 @@ Object *asciiToInteger(Interpreter *interp, Object **args, Object **env)
 
 // Interpreter introspection and configuration
 
-/** (flisp cmd[ arg..]) - query or set interpreter internals */
-Object *primitiveFlisp(Interpreter *interp, Object **args, Object **env)
+/** (interp cmd[ arg..]) - query or set interpreter internals */
+Object *primitiveInterp(Interpreter *interp, Object **args, Object **env)
 {
-    CHECK_TYPE(FLISP_ARG_ONE, type_symbol, "(flisp cmd[ arg..])");
+    CHECK_TYPE(FLISP_ARG_ONE, type_symbol, "(interp cmd[ arg..])");
 
     if (!strcmp(FLISP_ARG_ONE->string, "version")) {
         return newString(interp, FL_NAME " " FL_VERSION);
+    }
+    if (!strcmp(FLISP_ARG_ONE->string, "input")) {
+        if (FLISP_HAS_ARG_TWO) {
+            CHECK_TYPE(FLISP_ARG_TWO, type_stream, "(interp input[ fd] - fd");
+            interp->input.fd   = FLISP_ARG_TWO->fd;
+            interp->input.path = FLISP_ARG_TWO->path;
+            interp->input.buf  = FLISP_ARG_TWO->buf;
+            interp->input.len  = FLISP_ARG_TWO->size;
+        }
+        return &(interp->input);
     }
     exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value,
                             "(flisp cmd[ arg..]) - unknown command");
@@ -2424,7 +2435,7 @@ Primitive primitives[] = {
     {"string-search", 2,  2, TYPE_STRING,  stringSearch},
     {"ascii",         1,  1, TYPE_INTEGER, asciiToString},
     {"ascii->number", 1,  1, TYPE_STRING,  asciiToInteger},
-    {"flisp",         1, -1, 0,            primitiveFlisp},
+    {"interp",         1, -1, 0,            primitiveInterp},
 //    FLISP_REGISTER_FILE_EXTENSION
 #ifdef FLISP_FEMTO_EXTENSION
 #include "femto.register.c"
@@ -2590,12 +2601,16 @@ Interpreter *lisp_new(
     envSet(interp, &var, &val, &interp->global, true);
 
     /* input stream */
-    if (input) {
-        interp->input = input;
-        val = newStreamObject(interp, input, "STDIN");
-        var = newSymbol(interp, "*INPUT*");
-        (void)envSet(interp, &var, &val, &interp->global, true);
-    }
+    var = newSymbol(interp, "*INPUT*");
+    val = (interp) ? newStreamObject(interp, input, "STDIN") : nil;
+    var = newSymbol(interp, "*INPUT*");
+    interp->input.type = type_stream;
+    interp->input.fd = input;
+    interp->input.path = var;
+    interp->input.buf = NULL;
+    interp->input.len = 0;
+    (void)envSet(interp, &var, &val, &interp->global, true);
+
     /* output stream */
     if (output) {
         interp->output = output;
@@ -2711,14 +2726,15 @@ void lisp_eval(Interpreter *interp, char *input)
 
     if (input == NULL) {
         fl_debug(interp, "lisp_eval()\n");
-        if (interp->input  == NULL) {
+        if (interp->input.fd  == NULL) {
             setInterpreterResult(interp, nil, invalid_value, "no input stream configured");
             return;
         }
     } else {
         fl_debug(interp, "lisp_eval(\"%s\")\n", input);
         if (NULL == (fd = fmemopen(input, strlen(input), "r")))  {
-            setInterpreterResult(interp, nil, io_error, "fmemopen() for input string failed: %s", strerror(errno));
+            setInterpreterResult(interp, nil, io_error,
+                                 "fmemopen() for input string failed: %s", strerror(errno));
             return;
         }
     }

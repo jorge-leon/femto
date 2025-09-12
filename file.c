@@ -60,7 +60,7 @@ Object *primitiveFflush(Interpreter *interp, Object** args, Object **env)
 Object *primitiveFseek(Interpreter *interp, Object** args, Object **env)
 {
     int result, whence = SEEK_SET;
-    FILE *fd = interp->input;
+    FILE *fd = interp->input.fd;
     off_t pos;
 
     if (FLISP_ARG_ONE == nil) {
@@ -99,7 +99,7 @@ Object *primitiveFseek(Interpreter *interp, Object** args, Object **env)
  */
 Object *primitiveFtell(Interpreter *interp, Object** args, Object **env)
 {
-    FILE *fd = interp->input;
+    FILE *fd = interp->input.fd;
     off_t pos;
 
     if (FLISP_HAS_ARGS) {
@@ -121,7 +121,7 @@ Object *primitiveFtell(Interpreter *interp, Object** args, Object **env)
  */
 Object *primitiveFeof(Interpreter *interp, Object** args, Object **env)
 {
-    FILE *fd = interp->input;
+    FILE *fd = interp->input.fd;
 
     if (FLISP_HAS_ARGS) {
         if (FLISP_ARG_ONE->fd == NULL)
@@ -141,7 +141,7 @@ Object *primitiveFgetc(Interpreter *interp, Object** args, Object **env)
 {
     char s[] = "\0\0";
     int c;
-    FILE *fd = interp->input;
+    FILE *fd = interp->input.fd;
 
     if (FLISP_HAS_ARGS) {
         CHECK_TYPE(FLISP_ARG_ONE, type_stream, "(fgetc[ stream] - stream)");
@@ -177,7 +177,7 @@ Object *primitiveFgetc(Interpreter *interp, Object** args, Object **env)
 Object *primitiveFungetc(Interpreter *interp, Object** args, Object **env)
 {
     int c;
-    FILE *fd = interp->input;
+    FILE *fd = interp->input.fd;
 
     CHECK_TYPE(FLISP_ARG_ONE, type_integer, "(fungetc char[ stream] - char)");
     if (FLISP_HAS_ARG_TWO) {
@@ -210,7 +210,7 @@ Object *primitiveFgets(Interpreter *interp, Object** args, Object **env)
 {
     Object *string = nil;
     char *input;
-    FILE *fd = interp->input;
+    FILE *fd = interp->input.fd;
 
     if (FLISP_HAS_ARGS) {
         CHECK_TYPE(FLISP_ARG_ONE, type_stream, "(fgets[ stream] - stream)");
@@ -337,7 +337,7 @@ Object *primitiveFstat(Interpreter *interp, Object** args, Object **env)
 
     GC_RETURN(*gcResult);
 }
-/** (fttyp fd) - check if stream has a tty
+/** (fttyp[ fd]) - check if input or stream has a tty
  *
  * @param fd  stream
  *
@@ -346,7 +346,10 @@ Object *primitiveFstat(Interpreter *interp, Object** args, Object **env)
  */
 Object *primitiveFttyP(Interpreter *interp, Object** args, Object **env)
 {
-    return (isatty(fileno(FLISP_ARG_ONE->fd))) ? t : nil;
+    FILE* fd = interp->input.fd;
+    if (FLISP_HAS_ARGS)
+        fd = FLISP_ARG_ONE->fd;
+    return (isatty(fileno(fd))) ? t : nil;
 }
 /** (fmkdir path[ mode]) - create directory
  *
@@ -483,7 +486,7 @@ Primitive flisp_file_primitives[] = {
     {"fungetc",   1, 2, 0,           primitiveFungetc},
     {"fgets",     0, 1, 0,           primitiveFgets},
     {"fstat",     1, 2, 0,           primitiveFstat},
-    {"fttyp",     1, 1, TYPE_STREAM, primitiveFttyP},
+    {"fttyp",     0, 1, TYPE_STREAM, primitiveFttyP},
     {"fmkdir",    1, 2, 0,           primitiveMkdir},
     {"popen",     1, 2, TYPE_STRING, primitivePopen},
     {"pclose",    1, 1, TYPE_STREAM, primitivePclose},

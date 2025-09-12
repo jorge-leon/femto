@@ -93,6 +93,9 @@ In 2025 another set of changes were introduced:
 - The Lisp libraries have been extended and functions have been
   improved for compatibilty.
 - Lisp object space adjusts dynamically when needed.
+- setq was replaced by bind
+- Enough framework was built to implement the repl completely in Lisp.
+
 
 ## Building
 

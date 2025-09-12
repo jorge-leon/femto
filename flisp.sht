@@ -13,11 +13,11 @@ $(cat lisp/core.lsp)
      (getopts (cdr opts) 0))))
 
 (defun prompt s
-  (cond ((fttyp *INPUT*)  (princ (concat "\n" s)))) )
+  (cond ((fttyp)  (princ (concat "\n" s)))) )
 
 (defun repl (r)
   (prompt "> ")
-  (let ((result (catch (eval (read *INPUT*)))))
+  (let ((result (catch (eval (read)))))
     (cond ((same (car result) end-of-file) (prompt) r)
 	  ((car result)
 	   (prompt "error: "(car result)": '"(caddr result)"' - "(cadr result))
@@ -31,10 +31,9 @@ $(cat lisp/core.lsp)
 (let ((result (catch (getopts argv 0))))
   (cond ((car result) (princ "could not load rc file\n"))))
 
-(setq *INPUT* (open "<0"))
-
 (progn
-  (prompt (flisp 'version))
+  (interp 'input (open "<0"))
+  (prompt (interp 'version))
   (prompt "exit with C-d")
   (let ((result (repl nil)))
     (cond ((car result) (apply throw result))

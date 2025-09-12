@@ -5,9 +5,6 @@
 ## Next
 
 - fix tap.lsp
-- Implement `(flisp subcommand[arg..])` introspection and configuration command.
-  - (flisp version) => version string
-  - (flisp input[ fd])
 - Rename global argv to command-line-args, argv0 to invocation-name.
 
 
@@ -54,6 +51,8 @@
 - ? CSP between interpreters?
 
 ## fLisp 0.13
+- Implemented interp introspection and configuration command with version and
+  input subcommands.
 - Implemented simple repl in Lisp and minimized flisp.c
 - Replace setq and define with bind in the core. setq is defined in core.lsp
 - Moved append, fold-left, flip, reverse, apply, print, princ to core.lsp

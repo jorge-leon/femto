@@ -175,9 +175,10 @@ interpreter, extension functions behave the same as core functions.
 #### Syntax
 
 Program text is written as a sequence of symbolic expressions -
-<span class="dfn">sexp</span>'s - in parenthesized form. A
-[sexp](https://en.wikipedia.org/wiki/S-expression) is either a single
-symbol or a sequence of symbols or sexp's enclosed in parenthesis.
+<span class="abbr"><span class="dfn">sexp</span></span>'s - in
+parenthesized form. A [sexp](https://en.wikipedia.org/wiki/S-expression)
+is either a single symbol or a sequence of symbols or sexp's enclosed in
+parenthesis.
 
 The following characters are special to the reader:
 
@@ -189,7 +190,8 @@ Starts a function or macro invocation, a *list* or *cons* object (see
 Finishes a function invocation, *list* or *cons* object.
 
 `'` and `:`  
-With a single quote or a colon prefix before a sexp, the sexp is
+With a single quote or a colon prefix before a
+<span class="abbr">sexp</span>, the <span class="abbr">sexp</span> is
 expanded to `(quote «sexp»)` before it is evaluated.
 
 `.`  
@@ -581,8 +583,8 @@ Read a line or up to `INPUT_FMT_BUFSIZ` from *stream* or input.
 `(fstat «path»[ «linkp»])`  
 Get information about file at *path*.
 
-`(fttyp «fd»)`  
-Return true if stream *fd* is associated with a TTY.
+`(fttyp[ «fd»])`  
+Return true if input or stream *fd* is associated with a TTY.
 
 `(fmkdir «path»[ «mode»])`  
 Create directory at *path* with *mode*.
@@ -1495,12 +1497,6 @@ Femto editor requires much more memory because of the needs of the “OXO”
 game.
 
 #### Future Directions
-
-It is now possible to catch exceptions within Lisp code and exceptions
-return differentiated error codes and use POSIX stream I/O. This,
-together with the `(eval)` primitive would allow to write the repl
-directly in Lisp, and reading and eval'ing until no more “incomplete
-input” result codes are returned.
 
 Loops are availble via the labelled let macro and supported by `iota`.
 It could made easier, by any combination of:

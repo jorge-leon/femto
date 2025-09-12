@@ -42,6 +42,7 @@
   - Make double extensions optional.
   - Replace string-contains with string-search.
   - Make file extension optional.
+    - (file-readable-p filename) in core to replace (fstat) in femto.rc/flisp.rc
   - Reduce binary operators to 'and' and 'xor' and write needed rest in Lisp.
 - Event based I/O
   - Buffered I/O operations throw yield exception if buffers are full (w) /empty

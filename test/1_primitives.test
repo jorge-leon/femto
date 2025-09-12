@@ -324,19 +324,19 @@ flisp_expr
 [ -e _file_ ]; ok open-1 create file
 rm -f _file_
 
-RESULT=$(echo '(open "empty.lsp")' | $FLISP | grep -E '#<Stream 0x[0-9a-f]{1,16}, empty.lsp>')
+RESULT=$(echo '(open "empty.lsp")' | $FLISP | grep -E '#<Stream [0-9A-F]{8,} empty.lsp>')
 ok open-2 open file readonly
 
-RESULT=$(echo '(open "<0")' | $FLISP | grep -E "#<Stream 0x[0-9a-f]{1,16}, <0>")
+RESULT=$(echo '(open "<0")' | $FLISP | grep -E "#<Stream [0-9A-F]{8,} <0>")
 ok open-3 open readable file descriptor
 
-RESULT=$(echo '(open ">1")' | $FLISP | grep -E "#<Stream 0x[0-9a-f]{1,16}, >1>")
+RESULT=$(echo '(open ">1")' | $FLISP | grep -E "#<Stream [0-9A-F]{8,} >1>")
 ok open-4 open writeable file descriptor
 
-RESULT=$(echo '(open "any text" "<")' | $FLISP | grep -E "#<Stream 0x[0-9a-f]{1,16}, <STRING>")
+RESULT=$(echo '(open "any text" "<")' | $FLISP | grep -E "#<Stream [0-9A-F]{8,} <STRING>")
 ok open-5 open memory input stream
 
-RESULT=$(echo '(open "" ">")' | $FLISP | grep -E "#<Stream 0x[0-9a-f]{1,16}, >STRING>")
+RESULT=$(echo '(open "" ">")' | $FLISP | grep -E "#<Stream [0-9A-F]{8,} >STRING>")
 ok open-6 open memory output stream
 
 IN='(close (open "empty.lsp"))' OUT="0"

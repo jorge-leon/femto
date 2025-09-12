@@ -142,7 +142,7 @@ Interpreter *lisp_interpreters = NULL;
 
 void fl_fatal(char *message, int code)
 {
-    fprintf(stderr, "%s", message);
+    fputs(message, stderr);
     exit(code);
 }
 
@@ -169,7 +169,8 @@ void fl_debug(Interpreter *interp, char *format, ...)
     va_start(args, format);
     if (vfprintf(interp->debug, format, args) < 0) {
         va_end(args);
-        (void)fprintf(interp->debug, "fatal: failed to print debug message: %d, %s", errno, format);
+        (void)fprintf(interp->debug,
+                      "fatal: failed to print debug message %s: %s", format, strerror(errno));
     }
     va_end(args);
     (void)fflush(interp->debug);
@@ -1314,7 +1315,6 @@ Object *primitiveRead(Interpreter *interp, Object **args, Object **env)
 // Special forms handled by evalExpr. Must be in the same order as above.
 enum {
     PRIMITIVE_QUOTE,
-//    PRIMITIVE_SETQ,
     PRIMITIVE_BIND,
     PRIMITIVE_PROGN,
     PRIMITIVE_COND,
@@ -1400,7 +1400,7 @@ Object *evalBind(Interpreter *interp, Object **args, Object **env)
     GC_RETURN(*gcVal);
 }
 
-
+/** (progn[ ..]) => o: return last value of list */
 Object *evalProgn(Interpreter *interp, Object **args, Object **env)
 {
     if (*args == nil)
@@ -1632,8 +1632,6 @@ Object *evalExpr(Interpreter *interp, Object ** object, Object **env)
             switch ((uintptr_t)primitive->eval) {
             case PRIMITIVE_QUOTE:
                 GC_RETURN((*gcArgs)->car);
-//            case PRIMITIVE_SETQ:
-//                GC_RETURN(evalSetVar(interp, gcArgs, gcEnv, true));
             case PRIMITIVE_BIND:
                 GC_RETURN(evalBind(interp, gcArgs, gcEnv));
             case PRIMITIVE_PROGN:
@@ -1715,9 +1713,8 @@ void writeString(Interpreter *interp, FILE *fd, char *str)
 {
     if (fd == NULL) return;
 
-    int len = strlen(str);
-    if(fprintf(fd, "%s", str) != len)
-        exception(interp, io_error, "failed to write %d files, errno: %d", len, errno);
+    if(fputs(str, fd) == EOF)
+        exception(interp, io_error, "failed to write string %s",strerror(errno));
 }
 /** writeFmt - write printf formatted string to file descriptor
  *
@@ -1742,7 +1739,7 @@ void writeFmt(Interpreter *interp, FILE *fd, char *format, ...)
     len = vfprintf(fd, format, args);
     va_end(args);
     if (len < 0)
-        exception(interp, io_error, "failed to fprintf, errno: %d", errno);
+        exception(interp, io_error, "writeFmt(): failed to fprintf, %s", strerror(errno));
 }
 
 
@@ -1769,13 +1766,16 @@ void lisp_write_object(Interpreter *interp, FILE *fd, Object *object, bool reada
         writeFmt(interp, fd, "%g", object->number);
 #endif
     else if (object->type == type_symbol)
-        writeFmt(interp, fd, "%s", object->string);
+        writeString(interp, fd, object->string);
     else if (object->type == type_primitive)
         writeFmt(interp, fd, "#<Primitive %s>", object->primitive->name);
     else if (object->type == type_stream)
-        writeFmt(interp, fd, "#<Stream %p, %s>", (void *) object->fd, object->path->string);
+        writeFmt(interp, fd, "#<Stream %"PRIXPTR" %s>",
+                 (uintptr_t) object->fd,
+                 object->path->string
+            );
     else if (object->type == type_string)
-        if (!readably) writeFmt(interp, fd, "%s", object->string); else {
+        if (!readably) writeString(interp, fd, object->string); else {
             writeChar(interp, fd, '"');
             char *string;
             for (string = object->string; *string; ++string) {
@@ -2358,7 +2358,6 @@ Object *asciiToInteger(Interpreter *interp, Object **args, Object **env)
 
 Primitive primitives[] = {
     {"quote",         1,  1, 0, (LispEval) PRIMITIVE_QUOTE /* special form */ },
-//    {"setq",          0, -2, 0, (LispEval) PRIMITIVE_SETQ  /* special form */ },
     {"bind",          2,  3, 0, (LispEval) PRIMITIVE_BIND  /* special form */ },
     {"progn",         0, -1, 0, (LispEval) PRIMITIVE_PROGN /* special form */ },
     {"cond",          0, -1, 0, (LispEval) PRIMITIVE_COND  /* special form */ },
@@ -2366,7 +2365,6 @@ Primitive primitives[] = {
     {"macro",         1, -1, 0, (LispEval) PRIMITIVE_MACRO  /* special form */ },
     {"macroexpand-1", 1,  2, 0, (LispEval) PRIMITIVE_MACROEXPAND /* special form */ },
     {"catch",         1,  1, 0, (LispEval) PRIMITIVE_CATCH  /*special form */ },
-//    {"bind",          2,  3, 0,         primitiveBind},
     {"null",          1,  1, 0,         primitiveNullP},
     {"type-of",       1,  1, 0,         primitiveTypeOf},
     {"consp",         1,  1, 0,         primitiveConsP},

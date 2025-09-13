@@ -17,14 +17,17 @@
 ;;   The move from C to Lisp allows implementation of more
 ;;   powerful system interaction in the future
 (defun shell-command arg
-  (cond
-    (arg (setq command arg))
-    (t (setq command (prompt-filename "Command: "))))
-  (cond (command (shell-exec command))))
+  (let ((command nil))
+    (cond
+      (arg (setq command (string-trim (concat arg))))
+      (t (setq command (prompt-filename "Command: "))))
+    (cond (command (shell-exec command)))))
 
 (defun shell-exec (command)
+  (cond ((string-equal "-" (substring command 0 1))
+	 (throw invalid-value "shell command must not start with a hypen" command)))
   (setq temp (get-temp-file))
-  (setq rc (system (concat command " > " temp " 2>&1 <&-")))
+  (setq rc (system (concat command " > " temp " 2>&1 </dev/null")))
   (cond
     ((eq command ""))
     ((or (eq rc -1) (eq rc 127))
@@ -35,8 +38,7 @@
      (erase-buffer)
      (insert-file-contents-literally temp)
      (system (concat "rm -f " temp))
-     (clear-message-line)
-     )))
+     (clear-message-line) )))
 
 (defun insert-file ()
   (setq fn (prompt-filename "Insert file: "))

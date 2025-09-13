@@ -8,6 +8,10 @@
 #include <errno.h>
 #include "header.h"
 
+#include <unistd.h>
+ #include <fcntl.h>
+
+
 void gui(void); /* The GUI loop used in interactive mode */
 
 #define CPP_XSTR(s) CPP_STR(s)
@@ -19,42 +23,20 @@ FILE *prev, *debug_fp = NULL;
 char* output;
 size_t len;
 
-/** Lisp eval a file
+/** lisp_init() - initialize fLisp interpreter and load rc file
  *
- * @param: file .. path to file.
+ * @param: argv .. Array of commandline arguments.
  *
- * Tries to open the file indicated by *path* and feeds it to the Lisp
- * interpreter.
+ * Determines the path to the rc file and opens it, optionally opens
+ * the debug file and instantiates an fLisp interpreter with this files.
  *
  * Output and Errors are logged to the debug file descriptor.
  *
  */
-void load_file(char *file)
+void lisp_init(char **argv)
 {
-    FILE *fd;
-    if (!(fd = fopen(file, "r"))) {
-        debug("failed to open file %s: %d", file, errno);
-        return;
-    }
-    interp->input.fd = fd;
-    interp->output = debug_fp;
-    lisp_eval(interp, NULL);
-    if (FLISP_RESULT_CODE(interp) != nil) {
-        debug("failed to load file %s:\n", file);
-        lisp_write_error(interp, debug_fp);
-        if (FLISP_RESULT_CODE(interp) == out_of_memory)
-            fatal("OOM, exiting..");
-    }
-    if (fclose(fd))
-        debug("failed to close file %s\n", file);
-}
-
-int main(int argc, char **argv)
-{
-    char *envv, *library_path, *init_file;
-
-    batch_mode = ((envv=getenv("FEMTO_BATCH")) != NULL && strcmp(envv, "0"));
-    debug_mode = ((envv=getenv("FEMTO_DEBUG")) != NULL && strcmp(envv, "0"));
+    FILE *init_fd = NULL;
+    char *library_path, *init_file;
 
     if ((library_path=getenv("FEMTOLIB")) == NULL)
         library_path = CPP_XSTR(E_SCRIPTDIR);
@@ -62,11 +44,33 @@ int main(int argc, char **argv)
     if ((init_file = getenv("FEMTORC")) == NULL)
         init_file = CPP_XSTR(E_INITFILE);
 
-    if (debug_mode)
-        if (!(debug_fp = fopen(debug_file, "w")))
-            fatal("could not open debug file");
+    if ((init_fd = fopen(init_file, "r")) == NULL)
+        debug("failed to open rc file %s: %s\n", init_file, strerror(errno));
 
-    debug("start\n");
+    interp = lisp_new(argv, library_path, init_fd, debug_fp, debug_fp);
+    if (interp == NULL)
+        fatal("fLisp initialization failed");
+    debug("evaluating rc file %s\n", init_file);
+    lisp_eval(interp, NULL);
+    if (FLISP_RESULT_CODE(interp) != nil) {
+        debug("failed to load rc file %s:\n", init_file);
+        lisp_write_error(interp, debug_fp);
+        if (FLISP_RESULT_CODE(interp) == out_of_memory)
+            fatal("OOM, exiting..");
+    }
+    if (fclose(init_fd))
+        debug("failed to close rcfile %s: %s\n", init_file, strerror(errno));
+}
+
+int main(int argc, char **argv)
+{
+    char *envv;
+    batch_mode = ((envv=getenv("FEMTO_BATCH")) != NULL && strcmp(envv, "0"));
+    debug_mode = ((envv=getenv("FEMTO_DEBUG")) != NULL && strcmp(envv, "0"));
+
+    if (debug_mode)
+        if ((debug_fp = fopen(debug_file, "w")) == NULL)
+            fatal("could not open debug file");
 
     /* buffers */
     setlocale(LC_ALL, "") ; /* required for 3,4 byte UTF8 chars */
@@ -77,15 +81,12 @@ int main(int argc, char **argv)
     wheadp = curwp = new_window();
     associate_b2w(curbp, curwp);
 
+    /* keymaps */
     setup_keys();
 
-    /* Lisp interpreter */
-    interp = lisp_new(argv, library_path, NULL, NULL, debug_fp);
-    if (interp == NULL)
-        fatal("fLisp initialization failed");
+    lisp_init(argv);
 
-    if (strlen(init_file))
-        load_file(init_file);
+    debug("start\n");
 
     /* GUI */
     if (!batch_mode) gui();

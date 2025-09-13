@@ -4,6 +4,7 @@
 
 ## Next
 
+- Make logging mask, and suppress catch messages by default
 - Rename global argv to command-line-args, argv0 to invocation-name.
 - Make file extension optional, WIP
   - Move to (catch load ..) again to replace (fstat) in femto.rc/flisp.rc
@@ -18,7 +19,6 @@
   - (flisp gc) => memory info
 - Add read and eval tracing.
 - Implement mkdir -p functionality and fix Femto file save bug.
-- Fix Femto null input problem
 - Implement pipe shell output to buffer "*Shell Command Output*"
 
 ## Future
@@ -52,6 +52,9 @@
     (r).
 - Test more then one interpreter.
 - ? CSP between interpreters?
+
+## flisp 0.14
+- Fix Femto null input problem
 
 
 ## fLisp 0.13

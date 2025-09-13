@@ -5,26 +5,32 @@
 ## Next
 
 - Rename global argv to command-line-args, argv0 to invocation-name.
-
-
-## Future
-
+- Make file extension optional, WIP
+  - Move to (catch load ..) again to replace (fstat) in femto.rc/flisp.rc
+- Size reduction:
+  - Replace string-contains with string-search.
+  - Reduce binary operators to 'and' and 'xor' and write needed rest in Lisp.
 - Implement `(flisp subcommand[arg..])` introspection and configuration command.
-  - (flisp version) => version string
-  - (flisp input[ fd])
   - (flisp output[ fd])
   - (flisp error[ fd])
   - (flisp debug[ fd])
   - (flisp types[ type..]) => list of types
   - (flisp gc) => memory info
+- Add read and eval tracing.
+- Implement mkdir -p functionality and fix Femto file save bug.
+- Fix Femto null input problem
+- Implement pipe shell output to buffer "*Shell Command Output*"
+
+## Future
+
 - Implement backquote and friends.
   - The reader already implements '`', ',' and ',@' as `quasiquote`, `unquote`
     and `splice-unquote`.
+- Rewrite if as (defmacro if (pred then . else) ...)
 - Fix reduce, implement map, consider simplifying core functions and make them
   n-ary in Lisp.
 - Make extensions plugable.
 - Cleanup cerf: not so easy to do.
-- Add read and eval tracing.
 - Hash
   - Add new 'hash' field as uintptr_t to Lisp object struct type union.
   - Initialize each string type object with a hash of 0.
@@ -39,16 +45,14 @@
   - Rationale: embedding, 32, 16, 8 bit versions
 - posit's: https://en.wikipedia.org/wiki/Unum_(number_format)
 - Size reduction:
-  - Make double extensions optional.
-  - Replace string-contains with string-search.
-  - Make file extension optional.
-    - (file-readable-p filename) in core to replace (fstat) in femto.rc/flisp.rc
-  - Reduce binary operators to 'and' and 'xor' and write needed rest in Lisp.
+  - Make double extension optional.
+  - Make file extension optional
 - Event based I/O
   - Buffered I/O operations throw yield exception if buffers are full (w) /empty
     (r).
 - Test more then one interpreter.
 - ? CSP between interpreters?
+
 
 ## fLisp 0.13
 - Implemented interp introspection and configuration command with version and

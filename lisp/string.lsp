@@ -67,18 +67,6 @@
   (substring s -1))
 
 
-;;
-;; string-contains - return t if search is contained in str
-;;
-(defun string-contains (str search)
-   (cond
-     ((< (length str) (length search)) nil)  
-     ((eq str "") nil)
-     ((eq search "") nil)
-     ((string-startswith str search) t)
-     ((eq (string-shrink-right str) "") nil)
-     (t (string-contains (string-shrink-right str) search))))
-
 (provide 'string)
 
 

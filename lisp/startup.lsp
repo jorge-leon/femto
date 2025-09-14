@@ -119,12 +119,9 @@
 ;; Try to load the user rc file
 ;;
 (let ((rcfile (confn config_file)) (result nil))
-  (setq result (catch (fstat rcfile)))
-  (cond ((car result) (log 'ERROR result "locating rc file"))
-	(t
-	 (cond ((car (setq result (catch (load rcfile))))
-		(log 'ERROR result "rc file not loaded"))
-	       (t (log 'NOTICE nil "rc file '"rcfile"' loaded\n")) ))))
+  (cond ((car (setq result (catch (load rcfile))))
+	 (log 'ERROR result "error loading rc file:"))
+	(t (log 'NOTICE nil "rc file '"rcfile"' loaded\n")) ))
 
 ;;
 ;; Try to parse the commandline arguments

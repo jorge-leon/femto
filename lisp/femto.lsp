@@ -6,6 +6,10 @@
 (require 'flisp)
 (require 'string)
 
+;;; Emacs compatibility
+(setq command-line-args argv)
+(setq invocation-name argv0)
+
 (defun load-script(fn)
   (load (concat script_dir "/" fn)))
 

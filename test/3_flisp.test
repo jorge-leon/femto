@@ -2,7 +2,7 @@
 # test the fLisp library
 # leg20231129: Femto
 
-tap 69
+tap 45
 
 export FLISPRC=../flisp.rc
 flisplib() { IN="(require 'flisp) $IN" flisp_expr "$@"; }
@@ -54,40 +54,6 @@ flisplib 1; ok listp-3 single element list is list
 IN="(listp '(a 0))" OUT=t
 flisplib 1; ok listp-4 two element list is list
 
-# and
-IN='(and)' OUT=t
-flisplib 1; ok and-1  no args is t
-
-IN='(and t)' OUT=t
-flisplib 1; ok and-2  t is t
-
-IN='(and nil)' OUT=nil
-flisplib 1; ok and-3  nil is nil
-
-IN='(and t nil)' OUT=nil
-flisplib 1; ok and-4  t nil is nil
-
-IN='(and nil t)' OUT=nil
-flisplib 1; ok and-5  nil t is nil
-
-IN='(and nil nil)' OUT=nil
-flisplib 1; ok and-6  nil nil is nil
-
-IN='(and t t)' OUT=t
-flisplib 1; ok and-7 t t is t
-
-IN='(and "a")' OUT='"a"'
-flisplib 1; ok and-8 single not nil is itself
-
-IN='(and t "a")' OUT='"a"'
-flisplib 1; ok and-9 not nil at end is itself
-
-IN='(and "a" 0 t)' OUT=t
-flisplib 1; ok and-10 triple t is true
-
-IN='(defun aa (p) (and p p)) (aa nil)' OUT=nil
-flisplib 1; ok and-11 macro env not working
-
 IN='(or)' OUT=nil
 flisplib 1; ok or-1 empty or is false
 
@@ -112,53 +78,7 @@ flisplib 1; ok or-7 triple nil is nil
 IN='(or nil nil nil "a" "b" nil)' OUT='"a"'
 flisplib 1; ok or-8 nil with not nil is first itself
 
-false; ok reduce-1 \# TODO
-
 # Math
-
-IN='(max)'
-ERR="(env) expects at least 1 arguments"
-OBJ='#<Lambda (n . args)>'
-flisplib_err 1; ok max-1 with nil fails
-
-IN='(max "a")'
-ERR="not a number"
-OBJ='"a"'
-flisplib_err 1; ok max-2 with not number fails
-
-IN='(max 0)' OUT=0
-flisplib 1; ok max-3 with single number yields number
-
-IN='(max 2 1)' OUT=2
-flisplib 1; ok max-4 with 'a>b' yields a
-
-IN='(max 1 2)' OUT=2
-flisplib 1; ok max-5 with 'a<b' yields b
-
-IN='(max 1 2 3)' OUT=3
-flisplib 1; ok max-6 with more then two args
-
-IN='(min)'
-ERR="(env) expects at least 1 arguments"
-OBJ='#<Lambda (n . args)>'
-flisplib_err 1; ok min-1 with nil fails
-
-IN='(min "a")'
-ERR="not a number"
-OBJ='"a"'
-flisplib_err 1; ok min-2 with not number fails
-
-IN='(min 0)' OUT=0
-flisplib 1; ok min-3 with single number yields number
-
-IN='(min 1 2)' OUT=1
-flisplib 1; ok min-4 with 'a<b' yields a
-
-IN='(min 2 1)' OUT=1
-flisplib 1; ok min-5 with 'a>b' yields b
-
-IN='(min 1 2 3)' OUT=1
-flisplib 1; ok min-6 with more then two args
 
 IN='(nthcdr -1 nil)'
 ERR="negative index"

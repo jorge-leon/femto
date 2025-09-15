@@ -5,6 +5,9 @@
 
 (require 'flisp)
 (require 'string)
+(require 'file)
+
+;;; Utilities
 
 ;;; Emacs compatibility
 (setq command-line-args argv)

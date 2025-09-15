@@ -5,7 +5,7 @@
 
 export FLISPRC=../flisp.rc
 
-tap 28
+tap 27
 
 stringlib() { IN="(require 'string) $IN" flisp_expr "$@"; }
 stringlib_err() { IN="(require 'string) $IN" flisp_err "$@"; }
@@ -83,3 +83,7 @@ stringlib 1; ok string-string-shrink-left-1 string-shrink-left from empty string
 IN='(string-shrink-left "abcde")' OUT='"abcd"'
 stringlib 1; ok string-string-shrink-left-2 string-shrink-left from string is on char less
 
+false; ok string-first-char \# TODO
+false; ok string-last-char \# TODO
+false; ok string-empty-p \# TODO
+false; ok string-split \# TODO

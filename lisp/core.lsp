@@ -41,6 +41,14 @@
 
 (defun numberp (o) (cond  ((integerp o)) ((doublep o))))
 
+(defun assert-type (o type s)
+  (cond ((not (same (type-of o) type))
+	 (throw invalid-value (concat s ": expected "type", got " (type-of o)) o))))
+
+(defun assert-number (o s)
+  (cond ((not (numberp o))
+	 (throw invalid-value (concat s ": expected number, got " (type-of o)) o))))
+
 (defun cadr (l) (car (cdr l)))
 (defun cddr (l) (cdr (cdr l)))
 (defun caddr (l) (car (cdr (cdr l))))
@@ -176,12 +184,18 @@
   (cond ((null list))
 	((predicate start (car list)) (fold-leftp predicate (car list) (cdr list)))))
 
-(defun =  (x . args) (fold-leftp (coercec i=  d=)  x args))
-(defun <  (x . args) (fold-leftp (coercec i<  d<)  x args))
-(defun <= (x . args) (fold-leftp (coercec i<= d<=)  x args))
-(defun >  (x . args) (fold-leftp (coercec i>  d>)  x args))
-(defun >= (x . args) (fold-leftp (coercec i>= d>=)  x args))
+(defun =  (n . args) (fold-leftp (coercec i=  d=)  n args))
+(defun <  (n . args) (fold-leftp (coercec i<  d<)  n args))
+(defun <= (n . args) (fold-leftp (coercec i<= d<=)  n args))
+(defun >  (n . args) (fold-leftp (coercec i>  d>)  n args))
+(defun >= (n . args) (fold-leftp (coercec i>= d>=)  n args))
 
+(defun min (n . args)
+  (assert-number n "(min n[ arg ..]) n")
+  (fold-left (lambda (a b) (cond ((> a b) b) (t a))) n args) )
+(defun max (n . args)
+  (assert-number n "(max n[ arg ..]) n")
+  (fold-left (lambda (a b) (cond ((< a b) b) (t a))) n args) )
 
 (defmacro let args
   (cond
@@ -207,6 +221,13 @@
     (t (throw wrong-type-argument "let: first argument neither label nor binding" (car args)))))
 
 (defun prog1 (arg . args) arg)
+
+(defmacro and args
+  (cond
+    ((null args))
+    ((null (cdr args)) (car args))
+    (t (list 'cond (list (car args) (cons 'and (cdr args)))))))
+
 
 ;; load
 (defun fload (f)

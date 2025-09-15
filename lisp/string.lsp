@@ -66,6 +66,27 @@
 (defun string-last-char(s)
   (substring s -1))
 
+;;;
+;;; Test if string is empty string
+;;;
+(defun string-empty-p (s)
+  (string-equal "" s))
+
+;;
+;; Split string s at each substring f and return list of parts.
+;; If f is the empty string, split all characters.
+;;
+(defun string-split (f s)
+  (let loop ((parts nil) (s s) (i 0) (l (length f)))
+       (cond
+	 ((and (string-empty-p s) (string-empty-p f)) parts)
+	 ((null (setq i (string-search f s))) (append parts (list s)))
+	 (t
+	  (loop
+	   (append parts (list (substring s 0 (cond ((i= 0 l) 1) (t i)))))
+	   (substring s (+ i (max l 1)))
+	   0
+	   l )))))
 
 (provide 'string)
 

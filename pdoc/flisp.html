@@ -78,7 +78,8 @@
       <ol>
 	<li><a href="#startup">Library Loading</a></li>
 	<li><a href="#core_lib">Core Library</a></li>
-	<li><a href="#flisp_lib">fLlisp Library</a></li>
+	<li><a href="#flisp_lib">fLisp Library</a></li>
+	<li><a href="#string_lib">String Library</a></li>
       </ol>
       <li><a href="develop.html">fLisp Embedding and Development</a> <a href="develop.md">(Markdown)</a></li>
     </ol>
@@ -677,6 +678,14 @@
       <dd>Return <code>t</code> if <var>object</var> is of the respective type, otherwise <code>nil</code>.</dd>
       <dt><code>(numberp <var>object</var>)</code> <u>C</u></dt>
       <dd>Return <code>t</code> if <var>object</var> is integer or double, otherwise <code>nil</code>.</dd>
+      <dt><code>(assert-type <var>o</var> <var>type</var> <var>s</var>)</code></dt>
+      <dt><code>(assert-number <var>o</var> <var>s</var>)</code></dt>
+      <dd>
+	Throw an <code>invalid-type</code> exception if <var>o</var> is not of specified <var>type</var>. <var>s</var>
+	is a signature string indicating the erroneous parameter, e.g. <code>(assert-type o type-string
+	&quot;(assert-type o type s) - s&quot;)</code> would assert that <var>s</var> is of <code>type-string</code>.
+	In the case of <code>assert-number</code> the assertion is done for <code>numberp</code>.
+      </dd>
       <dt><code>(cadr <var>list</var>)</code> <u>C</u></dt>
       <dt>Return the second element in <var>list</var>, <code>(car (cdr <var>list</var>))</code>.</dt>
       <dt><code>(cddr <var>list</var>)</code> <u>C</u></dt>
@@ -736,6 +745,7 @@
       <dt><code>(mapcar <var>func</var> <var>list</var>)</code> <u>Se, Dc</u></dt>
       <dd>Apply <var>func</var> to each element in list and return the list of results.</dd>
       <dd>In Elisp func has to be quoted, in CL variadic <var>func</var> operates on a list of lists.</dd>
+      <!-- dynmically typed math -->
       <dt><code>(nfold <var>f</var> <var>i</var> <var>l</var>)</code></dt>
       <dd>
 	<q>Number fold</q>: <code>left-fold</code>s binary function <var>f</var> on list <var>l</var> with initial
@@ -752,43 +762,11 @@
 	<q>Coerce curry</q>: return a lambda <code>coerce</code>ing parameters <var>x</var> and <var>y</var> and
 	applying <var>ifunc</var> or <var>dfunc</var> respectively. Helper function for n-ary generic number type arithmetic.
       </dd>
-      <dt><code>(fold-leftp <var>predicate</var> <var>start</var> <var>list</var>)</code></dt>
-      <dd>
-	<q>Predicate fold</q>: <code>fold-left</code> binary function <var>predicate</var> to <var>list</var> with
-	initial value <var>start</var>. Returns <code>t</code> if <var>list</var> is empty. Helper functions for n-ary
-	generic number type comparison.
-      </dd>
-      <dt><code>(let ((<var>name</var> <var>value</var>)[ (<var>name</var> <var>value</var>)..]) <var>body</var>)</code> <u>C</u></dt>
-      <dd>Bind all <var>name</var>s to the respective <var>value</var>s then evaluate body.</dd>
-      <dt><code>(let <var>label</var>((<var>name</var> <var>value</var>)[ (<var>name</var> <var>value</var>)..]) <var>body</var>)</code> <u>Cs</u></dt>
-      <dd>
-	Labelled or <q>named</q> <code>let</code>: define a local function <var>label</var> with <var>body</var> and
-	all <var>name</var>s as parameters bound to the <var>values</var>.
-      </dd>
-      <dt><code>(prog1 <var>sexp</var>[<var>sexp</var>..])</code> <u>C</u></dt>
-      <dd>Evaluate all <var>sexp</var> in turn and return the value of the first.</dd>
-      <dt><code>(fload </code> <code><var>stream</var>)</code> <u>f</u></dt>
-      <dd>Reads and evaluates all Lisp objects in <var>stream</var>.</dd>
-      <dt><code>(load </code> <code><var>path</var>)</code> <u>C</u></dt>
-      <dd>Reads and evaluates all Lisp objects in file at <var>path</var>.</dd>
-      <dt><code>(provide <var>feature</var>)</code></dt>
-      <dd>
-	Used as the final expression of a library to register symbol <var>feature</var> as loaded into the
-	interpreter.
-      </dd>
-      <dt><code>(require <var>feature</var>)</code></dt>
-      <dd>
-	If the <var>feature</var> is not alreaded loaded, the file <code><var>feature</var>.lsp</code> is loaded from
-	the library path and registers the <var>feature</var> if loading was successful. The register is the
-	variable <code><var>features</var></code>.
-      </dd>
     </dl>
-
     <p>
       The following arithmethic functions coerce their arguments to double if any of them is double, then they use
       double arithmetic operators. If all arguments are integer they use integer arthmetic.
     </p>
-    
     <dl>
       <dt><code>(+[ <var>num</var>..])</code></dt>
       <dd>Returns the sum of all <var>num</var>s or <code>0</code> if none is given.</dd>
@@ -811,6 +789,12 @@
 	more <var>div</var>s are given. If one of the <var>div</var>s is <code>0</code>, the program exits with an
 	arithmetic exception.
       </dd>
+      <dt><code>(fold-leftp <var>predicate</var> <var>start</var> <var>list</var>)</code></dt>
+      <dd>
+	<q>Predicate fold</q>: <code>fold-left</code> binary function <var>predicate</var> to <var>list</var> with
+	initial value <var>start</var>. Returns <code>t</code> if <var>list</var> is empty. Helper functions for n-ary
+	generic number type comparison.
+      </dd>
       <dt><code>(= <var>num</var>[ <var>num</var>..])</code></dt>
       <dt><code>(&lt; <var>num</var>[ <var>num</var>..])</code></dt>
       <dt><code>(&gt; <var>num</var>[ <var>num</var>..])</code></dt>
@@ -821,8 +805,41 @@
 	respective result as <code>t</code> or <code>nil</code>.  If only one <var>num</var> is given they all
 	return <code>t</code>.
       </dd>
+      <dt><code>(min <var>n</var>[ <var>n</var>..])</code></dt>
+      <dt><code>(max <var>n</var>[ <var>n</var>..])</code></dt>
+      <dd>Return the smallest/biggest number of all given <var>n</var>s.</dd>
+      <!-- let et al -->
+      <dt><code>(let ((<var>name</var> <var>value</var>)[ (<var>name</var> <var>value</var>)..]) <var>body</var>)</code> <u>C</u></dt>
+      <dd>Bind all <var>name</var>s to the respective <var>value</var>s then evaluate body.</dd>
+      <dt><code>(let <var>label</var>((<var>name</var> <var>value</var>)[ (<var>name</var> <var>value</var>)..]) <var>body</var>)</code> <u>Cs</u></dt>
+      <dd>
+	Labelled or <q>named</q> <code>let</code>: define a local function <var>label</var> with <var>body</var> and
+	all <var>name</var>s as parameters bound to the <var>values</var>.
+      </dd>
+      <dt><code>(prog1 <var>sexp</var>[<var>sexp</var>..])</code> <u>C</u></dt>
+      <dd>Evaluate all <var>sexp</var> in turn and return the value of the first.</dd>
+      <dt><code>(and[ o..])</code></dt>
+      <dd>
+	Returns <code>t</code> or the last object <var>o</var> if none is given or all evaluate to non
+	<code>nil</code>, <code>nil</code> otherwise.
+      </dd>
+      <!-- features -->
+      <dt><code>(fload </code> <code><var>stream</var>)</code> <u>f</u></dt>
+      <dd>Reads and evaluates all Lisp objects in <var>stream</var>.</dd>
+      <dt><code>(load </code> <code><var>path</var>)</code> <u>C</u></dt>
+      <dd>Reads and evaluates all Lisp objects in file at <var>path</var>.</dd>
+      <dt><code>(provide <var>feature</var>)</code></dt>
+      <dd>
+	Used as the final expression of a library to register symbol <var>feature</var> as loaded into the
+	interpreter.
+      </dd>
+      <dt><code>(require <var>feature</var>)</code></dt>
+      <dd>
+	If the <var>feature</var> is not alreaded loaded, the file <code><var>feature</var>.lsp</code> is loaded from
+	the library path and registers the <var>feature</var> if loading was successful. The register is the
+	variable <code><var>features</var></code>.
+      </dd>
     </dl>
-
 
     <h4 id="flisp_lib">fLisp Library</h4>
     <p>
@@ -832,29 +849,11 @@
     <dl>
       <dt><code>(listp <var>o</var>)</code> <u>D</u></dt>
       <dd>Returns true if <var>o</var> is <code>nil</code> or a <i>cons</i>.</dd>
-      <dt><code>(and[ o..])</code></dt>
-      <dd>
-	Returns <code>t</code> or the last object <var>o</var> if none is given or all evaluate to non
-	<code>nil</code>, <code>nil</code> otherwise.
-      </dd>
       <dt><code>(or[ o..])</code></dt>
       <dd>
 	Returns <code>nil</code> if all objects <var></var>o are <code>nil</code>, otherwise returns the first object
 	which evaluates to non <code>nil</code>.
       </dd>
-      <dt><code>(reduce <var>func</var> <var>list</var> <var>start</var>)</code> <u>D</u></dt>
-      <dd>
-	<code>reduce</code> applies the binary <var>func</var> to the first element of <var>list</var>
-	and <var>start</var> and then recursively to the first element of the rest of the <var>list</var> and the result
-	of the previous invocation: it is <q>right binding</q>.
-      </dd>
-      <dd>
-	Since <code>reduce</code> is right associative and <var>start</var> is not optional, it differs significantly
-	both from Common Lisp and Scheme.
-      </dd>
-      <dt><code>(max <var>n</var>[ <var>n</var>..])</code></dt>
-      <dt><code>(min <var>n</var>[ <var>n</var>..])</code></dt>
-      <dd>Return the biggest/smallest number of all given <var>n</var>s.</dd>
       <dt><code>(nthcdr <var>i</var> <var>l</var>)</code></dt>
       <dd>Return sub list of <var>l</var> starting from zero-based <var>i</var>th element to the last.</dd>
       <dt><code>(nth <var>i</var> <var>l</var>)</code></dt>
@@ -885,9 +884,40 @@
       </dd>
       <dt><code>(equal <var>o1</var> <var>o2</var>)</code></dt>
       <dd>Return <code>nil</code> if <var>o1</var> and <var>o2</var> are not isomorphic.</dd>
-
+    </dl>
     <nav><a href="#toc">^</a></nav>
+    <h4 id="string_lib">String Library</h4>
+
+    <dl>
+      <dt><code>( string-trim-front <var>s</var>) ⇒ s'</code></dt>
+      <dd>Remove all space characters at the start of <var>s</var>.</dd>
+      <dt><code>( string-trim-back <var>s</var>) ⇒ s'</code></dt>
+      <dd>Remove all space characters at the end of <var>s</var>.</dd>
+      <dt><code>( string-trim <var>s</var>) ⇒ s'</code></dt>
+      <dd>Remove all space characters from start and end of <var>s</var>.</dd>
+      <dt><code>( string-ref <var>s</var> <var>r</var>) ⇒ c</code></dt>
+      <dd>Return a string with only the character at position <var>r</var> of <var>s</var>.</dd>
+      <dt><code>( string-startswith <var>s</var> <var>search</var>) ⇒ p</code></dt>
+      <dd>Return <code>t</code> if the first characters of <var>s</var> are the same as <var>search</var>.</dd>
+      <dt><code>( string-shrink-right <var>s</var>) ⇒ s'</code></dt>
+      <dd>Return a copy of string <var>s</var> with the last character removed.</dd>
+      <dt><code>( string-shrink-left <var>s</var>) ⇒ s'</code></dt>
+      <dd>Return a copy of string <var>s</var> with the first character removed.</dd>
+      <dt><code>( string-first-char <var>s</var>) ⇒ s'</code></dt>
+      <dd>Return a string with the first character of <var>s</var>.</dd>
+      <dt><code>( string-last-char <var>s</var>) ⇒ s'</code></dt>
+      <dd>Return a string with the last character of <var>s</var>.</dd>
+      <dt><code>( string-empty-p <var>s</var>) ⇒ p</code></dt>
+      <dd>Returns <code>t</code> if <var>s</var> is the empty string</dd>
+      <dt><code>( string-split <var>sep</var> <var>s</var>) ⇒ l</code></dt>
+      <dd>
+	Return a list with all sub strings of string <var>s</var> which are separated by the string <var>sep</var>
+	or <var>s</var> if <var>sep</var> is not contained. If <var>sep</var> is the empty string return a list with all
+	characters of <var>s</var>.
+      </dd>
+    </dl>
     
+    <nav><a href="#toc">^</a></nav>
   </body>
 </html>
 <!--

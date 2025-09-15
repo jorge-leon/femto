@@ -6,34 +6,7 @@
 
 (defun listp (o) (cond ((null o)) ((consp o))))
 
-(defmacro and args
-  (cond
-    ((null args))
-    ((null (cdr args)) (car args))
-    (t (list 'cond (list (car args) (cons 'and (cdr args)))))))
-
 (defmacro or args  (cons 'cond (mapcar list args)))
-
-(defun reduce (func seq start)
-  (cond ((null seq) start)
-        (t (reduce func (cdr seq) (func (car seq) start)))))
-
-(defun max (n . args)
-  (cond
-    ((null (numberp n))
-     (throw 'wrong-type-argument "not a number" n))
-    ((null args) n)
-    (t (reduce
-	(lambda (a b) (cond ((< a b) b) (t a)))
-	args n))))
-
-(defun min (n . args)
-  (cond
-    ((null (numberp n))
-     (throw wrong-type-argument "not a number" n))
-    ((null args) n)
-    (t (reduce (lambda (a b) (cond ((< a b) a) (t b)))
-	args n)) ))
 
 (defun nthcdr (i l)
   (cond

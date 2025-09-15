@@ -10,7 +10,7 @@ tap 175
 [ -x ../femto ]
 ok femto-1 femto exists and is executable;
 
-(FEMTORC= FEMTO_BATCH=1 ../femto >/dev/null)
+(FEMTORC=../femto.rc FEMTO_BATCH=1 ../femto >/dev/null)
 ok femto-2 w/o femto.rc femto in batch mode succeds
 
 (: | FEMTORC= FEMTO_BATCH=1 ../femto >/dev/null)

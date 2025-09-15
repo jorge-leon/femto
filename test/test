@@ -108,13 +108,13 @@ ok () {
 # - - -
 
 
-# pipe expr $IN to fLisp, extract $1 last values of output, default 1. Filters trailing 't.
-# Compare output with $OUT
+# pipe expr $PREPARE, then $IN to fLisp, extract $1 last values of
+# output, default 1. Filters trailing 't.  Compare output with $OUT
 flisp_expr () {
-    [ "$( echo -n "$IN" | $FLISP | tail -n ${1:-5})" = "$OUT" ]
+    [ "$( echo -n "$PREPARE $IN" | $FLISP | tail -n ${1:-5})" = "$OUT" ]
 }
 flisp_err () {
-    echo -n "$IN" | $FLISP 2>&1 | tail -n ${1:-5} |{
+    echo -n "$PREPARE $IN" | $FLISP 2>&1 | tail -n ${1:-5} |{
 	read PRE REST
 	: $PRE
 	: $REST

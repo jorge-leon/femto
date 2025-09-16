@@ -39,7 +39,27 @@
  macrop (curry typep type-macro)
  streamp (curry typep type-stream))
 
-(defun numberp (o) (cond  ((integerp o)) ((doublep o))))
+(defun string (o)
+  ;; Convert argument to string.
+  ;; Common Lisp
+  (cond
+    ((eq nil o) "")
+    ((stringp o) o)
+    ((symbolp o) (symbol-name o))
+    ((consp o) (string-append (string (car o)) (string (cdr o))))
+    (t (let ((f (open "" ">")))
+	 (write o t f)
+	 (prog1
+	     (cadr (file-info f))
+	   (close f) )))))
+
+;; Concatenate all arguments to a string.
+;; Elisp
+(defun concat args
+  (cond
+    ((eq nil args) "")
+    ((eq nil (cdr args)) (string (car args)))
+    (t (string-append (string (car args)) (concat (cdr args)))) ))
 
 (defun assert-type (o type s)
   (cond ((not (same (type-of o) type))
@@ -48,6 +68,8 @@
 (defun assert-number (o s)
   (cond ((not (numberp o))
 	 (throw invalid-value (concat s ": expected number, got " (type-of o)) o))))
+
+(defun numberp (o) (cond  ((integerp o)) ((doublep o))))
 
 (defun cadr (l) (car (cdr l)))
 (defun cddr (l) (cdr (cdr l)))
@@ -125,28 +147,6 @@
      (fold-left (lambda (x y) (+ x 1)) 0 o))
     (t (throw wrong-type-argument "(length object) - expected type-cons or type-string" o))))
 
-
-(defun string (o)
-  ;; Convert argument to string.
-  ;; Common Lisp
-  (cond
-    ((eq nil o) "")
-    ((stringp o) o)
-    ((symbolp o) (symbol-name o))
-    ((consp o) (string-append (string (car o)) (string (cdr o))))
-    (t (let ((f (open "" ">")))
-	 (write o t f)
-	 (prog1
-	     (cadr (file-info f))
-	   (close f) )))))
-
-(defun concat args
-  ;; Concatenate all arguments to a string.
-  ;; Elisp
-  (cond
-    ((eq nil args) "")
-    ((eq nil (cdr args)) (string (car args)))
-    (t (string-append (string (car args)) (concat (cdr args)))) ))
 
 (defun memq (o l)
   ;; If object o in list l return sublist of l starting with o, else nil.
@@ -228,6 +228,13 @@
     ((null (cdr args)) (car args))
     (t (list 'cond (list (car args) (cons 'and (cdr args)))))))
 
+;;; Concatenate each element of l with separator f
+(defun join (f l)
+  (let loop ((s "") (l l))
+       (cond
+	 ((null l) "")
+	 ((null (cdr l)) (concat s (car l)))
+	 (t  (loop (concat s (car l) f) (cdr l))) )))
 
 ;; load
 (defun fload (f)

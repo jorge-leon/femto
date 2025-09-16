@@ -4,7 +4,7 @@
 
 export FLISPRC=../flisp.rc
 
-tap 138
+tap 146
 
 # list
 IN='(list)' OUT=nil
@@ -90,6 +90,44 @@ flisp_expr 1; ok streamp-1  streamp stream is t
 
 IN="(streamp streamp)" OUT='nil'
 flisp_expr 1; ok streamp-2  streamp lambda is nil
+
+# string
+IN="(string nil)" OUT='""'
+flisp_expr 1; ok string-1 nil is empty string
+
+IN="(string 42)" OUT='"42"'
+flisp_expr 1; ok string-2 42 is string 42
+
+IN="(string +03)" OUT='"3"'
+flisp_expr 1; ok string-3 octal number converts to number string
+
+IN='(string "a")' OUT='"a"'
+flisp_expr 1; ok string-4 string returns itself
+
+IN="(string 'a)" OUT='"a"'
+flisp_expr 1; ok string-5 symbols converts to its name
+
+IN="(string (cons 'a  2))" OUT='"a2"'
+flisp_expr 1; ok string-6 cons converts to concatenated strings of elements
+
+IN="(string car)" OUT='"#<Primitive car>"'
+flisp_expr 1; ok string 7 primitive prints reader macro and name
+
+IN="(string (lambda (a b)))" OUT='"#<Lambda (a b)>"'
+flisp_expr 1; ok string-8 lambda prints reader macro and parameters
+
+IN="(string (macro (a b)))" OUT='"#<Macro (a b)>"'
+flisp_expr 1; ok string-9 macro prints reader macro and parameters
+
+IN='(setq f (open "" "<"))(close f)(string f)' OUT='"#<Stream 0 <STRING>"'
+flisp_expr 1; ok string-10 closed stream prints reader macro nil as fd and type
+
+# concat
+IN="(concat 1 'a \"?\")" OUT='"1a?"'
+flisp_expr 1; ok concat-1 simple string concatenation
+
+false; ok assert-type \# TODO
+false; ok assert-number \# TODO
 
 IN="(numberp 42)" OUT='t'
 flisp_expr 1; ok numberp-1  numberp number is t
@@ -211,40 +249,25 @@ flisp_expr 1; ok length-3 length of empty string is zero
 IN='(length "answer")' OUT="6"
 flisp_expr 1; ok length-1 length of answer is six
 
-# string
-IN="(string nil)" OUT='""'
-flisp_expr 1; ok string-1 nil is empty string
 
-IN="(string 42)" OUT='"42"'
-flisp_expr 1; ok string-2 42 is string 42
+IN='(join ":" nil)' OUT='""'
+flisp_expr 1; ok join-1 join nil is empty string
 
-IN="(string +03)" OUT='"3"'
-flisp_expr 1; ok string-3 octal number converts to number string
+IN='(join ":" (list "a"))' OUT='"a"'
+flisp_expr 1; ok join-2 join single list is string
 
-IN='(string "a")' OUT='"a"'
-flisp_expr 1; ok string-4 string returns itself
+IN='(join ":" (list "a" "b"))' OUT='"a:b"'
+flisp_expr 1; ok join-3 join two elements contains separator
 
-IN="(string 'a)" OUT='"a"'
-flisp_expr 1; ok string-5 symbols converts to its name
+IN='(join ":" (list "a" "b" "c"))' OUT='"a:b:c"'
+flisp_expr 1; ok join-4 join several contains several separators
 
-IN="(string (cons 'a  2))" OUT='"a2"'
-flisp_expr 1; ok string-6 cons converts to concatenated strings of elements
+IN='(join "" (list "a" "b" "c"))' OUT='"abc"'
+flisp_expr 1; ok join-5 join with empty separator concats
 
-IN="(string car)" OUT='"#<Primitive car>"'
-flisp_expr 1; ok string 7 primitive prints reader macro and name
+IN='(join "nswe" (list "a" "r"))' OUT='"answer"'
+flisp_expr 1; ok join-6 with long separator inserts long separator
 
-IN="(string (lambda (a b)))" OUT='"#<Lambda (a b)>"'
-flisp_expr 1; ok string-8 lambda prints reader macro and parameters
-
-IN="(string (macro (a b)))" OUT='"#<Macro (a b)>"'
-flisp_expr 1; ok string-9 macro prints reader macro and parameters
-
-IN='(setq f (open "" "<"))(close f)(string f)' OUT='"#<Stream 0 <STRING>"'
-flisp_expr 1; ok string-10 closed stream prints reader macro nil as fd and type
-
-# concat
-IN="(concat 1 'a \"?\")" OUT='"1a?"'
-flisp_expr 1; ok concat-1 simple string concatenation
 
 # memq
 IN="(memq 'a (list 0 'a 3))" OUT="(a 3)"

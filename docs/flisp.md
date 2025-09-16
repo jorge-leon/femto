@@ -688,8 +688,11 @@ Returns true if *object* has *type*.
 `(streamp «object»)` <u>C</u>  
 Return `t` if *object* is of the respective type, otherwise `nil`.
 
-`(numberp «object»)` <u>C</u>  
-Return `t` if *object* is integer or double, otherwise `nil`.
+`(string «arg»)` <u>C</u>  
+Returns the string conversion of argument.
+
+`(concat `\[*arg*..\]`)` <u>Ce</u>  
+Returns concatenation of all arguments converted to strings.
 
 `(assert-type «o» «type» «s»)`  
 `(assert-number «o» «s»)`  
@@ -698,6 +701,9 @@ is a signature string indicating the erroneous parameter, e.g.
 `(assert-type o type-string "(assert-type o type s) - s")` would assert
 that *s* is of `type-string`. In the case of `assert-number` the
 assertion is done for `numberp`.
+
+`(numberp «object»)` <u>C</u>  
+Return `t` if *object* is integer or double, otherwise `nil`.
 
 `(cadr «list»)` <u>C</u>  
 Return the second element in *list*, `(car (cdr «list»))`.  
@@ -748,12 +754,6 @@ Logical inverse. In Lisp a synonym for `null`
 `(length «obj»)` <u>C</u>  
 Returns the length of *obj* if it is a string or a list, otherwise
 throws a type exception.
-
-`(string «arg»)` <u>C</u>  
-Returns the string conversion of argument.
-
-`(concat `\[*arg*..\]`)` <u>Ce</u>  
-Returns concatenation of all arguments converted to strings.
 
 `(memq «arg» «list»)`  
 If *arg* is contained in *list*, returns the sub list of *list* starting
@@ -835,6 +835,10 @@ Evaluate all *sexp* in turn and return the value of the first.
 `(and[ o..])`  
 Returns `t` or the last object *o* if none is given or all evaluate to
 non `nil`, `nil` otherwise.
+
+`(join «sep» «l») ⇒ s` <u>f</u>  
+Return a string with all elements of *l* concatenated with *sep* between
+each of them.
 
 `(fload ` *stream*`)` <u>f</u>  
 Reads and evaluates all Lisp objects in *stream*.
@@ -930,7 +934,7 @@ Return a string with the last character of *s*.
 `( string-empty-p «s») ⇒ p`  
 Returns `t` if *s* is the empty string
 
-`( string-split «sep» «s») ⇒ l`  
+`( string-split «sep» «s») ⇒ l` <u>f</u>  
 Return a list with all sub strings of string *s* which are separated by
 the string *sep* or *s* if *sep* is not contained. If *sep* is the empty
 string return a list with all characters of *s*.

@@ -58,8 +58,8 @@
 - Use (catch load ..) again in femto.rc, to reduce dependency on file extension.
 - Remove string-contains Lisp implementation, it is covered by string-search.
 - Remove (reduce), was incompatible and unused, replacement fold-left and family.
-- Add string-empty-p and string-split to the string library. Documentation for
-  the complete library.
+- Add string-empty-p string-split and string-join to the string
+  library. Documentation for the complete library.
 - Implement mkdir -p functionality.
 
 

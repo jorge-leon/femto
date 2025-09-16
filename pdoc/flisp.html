@@ -676,8 +676,10 @@
       <dt><code>(macrop <var>object</var>)</code> <u>C</u></dt>
       <dt><code>(streamp <var>object</var>)</code> <u>C</u></dt>
       <dd>Return <code>t</code> if <var>object</var> is of the respective type, otherwise <code>nil</code>.</dd>
-      <dt><code>(numberp <var>object</var>)</code> <u>C</u></dt>
-      <dd>Return <code>t</code> if <var>object</var> is integer or double, otherwise <code>nil</code>.</dd>
+      <dt><code>(string <var>arg</var>)</code> <u>C</u></dt>
+      <dd>Returns the string conversion of argument.</dd>
+      <dt><code>(concat </code>[<code><var>arg</var></code>..]<code>)</code> <u>Ce</u></dt>
+      <dd>Returns concatenation of all arguments converted to strings.</dd>
       <dt><code>(assert-type <var>o</var> <var>type</var> <var>s</var>)</code></dt>
       <dt><code>(assert-number <var>o</var> <var>s</var>)</code></dt>
       <dd>
@@ -686,6 +688,8 @@
 	&quot;(assert-type o type s) - s&quot;)</code> would assert that <var>s</var> is of <code>type-string</code>.
 	In the case of <code>assert-number</code> the assertion is done for <code>numberp</code>.
       </dd>
+      <dt><code>(numberp <var>object</var>)</code> <u>C</u></dt>
+      <dd>Return <code>t</code> if <var>object</var> is integer or double, otherwise <code>nil</code>.</dd>
       <dt><code>(cadr <var>list</var>)</code> <u>C</u></dt>
       <dt>Return the second element in <var>list</var>, <code>(car (cdr <var>list</var>))</code>.</dt>
       <dt><code>(cddr <var>list</var>)</code> <u>C</u></dt>
@@ -733,10 +737,7 @@
       <dd>Logical inverse. In Lisp a synonym for <code>null</code></dd>
       <dt><code>(length <var>obj</var>)</code> <u>C</u></dt>
       <dd>Returns the length of <var>obj</var> if it is a string or a list, otherwise throws a type exception.</dd>
-      <dt><code>(string <var>arg</var>)</code> <u>C</u></dt>
-      <dd>Returns the string conversion of argument.</dd>
-      <dt><code>(concat </code>[<code><var>arg</var></code>..]<code>)</code> <u>Ce</u></dt>
-      <dd>Returns concatenation of all arguments converted to strings.</dd>
+
       <dt><code>(memq <var>arg</var> <var>list</var>)</code></dt>
       <dd>
 	If <var>arg</var> is contained in <var>list</var>, returns the sub list of <var>list</var> starting with the
@@ -823,6 +824,11 @@
 	Returns <code>t</code> or the last object <var>o</var> if none is given or all evaluate to non
 	<code>nil</code>, <code>nil</code> otherwise.
       </dd>
+      <dt><code>(join <var>sep</var> <var>l</var>) ⇒ s</code> <u>f</u></dt>
+      <dd>
+	Return a string with all elements of <var>l</var> concatenated with <var>sep</var> between each of them.
+      </dd>
+
       <!-- features -->
       <dt><code>(fload </code> <code><var>stream</var>)</code> <u>f</u></dt>
       <dd>Reads and evaluates all Lisp objects in <var>stream</var>.</dd>
@@ -909,7 +915,7 @@
       <dd>Return a string with the last character of <var>s</var>.</dd>
       <dt><code>( string-empty-p <var>s</var>) ⇒ p</code></dt>
       <dd>Returns <code>t</code> if <var>s</var> is the empty string</dd>
-      <dt><code>( string-split <var>sep</var> <var>s</var>) ⇒ l</code></dt>
+      <dt><code>( string-split <var>sep</var> <var>s</var>) ⇒ l</code> <u>f</u></dt>
       <dd>
 	Return a list with all sub strings of string <var>s</var> which are separated by the string <var>sep</var>
 	or <var>s</var> if <var>sep</var> is not contained. If <var>sep</var> is the empty string return a list with all

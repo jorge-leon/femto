@@ -5,6 +5,8 @@
 ## Next
 
 - Bug: femto segfaults w/o femtorc, batch-mode
+-  Fix Femto file save bug.
+   - implement - file-name-directory, file-name-nondirectory
 - Make logging mask, and suppress catch messages by default
 - Size reduction:
   - Reduce binary operators to 'and' and 'xor' and write needed rest in Lisp.
@@ -15,7 +17,6 @@
   - (flisp types[ type..]) => list of types
   - (flisp gc) => memory info
 - Add read and eval tracing.
-- Implement mkdir -p functionality and fix Femto file save bug.
 - Implement pipe shell output to buffer "*Shell Command Output*"
 
 ## Future
@@ -50,6 +51,7 @@
 - Test more then one interpreter.
 - ? CSP between interpreters?
 
+
 ## flisp 0.14
 - Fixed Femto null input problem
 - Aliased global argv to command-line-args, argv0 to invocation-name in femto.lsp.
@@ -58,6 +60,8 @@
 - Remove (reduce), was incompatible and unused, replacement fold-left and family.
 - Add string-empty-p and string-split to the string library. Documentation for
   the complete library.
+- Implement mkdir -p functionality.
+
 
 ## fLisp 0.13
 - Implemented interp introspection and configuration command with version and

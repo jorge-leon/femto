@@ -58,7 +58,8 @@ This manual refers to version 0.13 or later of fLisp.
 7.  [Lisp Libraries](#libraries)
     1.  [Library Loading](#startup)
     2.  [Core Library](#core_lib)
-    3.  [fLlisp Library](#flisp_lib)
+    3.  [fLisp Library](#flisp_lib)
+    4.  [String Library](#string_lib)
 8.  [fLisp Embedding and
     Development](develop.html) [(Markdown)](develop.md)
 
@@ -157,10 +158,9 @@ interpreter, extension functions behave the same as core functions.
 #### Syntax
 
 Program text is written as a sequence of symbolic expressions -
-<span class="abbr"><span class="dfn">sexp</span></span>'s - in
-parenthesized form. A [sexp](https://en.wikipedia.org/wiki/S-expression)
-is either a single symbol or a sequence of symbols or sexp's enclosed in
-parenthesis.
+<span class="dfn">sexp</span>'s - in parenthesized form. A
+[sexp](https://en.wikipedia.org/wiki/S-expression) is either a single
+symbol or a sequence of symbols or sexp's enclosed in parenthesis.
 
 The following characters are special to the reader:
 
@@ -172,8 +172,7 @@ Starts a function or macro invocation, a *list* or *cons* object (see
 Finishes a function invocation, *list* or *cons* object.
 
 `'` and `:`  
-With a single quote or a colon prefix before a
-<span class="abbr">sexp</span>, the <span class="abbr">sexp</span> is
+With a single quote or a colon prefix before a sexp, the sexp is
 expanded to `(quote «sexp»)` before it is evaluated.
 
 `.`  
@@ -692,6 +691,14 @@ Return `t` if *object* is of the respective type, otherwise `nil`.
 `(numberp «object»)` <u>C</u>  
 Return `t` if *object* is integer or double, otherwise `nil`.
 
+`(assert-type «o» «type» «s»)`  
+`(assert-number «o» «s»)`  
+Throw an `invalid-type` exception if *o* is not of specified *type*. *s*
+is a signature string indicating the erroneous parameter, e.g.
+`(assert-type o type-string "(assert-type o type s) - s")` would assert
+that *s* is of `type-string`. In the case of `assert-number` the
+assertion is done for `numberp`.
+
 `(cadr «list»)` <u>C</u>  
 Return the second element in *list*, `(car (cdr «list»))`.  
 `(cddr «list»)` <u>C</u>  
@@ -773,36 +780,6 @@ Helper function for n-ary generic number type arithmetic.
 applying *ifunc* or *dfunc* respectively. Helper function for n-ary
 generic number type arithmetic.
 
-`(fold-leftp «predicate» «start» «list»)`  
-“Predicate fold”: `fold-left` binary function *predicate* to *list* with
-initial value *start*. Returns `t` if *list* is empty. Helper functions
-for n-ary generic number type comparison.
-
-`(let ((«name» «value»)[ («name» «value»)..]) «body»)` <u>C</u>  
-Bind all *name*s to the respective *value*s then evaluate body.
-
-`(let «label»((«name» «value»)[ («name» «value»)..]) «body»)` <u>Cs</u>  
-Labelled or “named” `let`: define a local function *label* with *body*
-and all *name*s as parameters bound to the *values*.
-
-`(prog1 «sexp»[«sexp»..])` <u>C</u>  
-Evaluate all *sexp* in turn and return the value of the first.
-
-`(fload ` *stream*`)` <u>f</u>  
-Reads and evaluates all Lisp objects in *stream*.
-
-`(load ` *path*`)` <u>C</u>  
-Reads and evaluates all Lisp objects in file at *path*.
-
-`(provide «feature»)`  
-Used as the final expression of a library to register symbol *feature*
-as loaded into the interpreter.
-
-`(require «feature»)`  
-If the *feature* is not alreaded loaded, the file *feature*`.lsp` is
-loaded from the library path and registers the *feature* if loading was
-successful. The register is the variable *features*.
-
 The following arithmethic functions coerce their arguments to double if
 any of them is double, then they use double arithmetic operators. If all
 arguments are integer they use integer arthmetic.
@@ -827,6 +804,11 @@ Returns `1` if no *div* is given, *num*%*div*\[%*div*..\] if one or more
 *div*s are given. If one of the *div*s is `0`, the program exits with an
 arithmetic exception.
 
+`(fold-leftp «predicate» «start» «list»)`  
+“Predicate fold”: `fold-left` binary function *predicate* to *list* with
+initial value *start*. Returns `t` if *list* is empty. Helper functions
+for n-ary generic number type comparison.
+
 `(= «num»[ «num»..])`  
 `(< «num»[ «num»..])`  
 `(> «num»[ «num»..])`  
@@ -836,80 +818,121 @@ These predicate functions apply the respective comparison operator
 between all *num*s and return the respective result as `t` or `nil`. If
 only one *num* is given they all return `t`.
 
+`(min «n»[ «n»..])`  
+`(max «n»[ «n»..])`  
+Return the smallest/biggest number of all given *n*s.
+
+`(let ((«name» «value»)[ («name» «value»)..]) «body»)` <u>C</u>  
+Bind all *name*s to the respective *value*s then evaluate body.
+
+`(let «label»((«name» «value»)[ («name» «value»)..]) «body»)` <u>Cs</u>  
+Labelled or “named” `let`: define a local function *label* with *body*
+and all *name*s as parameters bound to the *values*.
+
+`(prog1 «sexp»[«sexp»..])` <u>C</u>  
+Evaluate all *sexp* in turn and return the value of the first.
+
+`(and[ o..])`  
+Returns `t` or the last object *o* if none is given or all evaluate to
+non `nil`, `nil` otherwise.
+
+`(fload ` *stream*`)` <u>f</u>  
+Reads and evaluates all Lisp objects in *stream*.
+
+`(load ` *path*`)` <u>C</u>  
+Reads and evaluates all Lisp objects in file at *path*.
+
+`(provide «feature»)`  
+Used as the final expression of a library to register symbol *feature*
+as loaded into the interpreter.
+
+`(require «feature»)`  
+If the *feature* is not alreaded loaded, the file *feature*`.lsp` is
+loaded from the library path and registers the *feature* if loading was
+successful. The register is the variable *features*.
+
 #### fLisp Library
 
 This library implements commonly excpected Lisp idioms. *fLisp*
 implements a carefully selected minimum set of commonly used functions.
 
-`(listp «o»)` <u>D</u>
-
+`(listp «o»)` <u>D</u>  
 Returns true if *o* is `nil` or a *cons*.
 
-`(and[ o..])`
-
-Returns `t` or the last object *o* if none is given or all evaluate to
-non `nil`, `nil` otherwise.
-
-`(or[ o..])`
-
+`(or[ o..])`  
 Returns `nil` if all objects o are `nil`, otherwise returns the first
 object which evaluates to non `nil`.
 
-`(reduce «func» «list» «start»)` <u>D</u>
-
-`reduce` applies the binary *func* to the first element of *list* and
-*start* and then recursively to the first element of the rest of the
-*list* and the result of the previous invocation: it is “right binding”.
-
-Since `reduce` is right associative and *start* is not optional, it
-differs significantly both from Common Lisp and Scheme.
-
-`(max «n»[ «n»..])`
-
-`(min «n»[ «n»..])`
-
-Return the biggest/smallest number of all given *n*s.
-
-`(nthcdr «i» «l»)`
-
+`(nthcdr «i» «l»)`  
 Return sub list of *l* starting from zero-based *i*th element to the
 last.
 
-`(nth «i» «l»)`
-
+`(nth «i» «l»)`  
 Return zero-based *i*th element of list *l*
 
-`(fold-right «f» «o» «l»)` <u>Cs</u>
-
+`(fold-right «f» «o» «l»)` <u>Cs</u>  
 Apply binary function *f* to last element of *l* and *o*, then
 recursively to the previous element and the result.
 
-`(unfold «f» «o» «p»)` <u>Cs</u>
-
+`(unfold «f» «o» «p»)` <u>Cs</u>  
 Create a list starting with *o* followed by the result of successive
 application of *f* to *o* until applying *p* to the result is not `nil`
 anymore.
 
-`(iota «count»[ «start»[ «step»]])` <u>Cs</u>
-
+`(iota «count»[ «start»[ «step»]])` <u>Cs</u>  
 Create a list of *count* numbers starting with *start* or `0` if not
 given by successively adding *step* or `1` if not given.
 
-`(atom «o»)`
-
+`(atom «o»)`  
 `t` if *o* is not a *cons*.
 
-`(zerop «x»)`
-
+`(zerop «x»)`  
 `t` if number *x* is zero.
 
-`(if «p» «then»[ «else»)`
-
+`(if «p» «then»[ «else»)`  
 Evaluate *then* if predicate *p* evaluates to not `nil`, else evaluate
 *else*.
 
-`(equal «o1» «o2»)`
-
+`(equal «o1» «o2»)`  
 Return `nil` if *o1* and *o2* are not isomorphic.
+
+[^](#toc)
+
+#### String Library
+
+`( string-trim-front «s») ⇒ s'`  
+Remove all space characters at the start of *s*.
+
+`( string-trim-back «s») ⇒ s'`  
+Remove all space characters at the end of *s*.
+
+`( string-trim «s») ⇒ s'`  
+Remove all space characters from start and end of *s*.
+
+`( string-ref «s» «r») ⇒ c`  
+Return a string with only the character at position *r* of *s*.
+
+`( string-startswith «s» «search») ⇒ p`  
+Return `t` if the first characters of *s* are the same as *search*.
+
+`( string-shrink-right «s») ⇒ s'`  
+Return a copy of string *s* with the last character removed.
+
+`( string-shrink-left «s») ⇒ s'`  
+Return a copy of string *s* with the first character removed.
+
+`( string-first-char «s») ⇒ s'`  
+Return a string with the first character of *s*.
+
+`( string-last-char «s») ⇒ s'`  
+Return a string with the last character of *s*.
+
+`( string-empty-p «s») ⇒ p`  
+Returns `t` if *s* is the empty string
+
+`( string-split «sep» «s») ⇒ l`  
+Return a list with all sub strings of string *s* which are separated by
+the string *sep* or *s* if *sep* is not contained. If *sep* is the empty
+string return a list with all characters of *s*.
 
 [^](#toc)

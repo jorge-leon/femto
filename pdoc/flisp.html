@@ -45,7 +45,7 @@
       <li><a href="https://www.scheme.org/">The Scheme Programming Language</a>.</li>
     </ul>
 
-    This manual refers to version 0.13 or later of fLisp.
+    This manual refers to version 0.14 or later of fLisp.
     
     <h3 id="toc">Table of Contents</h3>
     <ol>
@@ -80,6 +80,7 @@
 	<li><a href="#core_lib">Core Library</a></li>
 	<li><a href="#flisp_lib">fLisp Library</a></li>
 	<li><a href="#string_lib">String Library</a></li>
+	<li><a href="#file_lib">File Library</a></li>
       </ol>
       <li><a href="develop.html">fLisp Embedding and Development</a> <a href="develop.md">(Markdown)</a></li>
     </ol>
@@ -895,34 +896,53 @@
     <h4 id="string_lib">String Library</h4>
 
     <dl>
-      <dt><code>( string-trim-front <var>s</var>) ⇒ s'</code></dt>
+      <dt><code>(string-trim-front <var>s</var>) ⇒ s'</code></dt>
       <dd>Remove all space characters at the start of <var>s</var>.</dd>
-      <dt><code>( string-trim-back <var>s</var>) ⇒ s'</code></dt>
+      <dt><code>(string-trim-back <var>s</var>) ⇒ s'</code></dt>
       <dd>Remove all space characters at the end of <var>s</var>.</dd>
-      <dt><code>( string-trim <var>s</var>) ⇒ s'</code></dt>
+      <dt><code>(string-trim <var>s</var>) ⇒ s'</code></dt>
       <dd>Remove all space characters from start and end of <var>s</var>.</dd>
-      <dt><code>( string-ref <var>s</var> <var>r</var>) ⇒ c</code></dt>
+      <dt><code>(string-ref <var>s</var> <var>r</var>) ⇒ c</code></dt>
       <dd>Return a string with only the character at position <var>r</var> of <var>s</var>.</dd>
-      <dt><code>( string-startswith <var>s</var> <var>search</var>) ⇒ p</code></dt>
+      <dt><code>(string-startswith <var>s</var> <var>search</var>) ⇒ p</code></dt>
       <dd>Return <code>t</code> if the first characters of <var>s</var> are the same as <var>search</var>.</dd>
-      <dt><code>( string-shrink-right <var>s</var>) ⇒ s'</code></dt>
+      <dt><code>(string-shrink-right <var>s</var>) ⇒ s'</code></dt>
       <dd>Return a copy of string <var>s</var> with the last character removed.</dd>
-      <dt><code>( string-shrink-left <var>s</var>) ⇒ s'</code></dt>
+      <dt><code>(string-shrink-left <var>s</var>) ⇒ s'</code></dt>
       <dd>Return a copy of string <var>s</var> with the first character removed.</dd>
-      <dt><code>( string-first-char <var>s</var>) ⇒ s'</code></dt>
+      <dt><code>(string-first-char <var>s</var>) ⇒ s'</code></dt>
       <dd>Return a string with the first character of <var>s</var>.</dd>
-      <dt><code>( string-last-char <var>s</var>) ⇒ s'</code></dt>
+      <dt><code>(string-last-char <var>s</var>) ⇒ s'</code></dt>
       <dd>Return a string with the last character of <var>s</var>.</dd>
-      <dt><code>( string-empty-p <var>s</var>) ⇒ p</code></dt>
+      <dt><code>(string-empty-p <var>s</var>) ⇒ p</code></dt>
       <dd>Returns <code>t</code> if <var>s</var> is the empty string</dd>
-      <dt><code>( string-split <var>sep</var> <var>s</var>) ⇒ l</code> <u>f</u></dt>
+      <dt><code>(string-split <var>sep</var> <var>s</var>) ⇒ l</code> <u>f</u></dt>
       <dd>
 	Return a list with all sub strings of string <var>s</var> which are separated by the string <var>sep</var>
 	or <var>s</var> if <var>sep</var> is not contained. If <var>sep</var> is the empty string return a list with all
 	characters of <var>s</var>.
       </dd>
     </dl>
-    
+
+    <nav><a href="#toc">^</a></nav>
+    <h4 id="file_lib">File Library</h4>
+
+    <dl>
+      <dt><code>(mkdir <var>s</var>[ <var>parent-p</var>]) ⇒ <var>created-p</var></code></dt>
+      <dd>
+	If <var>parent-p</var> is <code>nil</code> or absent call <code>(fmkdir <var>s</var>)</code>, otherwise create
+	all missing parent directories and finally directory <var>s</var>.  Return <code>t</code> if directory already
+	exists, or if <var>s</var> is one of <code>/</code>, <code>.</code>, <code>..</code> or the empty
+	string. Return <code>nil</code> if directory was created successfully. Throws exceptions <var>s</var> cannot be
+	created.
+      </dd>
+      <dt><code>(file-name-directory <var>s</var>)</code> ⇒ s <u>e</u></dt>
+      <dd>
+	Return the directory part of path <var>s</var> with a trailing <code>/</code> or <code>nil</code>
+	if <var>s</var> does not 
+      </dd>
+      <dt><code>(file-name-nondirectory <var>s</var>)</code> ⇒ s <u>e</u></dt>
+      <dd>Return the last segment of path <var>s</var>.</dd>
     <nav><a href="#toc">^</a></nav>
   </body>
 </html>

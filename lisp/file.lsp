@@ -19,10 +19,6 @@
 (defun mkdir (path . parentp)
   (cond
     ((memq path '("." ".." "/" "")))
-    ;; ((string-empty-p path))
-    ;; ((string-equal "." path))
-    ;; ((string-equal ".." path))
-    ;; ((string-equal "/" path))
     ((not parentp)  (fmkdir path))
     (t
      (let loop ((parts (string-split "/" path)) (prefix "") (result nil))
@@ -35,7 +31,7 @@
 	  ;;        empty | /(cadr parts)  |  x  |
 	  ;;            a |       a        | x/a |
 	  ;;
-	  (cond ((null parts) (not (car result)))
+	  (cond ((null parts)  (not (car result)))
 		;; Note: we could check if we have "" after the first path segment and skip over it a//b/c => a "" b c
 		(t
 		 (cond ((string-empty-p prefix)
@@ -54,4 +50,14 @@
 			(fmkdir prefix)	)) ; bail out on error
 		 (loop (cdr parts) prefix result) ))))))
 
+(defun file-name-directory (s)
+  (cond ((memq s '("" "." ".."))  nil)
+	(t
+	 (let loop ((parts (string-split "/" s)) (d ""))
+	      (cond ((null (cdr parts)) (cond ((string-equal "" d) nil) (t d)))
+		    (t (loop (cdr parts) (string-append d (string-append (car parts)  "/")))) )))))
 
+;;; Note: conforms to Elisp, though I'd rather 'nil' the empty string, . and ..
+(defun file-name-nondirectory (s)
+  (cond	((string-equal s "/") "")
+	(t  (car (reverse (string-split "/" s)))) ))

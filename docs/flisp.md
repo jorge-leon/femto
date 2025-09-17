@@ -32,7 +32,7 @@ use other resources eg.
   or
 - [The Scheme Programming Language](https://www.scheme.org/).
 
-This manual refers to version 0.13 or later of fLisp.
+This manual refers to version 0.14 or later of fLisp.
 
 ### Table of Contents
 
@@ -60,6 +60,7 @@ This manual refers to version 0.13 or later of fLisp.
     2.  [Core Library](#core_lib)
     3.  [fLisp Library](#flisp_lib)
     4.  [String Library](#string_lib)
+    5.  [File Library](#file_lib)
 8.  [fLisp Embedding and
     Development](develop.html) [(Markdown)](develop.md)
 
@@ -158,9 +159,10 @@ interpreter, extension functions behave the same as core functions.
 #### Syntax
 
 Program text is written as a sequence of symbolic expressions -
-<span class="dfn">sexp</span>'s - in parenthesized form. A
-[sexp](https://en.wikipedia.org/wiki/S-expression) is either a single
-symbol or a sequence of symbols or sexp's enclosed in parenthesis.
+<span class="abbr"><span class="dfn">sexp</span></span>'s - in
+parenthesized form. A [sexp](https://en.wikipedia.org/wiki/S-expression)
+is either a single symbol or a sequence of symbols or sexp's enclosed in
+parenthesis.
 
 The following characters are special to the reader:
 
@@ -172,7 +174,8 @@ Starts a function or macro invocation, a *list* or *cons* object (see
 Finishes a function invocation, *list* or *cons* object.
 
 `'` and `:`  
-With a single quote or a colon prefix before a sexp, the sexp is
+With a single quote or a colon prefix before a
+<span class="abbr">sexp</span>, the <span class="abbr">sexp</span> is
 expanded to `(quote «sexp»)` before it is evaluated.
 
 `.`  
@@ -904,39 +907,60 @@ Return `nil` if *o1* and *o2* are not isomorphic.
 
 #### String Library
 
-`( string-trim-front «s») ⇒ s'`  
+`(string-trim-front «s») ⇒ s'`  
 Remove all space characters at the start of *s*.
 
-`( string-trim-back «s») ⇒ s'`  
+`(string-trim-back «s») ⇒ s'`  
 Remove all space characters at the end of *s*.
 
-`( string-trim «s») ⇒ s'`  
+`(string-trim «s») ⇒ s'`  
 Remove all space characters from start and end of *s*.
 
-`( string-ref «s» «r») ⇒ c`  
+`(string-ref «s» «r») ⇒ c`  
 Return a string with only the character at position *r* of *s*.
 
-`( string-startswith «s» «search») ⇒ p`  
+`(string-startswith «s» «search») ⇒ p`  
 Return `t` if the first characters of *s* are the same as *search*.
 
-`( string-shrink-right «s») ⇒ s'`  
+`(string-shrink-right «s») ⇒ s'`  
 Return a copy of string *s* with the last character removed.
 
-`( string-shrink-left «s») ⇒ s'`  
+`(string-shrink-left «s») ⇒ s'`  
 Return a copy of string *s* with the first character removed.
 
-`( string-first-char «s») ⇒ s'`  
+`(string-first-char «s») ⇒ s'`  
 Return a string with the first character of *s*.
 
-`( string-last-char «s») ⇒ s'`  
+`(string-last-char «s») ⇒ s'`  
 Return a string with the last character of *s*.
 
-`( string-empty-p «s») ⇒ p`  
+`(string-empty-p «s») ⇒ p`  
 Returns `t` if *s* is the empty string
 
-`( string-split «sep» «s») ⇒ l` <u>f</u>  
+`(string-split «sep» «s») ⇒ l` <u>f</u>  
 Return a list with all sub strings of string *s* which are separated by
 the string *sep* or *s* if *sep* is not contained. If *sep* is the empty
 string return a list with all characters of *s*.
+
+[^](#toc)
+
+#### File Library
+
+`(mkdir «s»[ «parent-p»]) ⇒ «created-p»`
+
+If *parent-p* is `nil` or absent call `(fmkdir «s»)`, otherwise create
+all missing parent directories and finally directory *s*. Return `t` if
+directory already exists, or if *s* is one of `/`, `.`, `..` or the
+empty string. Return `nil` if directory was created successfully. Throws
+exceptions *s* cannot be created.
+
+`(file-name-directory «s»)` ⇒ s <u>e</u>
+
+Return the directory part of path *s* with a trailing `/` or `nil` if
+*s* does not
+
+`(file-name-nondirectory «s»)` ⇒ s <u>e</u>
+
+Return the last segment of path *s*.
 
 [^](#toc)

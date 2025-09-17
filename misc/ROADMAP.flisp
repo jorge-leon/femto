@@ -6,7 +6,6 @@
 
 - Bug: femto segfaults w/o femtorc, batch-mode
 -  Fix Femto file save bug.
-   - implement - file-name-directory, file-name-nondirectory
 - Make logging mask, and suppress catch messages by default
 - Size reduction:
   - Reduce binary operators to 'and' and 'xor' and write needed rest in Lisp.
@@ -60,7 +59,8 @@
 - Remove (reduce), was incompatible and unused, replacement fold-left and family.
 - Add string-empty-p string-split and string-join to the string
   library. Documentation for the complete library.
-- Implement mkdir -p functionality.
+- Add new "file" library: mkdir, file-name-directory, file-name-nondirectory.
+
 
 
 ## fLisp 0.13

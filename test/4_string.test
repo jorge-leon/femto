@@ -1,7 +1,4 @@
 #!./test # -*- mode: sh -*-
-# test executable and fLisp functionality
-# leg20231128: Femto
-
 
 export FLISPRC=../flisp.rc
 export PREPARE="(require 'string)"

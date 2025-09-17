@@ -2676,7 +2676,16 @@ void lisp_write_error(Interpreter *interp, FILE *fd)
  */
 Object *cerf(Interpreter *interp, FILE *fd)
 {
-    /* Note: find a way to not construct this all the time anew */
+    /* Note: find a way to not construct this all the time anew, maybe along these lines: */
+#if 0
+    /* segfaults though */
+    Object stream = (Object) { type_stream,  .path = nil, .fd = fd};
+    Object list =   (Object) { type_cons,  .car = &stream, .cdr = nil};
+    Object *object = &list;
+    if (fd == NULL) object->car = nil;
+    object->car = primitiveRead(interp, &object, &interp->global);
+    return evalCatch(interp, &object, &interp->global);
+#else
     Primitive readPrimitive =  { "read",  0, 2, 0, primitiveRead };
     Primitive evalPrimitive =  { "eval",  1, 1, 0, primitiveEval };
 
@@ -2693,6 +2702,7 @@ Object *cerf(Interpreter *interp, FILE *fd)
     Object *evalApply = &(Object) { type_cons, .car = &evalCons, .cdr = nil };
 
     return evalCatch(interp, &evalApply, &interp->global);
+#endif
 }
 
 /** lisp_eval() - interpret a string or file in Lisp

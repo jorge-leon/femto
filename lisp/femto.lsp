@@ -172,4 +172,15 @@
           (forward-char)
           (insert-string c))))))
 
+(setq primitive-write-file write-file)
+(defun femto-write-file ()
+  (let ((p (prompt-filename (get-buffer-filename))))
+    (let ((d (file-name-directory p)))
+      (cond ((car (catch (fstat d)))
+	     (cond ((string-equal "y" (response (prompt (concat "Directory ‘"d"’ does not exist; create? (y or n) ") "")))
+		    (mkdir (file-name-directory d) t)
+		    (throw 'not-implemented "write buffer to file" p) )
+		   (t message "Cancelled") ))
+	    (t (throw 'not-implemented "write buffer to file" p) )))))
+
 (provide 'femto)

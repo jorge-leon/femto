@@ -305,7 +305,13 @@ void i_readfile(void)
 
 void readfile(char *fname)
 {
+    char bname[NBUFN];
     buffer_t *bp = find_buffer_by_fname(fname);
+    if (bp == NULL) {
+        make_buffer_name(bname, fname);
+        make_buffer_name_uniq(bname);
+        bp = find_buffer(bname, TRUE);
+    }
     disassociate_b(curwp); /* we are leaving the old buffer for a new one */
     curbp = bp;
     associate_b2w(curbp, curwp);

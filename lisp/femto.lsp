@@ -16,7 +16,7 @@
 (defun load-script(fn)
   (load (concat script_dir "/" fn)))
 
-(defun repeat (n func)  
+(defun repeat (n func)
   (cond ((> n 0) (func) (repeat (- n 1) func))))
 
 ;; OS interaction
@@ -114,7 +114,7 @@
 ;; find the end of the s-expression and set cursor on next cell
 (defun find_end_p()
   (setq k (get-char))
-  (cond 
+  (cond
     ((eq 0 (get-point)) -1)
     ((eq ")" k) (forward-char) (get-point))
     ((or (eq "" k) (eq " " k) (eq "\t" k) (eq "\n" k)) (backward-char) (find_end_p))
@@ -126,8 +126,8 @@
 (defun find_start_p()
   (beginning-of-line)
   (setq kyy (get-char))
-  (cond 
-    ((and (eq 0 (get-point)) (not (eq kyy "("))) -1) 
+  (cond
+    ((and (eq 0 (get-point)) (not (eq kyy "("))) -1)
     ((eq kyy "(") (get-point))
     (t (previous-line) (find_start_p)) ))
 
@@ -156,21 +156,38 @@
        ((eq -1 end_p) (message "could not find end of s-expression"))) )))
 
 (defun transpose-chars ()
-  (cond 
+  (cond
     ((= (get-point) 0) (message "Beginning of buffer"))
-    (t 
+    (t
       (cond
-        ((eq (get-char) "\n")
+	((eq (get-char) "\n")
 	  (setq p (get-point))
-          (backward-char)
-          (transpose-chars)
-          (set-point p))
-        (t
-          (backward-char)
-          (setq c (get-char))
-          (delete)
-          (forward-char)
-          (insert-string c))))))
+	  (backward-char)
+	  (transpose-chars)
+	  (set-point p))
+	(t
+	  (backward-char)
+	  (setq c (get-char))
+	  (delete)
+	  (forward-char)
+	  (insert-string c))))))
+
+
+;;; find-file - ff
+(defun ff ()
+  (let ((filename (string-trim (prompt-filename "Find file: "))))
+    (let ((buffer (find-buffer-visiting filename)))
+      (cond (buffer (select-buffer buffer))
+	    (t
+	     (setq buffer (file-name-nondirectory filename)) ; Note: we must uniqify here
+	     (generate-new-buffer buffer)
+	     (select-buffer buffer)
+	     (set-visited-filename filename)
+	     (let ((result (catch (fstat filename))))
+	       (cond ((eq (car result) 'not-found) (message "(New File)"))
+		     (t
+		      (let ((size (cadr (memq :size (caddr result)))))
+			(buffer-fread size (open filename)) )))))))))
 
 (setq primitive-write-file write-file)
 (defun femto-write-file ()

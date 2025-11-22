@@ -169,6 +169,16 @@ Object *e_getfilename(Interpreter *interp, Object **args, Object **env) {
     return newString(interp, response_buf);
 }
 
+Object *e_find_buffer_by_fname(Interpreter *interp, Object **args, Object **env)
+{
+  if (FLISP_ARG_ONE->string[0] == '\0')
+    return nil;
+  
+  buffer_t *bp = find_buffer_by_fname(FLISP_ARG_ONE->string);
+
+  return bp == NULL ? nil : newString(interp, bp->b_bname);
+}
+
 Object *e_show_prompt(Interpreter *interp, Object **args, Object **env)
 {
     display_prompt_and_response(FLISP_ARG_ONE->string, FLISP_ARG_TWO->string);

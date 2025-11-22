@@ -1,5 +1,6 @@
 /* window.c, femto, Hugh Barney, Public Domain, 2017 */
 
+#include "buffer.h"
 #include "header.h"
 
 int win_cnt = 0;

@@ -3,6 +3,7 @@
  * Simple forward and reverse search.
  */
 
+#include "buffer.h"
 #include "header.h"
 
 void search(void)

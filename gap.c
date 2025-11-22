@@ -4,6 +4,7 @@
  */
 
 #include <sys/stat.h>
+#include "buffer.h"
 #include "header.h"
 
 /* Enlarge gap by n chars, position of gap cannot change */

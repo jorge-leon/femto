@@ -1,5 +1,6 @@
 /* undo.c, femto, Hugh Barney, Public Domain, 2017 */
 
+#include "buffer.h"
 #include "header.h"
 
 undo_tt *new_undo(void)

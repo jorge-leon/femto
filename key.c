@@ -3,6 +3,7 @@
  * Derived from: Anthony's Editor January 93, (Public Domain 1991, 1993 by Anthony Howe)
  */
 
+#include "buffer.h"
 #include "header.h"
 
 keymap_t *new_key(char *name, char *bytes)

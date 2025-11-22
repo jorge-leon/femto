@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include "buffer.h"
 #include "header.h"
 
 void buffer_init(buffer_t *bp)
@@ -55,54 +56,60 @@ int buffer_is_empty(buffer_t *bp)
  * structure associated with it. If the buffer is not found and the
  * "cflag" is TRUE, create it.
  */
-buffer_t *find_buffer(char *bname, int cflag)
+buffer_t *find_buffer(char *name, int cflag)
 {
     buffer_t *bp = NULL;
-    buffer_t *sb = NULL;
 
-    debug("find-buffer(%s, %d)\n", bname, cflag);
-    bp = bheadp;
-    while (bp != NULL) {
-        if (strcmp(bname, bp->b_bname) == 0) {
-            return (bp);
-        }
-        bp = bp->b_next;
+    debug("find-buffer(%s, %d)\n", name, cflag);
+    bp = search_buffer(name);
+
+    if (bp == NULL && cflag)
+        bp = new_buffer(name);
+    return bp;
+}
+buffer_t *search_buffer(char *name)
+{
+    buffer_t *bp;
+    for (bp = bheadp; bp != NULL; bp = bp->b_next)
+        if (strcmp(name, bp->b_bname) == 0)
+            break;
+    return (bp);
+}
+buffer_t *new_buffer(char *name)
+{
+    buffer_t *bp, *sb;
+    if ((bp = (buffer_t *) malloc (sizeof (buffer_t))) == NULL)
+        return NULL;
+
+    buffer_init(bp);
+
+    /* find the place in the list to insert this buffer */
+    if (bheadp == NULL) {
+        bheadp = bp;
+    } else if (strcmp(bheadp->b_bname, name) > 0) {
+        /* insert at the begining */
+        bp->b_next = bheadp;
+        bheadp = bp;
+    } else {
+        for (sb = bheadp; sb->b_next != NULL; sb = sb->b_next)
+            if (strcmp (sb->b_next->b_bname, name) > 0)
+                break;
+
+        /* and insert it */
+        bp->b_next = sb->b_next;
+        sb->b_next = bp;
     }
 
-    if (cflag != FALSE) {
-        if ((bp = (buffer_t *) malloc (sizeof (buffer_t))) == NULL)
-            return (0);
+    safe_strncpy(bp->b_bname, name, NBUFN);
+    if (bp->b_bname[0] == '*')
+        add_mode(bp, B_SPECIAL); /* special buffers start with * in the name */
+    else if (global_undo_mode)
+        add_mode(bp, B_UNDO);
 
-        buffer_init(bp);
-        assert(bp != NULL);
+    /* a newly created buffer needs to have a gap otherwise it is not ready for insertion */
+    if (!growgap(bp, MIN_GAP_EXPAND))
+        msg(f_alloc);
 
-        /* find the place in the list to insert this buffer */
-        if (bheadp == NULL) {
-            bheadp = bp;
-        } else if (strcmp(bheadp->b_bname, bname) > 0) {
-            /* insert at the begining */
-            bp->b_next = bheadp;
-            bheadp = bp;
-        } else {
-            for (sb = bheadp; sb->b_next != NULL; sb = sb->b_next)
-                if (strcmp (sb->b_next->b_bname, bname) > 0)
-                    break;
-
-            /* and insert it */
-            bp->b_next = sb->b_next;
-            sb->b_next = bp;
-        }
-
-        safe_strncpy(bp->b_bname, bname, NBUFN);
-        if (bp->b_bname[0] == '*')
-            add_mode(bp, B_SPECIAL); /* special buffers start with * in the name */
-        else if (global_undo_mode)
-            add_mode(bp, B_UNDO);
-
-        /* a newly created buffer needs to have a gap otherwise it is not ready for insertion */
-        if (!growgap(bp, MIN_GAP_EXPAND))
-            msg(f_alloc);
-    }
     return bp;
 }
 

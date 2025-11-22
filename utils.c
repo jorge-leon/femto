@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <string.h>
 #include <ctype.h>
+#include "buffer.h"
 #include "header.h"
 
 /*

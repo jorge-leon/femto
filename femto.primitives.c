@@ -1,3 +1,5 @@
+#include "buffer.h"
+
 /************************* Editor Extensions **************************************/
 
 
@@ -227,6 +229,25 @@ Object *e_zero_buffer(Interpreter *interp, Object **args, Object **env)
     assert(curbp != NULL);
     zero_buffer(curbp);
     return nil;
+}
+
+/** (generate-new-buffer name) */
+Object *e_new_buffer(Interpreter *interp, Object **args, Object **env)
+{
+  if (new_buffer(FLISP_ARG_ONE->string))
+    return FLISP_ARG_ONE;
+  exceptionWithObject(interp, FLISP_ARG_ONE, out_of_memory, "(generate-new-buffer name) failed, out of memory");
+}
+/** (set-visited-filename name) */
+Object *e_set_buffer_filename(Interpreter *interp, Object **args, Object **env)
+{
+  if (FLISP_ARG_ONE == nil)
+    curbp->b_fname[0] = '\0';
+  else {
+    CHECK_TYPE(FLISP_ARG_ONE, type_string, "(set-visited-filename name) - name");
+    safe_strncpy(curbp->b_fname, FLISP_ARG_ONE->string, NAME_MAX);
+  }
+  return nil;
 }
 
 Object *e_find_file(Interpreter *interp, Object **args, Object **env)

@@ -6,6 +6,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <errno.h>
+#include "buffer.h"
 #include "header.h"
 
 #include <unistd.h>

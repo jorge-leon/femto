@@ -1,6 +1,7 @@
 /* replace.c, femto, Hugh Barney, Public Domain, 2017 */
 
 #include <string.h>
+#include "buffer.h"
 #include "header.h"
 
 /*search for a string and replace it with another string */

@@ -1,5 +1,6 @@
 /* hlite.c, generic syntax hilighting, Atto Emacs, Hugh Barney, Public Domain, 2016 */
 
+#include "buffer.h"
 #include "header.h"
 
 int state = ID_DEFAULT;

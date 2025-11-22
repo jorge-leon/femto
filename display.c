@@ -3,6 +3,10 @@
  * Derived from: Anthony's Editor January 93, (Public Domain 1991, 1993 by Anthony Howe)
  */
 
+
+#define _XOPEN_SOURCE 500
+#include <wchar.h>
+#include "buffer.h"
 #include "header.h"
 
 /* Reverse scan for start of logical line containing offset */

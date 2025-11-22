@@ -311,7 +311,8 @@ void readfile(char *fname)
 
     /* load the file if not already loaded */
     if (bp != NULL && bp->b_fname[0] == '\0') {
-        if (!e_load_file(fname)) {
+        clear_buffer();
+        if (!insert_file(fname, FALSE)) {
             msg(m_newfile, fname);
         }
         safe_strncpy(curbp->b_fname, fname, NAME_MAX);
@@ -826,7 +827,7 @@ void user_func(void)
 /*
  * readhook
  *
- * this will be called everytime a file is loaded into 
+ * this will be called everytime a file is loaded into
  * a buffer, it will execute the lisp function read-hook
  *
  */
@@ -835,12 +836,12 @@ void readhook(buffer_t *bp)
 {
 
     // we dont want any output from the read-hook, leaving message line available
-    // the only thing that could go wrong are errors in the lisp code or 
+    // the only thing that could go wrong are errors in the lisp code or
     // a missing read-hook function in startup.lsp
 
     if (eval_string(true, "(read-hook \"%s\")", bp->b_fname) == NULL)
         return;
-    
+
     free_lisp_output();
 }
 
@@ -862,11 +863,11 @@ int add_mode_current_buffer(char* modename)
         add_mode(curbp, B_PYTHON);;
         return 1;
     }
-   
+
     return 0; // we did not add a mode
 }
 
-int delete_mode_current_buffer(char* modename) 
+int delete_mode_current_buffer(char* modename)
 {
     if (strcmp(modename, "special") == 0) {
         delete_mode(curbp, B_SPECIAL);
@@ -884,11 +885,11 @@ int delete_mode_current_buffer(char* modename)
         delete_mode(curbp, B_PYTHON);;
         return 1;
     }
-    
+
     return 0; // we did not delete a mode
 }
 
-int get_mode_current_buffer(char* modename) 
+int get_mode_current_buffer(char* modename)
 {
     if (strcmp(modename, "special") == 0) {
         return 1;
@@ -901,7 +902,7 @@ int get_mode_current_buffer(char* modename)
     } else if (strcmp(modename, "python") == 0) {
         return 1;
     }
-    
+
     return 0; // mode is not set
 }
 

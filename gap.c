@@ -145,10 +145,24 @@ void clear_buffer(void)
     beginning_of_buffer();
 }
 
-int e_load_file(char *fn)
+/** Read size bytes from stream into buffer starting at point
+    
+    @returns: number of bytes read or zero if the buffer cannot be grown by size
+*/
+size_t buffer_fread(buffer_t *buffer, size_t size, FILE *stream)
 {
-    clear_buffer();
-    return insert_file(fn, FALSE);
+    size_t len;
+
+    if (size == 0)
+        return 0;
+
+    if (buffer->b_egap - buffer->b_gap < size * sizeof (char_t) && !growgap(buffer, size))
+        return 0;
+    buffer->b_point = movegap(buffer, buffer->b_point);
+    len = fread(buffer->b_gap, sizeof (char), size, stream);
+    if (len == size)
+        buffer->b_gap += len;
+    return len;
 }
 
 /* reads file into buffer at point */
@@ -166,15 +180,20 @@ int insert_file(char *fn, int modflag)
         msg(m_toobig, fn);
         return (FALSE);
     }
-    if (curbp->b_egap - curbp->b_gap < sb.st_size * sizeof (char_t) && !growgap(curbp, sb.st_size))
+    if (sb.st_size == 0) {
+        msg(m_empty, fn);
         return (FALSE);
+    }
     if ((fp = fopen(fn, "r")) == NULL) {
         msg(m_open, fn);
         return (FALSE);
     }
-    curbp->b_point = movegap(curbp, curbp->b_point);
-    curbp->b_gap += len = fread(curbp->b_gap, sizeof (char), (size_t) sb.st_size, fp);
-
+    len = buffer_fread(curbp, sb.st_size, fp);
+    if (len == 0) {
+        msg(m_read, fn);
+        (void) fclose(fp);
+        return (FALSE);
+    }
     if (fclose(fp) != 0) {
         msg(m_close, fn);
         return (FALSE);

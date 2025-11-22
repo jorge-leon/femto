@@ -37,6 +37,7 @@ available to be called as lisp functions
     {"search-forward",            1, 1, TYPE_STRING, e_search_forward},
     {"search-backward",           1, 1, TYPE_STRING, e_search_backward},
     {"insert-file-contents-literally", 1, 2, TYPE_STRING, e_insert_file},
+    {"buffer-fread",              2, 2, 0,         e_buffer_fread},
     {"select-buffer",             1, 1, TYPE_STRING, e_select_buffer},
     {"rename-buffer",             1, 1, TYPE_STRING, e_rename_buffer},
     {"kill-buffer",               1, 1, TYPE_STRING, e_kill_buffer},

@@ -139,6 +139,26 @@ Object *e_insert_file(Interpreter *interp, Object **args, Object **env) {
     return ((insert_file(FLISP_ARG_ONE->string, mflag) == TRUE) ? t : nil);
 }
 
+/** (buffer-fread size stream) - read size bytes from stream into current buffer at point */
+Object *e_buffer_fread(Interpreter *interp, Object **args, Object **env) {
+
+  CHECK_TYPE(FLISP_ARG_ONE, type_integer, "(buffer-read size stream) - size");
+  CHECK_TYPE(FLISP_ARG_TWO, type_stream, "(buffer-read size stream) - stream");
+
+  if (FLISP_ARG_ONE->integer == 0)
+    return nil;
+
+  if (FLISP_ARG_ONE->integer < 0)
+    exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(buffer-read size stream) - size is negative");
+
+  if (buffer_fread(curbp, FLISP_ARG_ONE->integer, FLISP_ARG_TWO->fd))
+    return nil;
+
+  if (ferror(FLISP_ARG_TWO->fd))
+    exceptionWithObject(interp, FLISP_ARG_TWO, io_error, "buffer_fread() failed: %s", strerror(errno));
+  exception(interp, out_of_memory, "buffer_fread() failed, could not grow current buffer");
+}
+
 Object *e_getfilename(Interpreter *interp, Object **args, Object **env) {
 
     if (FALSE == getfilename(FLISP_ARG_ONE->string, (char*) response_buf, NAME_MAX))

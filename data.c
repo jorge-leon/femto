@@ -43,6 +43,7 @@ char *m_stat = "Failed to find file \"%s\".";
 char *m_open = "Failed to open file \"%s\".";
 char *m_close = "Failed to close file \"%s\".";
 char *m_write = "Failed to write file \"%s\".";
+char *m_read = "Failed to read file \"%s\".";
 char *m_badname = "Not a portable POSIX file name.";
 char *m_file = "File \"%s\" %ld bytes.";
 char *m_saved = "File \"%s\" %ld bytes saved.";
@@ -58,7 +59,7 @@ char *m_goto = "Goto line: ";
 char *m_sprompt = "Search: ";
 char *m_qreplace = "Replace '%s' with '%s' ? ";
 char *m_rephelp = "(y)es, (n)o, (!)do the rest, (q)uit";
-char *m_nomark ="No mark set";
+char *m_nomark = "No mark set";
 char *m_noregion = "No region defined, mark and point are the same place";
 
 char *str_notsaved = "Discard changes (y/n) ?";

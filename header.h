@@ -410,8 +410,8 @@ extern void describe_functions(void);
 
 /* functions in gap.c */
 extern char_t * ptr(buffer_t *, register point_t);
-extern int e_load_file(char *);
 extern int growgap(buffer_t *, point_t);
+extern size_t buffer_fread(buffer_t *, size_t, FILE *);
 extern int insert_file(char *, int);
 extern int posix_file(char *);
 extern int save_buffer(buffer_t *, char *);

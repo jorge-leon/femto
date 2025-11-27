@@ -5,11 +5,6 @@
 
 extern Primitive flisp_file_primitives[];
 
-extern Object *permission_denied;
-extern Object *not_found;
-
-extern Constant flisp_file_constants[];
-
 #endif
 /*
  * Local Variables:

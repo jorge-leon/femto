@@ -145,6 +145,12 @@ extern Object *invalid_value;
 extern Object *wrong_num_of_arguments;
 extern Object *io_error;
 extern Object *out_of_memory;
+/* I/O */
+extern Object *permission_denied;
+extern Object *not_found;
+extern Object *file_exists;
+extern Object *read_only;
+extern Object *is_directory;
 /* utility */
 extern Object *one;
 extern Object *empty;

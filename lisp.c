@@ -7,13 +7,12 @@
 
 #include <sys/mman.h>
 #include <assert.h>
-#include <ctype.h>
 #include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
-#include <curses.h>
 #include <limits.h>
 
 // Note: can this be untangled?
@@ -75,6 +74,12 @@ Object *arith_error =                           &(Object) { NULL, .string = "ari
 Object *io_error =                              &(Object) { NULL, .string = "io-error" };
 Object *out_of_memory =             (Object *) (&(Symbol) { NULL, .string = "out-of-memory" });
 Object *gc_error =                              &(Object) { NULL, .string = "gc-error" };
+/* I/O */
+Object *permission_denied =  (Object *) (&(Symbol) { NULL, .string = "permission-denied" });
+Object *not_found = &(Object) { NULL, .string = "not-found" };
+Object *file_exists = &(Object) { NULL, .string = "file-exists" };
+Object *read_only = &(Object) { NULL, .string = "read-only" };
+Object *is_directory = &(Object) { NULL, .string = "is-directory" };
 /* Internal */
 Object *type_env =                              &(Object) { NULL, .string = "type-env" };
 Object *type_moved =                            &(Object) { NULL, .string = "type-moved" };
@@ -108,7 +113,13 @@ Constant flisp_constants[] = {
     { &arith_error, &arith_error },
     { &io_error, &io_error },
     { &out_of_memory, &out_of_memory },
-    { &gc_error, &gc_error }
+    { &gc_error, &gc_error },
+    /* I/O */
+    { &permission_denied, &permission_denied },
+    { &not_found, &not_found },
+    { &file_exists, &file_exists },
+    { &read_only, &read_only },
+    { &is_directory, &is_directory }
 };
 
 /** Type codes:
@@ -1699,7 +1710,7 @@ void writeChar(Interpreter *interp, FILE *fd, char ch)
     if (fd == NULL) return;
 
     if(fputc(ch, fd) == EOF)
-        exception(interp, io_error, "failed to write character %c, errno: %d", ch, errno);
+        exception(interp, io_error, "failed to write character %c, errno: %s", ch, strerror(errno));
 }
 
 /** writeString - write string to file descriptor
@@ -2138,16 +2149,16 @@ Object *file_inputMemStream(Interpreter *interp, char *string)
  */
 Object *file_fopen(Interpreter *interp, char *path, char* mode) {
     FILE * fd;
-    Object *stream;
+    Object *stream, *err = nil;
 
     if (strcmp("<", mode) == 0) {
         if (nil == (stream = file_inputMemStream(interp, path)))
-            exception(interp, io_error, "failed to open string as memory input stream: %d", errno);
+            exception(interp, io_error, "failed to open string as memory input stream: %s", strerror(errno));
         return stream;
     }
     if (strcmp(">", mode) == 0) {
         if (nil == (stream = file_outputMemStream(interp)))
-            exception(interp, io_error, "failed to open memory output stream: %d", errno);
+            exception(interp, io_error, "failed to open memory output stream: %s", strerror(errno));
         return stream;
     }
     char c = path[0];
@@ -2160,8 +2171,17 @@ Object *file_fopen(Interpreter *interp, char *path, char* mode) {
         if (NULL == (fd = fdopen((int)d, c == '<' ? "r" : "a")))
             exception(interp, io_error, "failed to open I/O stream %ld for %s", d, c == '<' ? "reading" : "writing");
     } else {
-        if (NULL == (fd = fopen(path, mode)))
-            exception(interp, io_error, "failed to open file '%s' with mode '%s': %s", path, mode, strerror(errno));
+        if (NULL == (fd = fopen(path, mode))) {
+            fl_debug(interp, "fopen() failed:%d: %s\n", errno, strerror(errno));
+            switch(errno) {
+            case EACCES:  err = permission_denied; break;
+            case EEXIST:  err = file_exists; break;
+            case ENOENT:  err = not_found; break;
+            case EISDIR:  err = is_directory; break;
+            default:      err = io_error; break;
+            }
+            exception(interp, err, "failed to open file '%s' with mode '%s': %s", path, mode, strerror(errno));
+        }
     }
     return newStreamObject(interp, fd, path);
 }
@@ -2487,12 +2507,6 @@ void initRootEnv(Interpreter *interp)
     }
 #endif
 #ifdef FLISP_FILE_EXTENSION
-    for (Constant *constant = flisp_file_constants; constant->symbol != NULL; constant++) {
-        (*constant->symbol)->type = type_symbol;
-        envSet(interp, constant->symbol, constant->value, &interp->global, true);
-        interp->symbols = newCons(interp, constant->symbol, &interp->symbols);
-    }
-
     for (Primitive *entry = flisp_file_primitives; entry->name != NULL; entry++) {
         var = newSymbol(interp, entry->name);
         val = newPrimitive(interp, entry);

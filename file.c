@@ -8,19 +8,6 @@
 #include "lisp.h"
 #include "file.h"
 
-Object *permission_denied =  (Object *) (&(Symbol) { NULL, .string = "permission-denied" });
-Object *not_found = &(Object) { NULL, .string = "not-found" };
-Object *file_exists = &(Object) { NULL, .string = "file-exists" };
-Object *read_only = &(Object) { NULL, .string = "read-only" };
-
-Constant flisp_file_constants[] = {
-    { &permission_denied, &permission_denied },
-    { &not_found, &not_found },
-    { &file_exists, &file_exists },
-    { &read_only, &read_only },
-    { NULL, NULL }
-};
-
 /** (fflush[ stream]) - flush stream, output or all streams
  *
  * @param stream  Stream to flush. If t all streams are flushed, if

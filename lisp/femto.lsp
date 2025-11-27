@@ -173,22 +173,57 @@
 	  (insert-string c))))))
 
 
-;;; find-file - ff
-(defun ff ()
+;;; Buffers
+
+(defun create-file-buffer (filename)
+  (generate-new-buffer (file-name-nondirectory filename))) ; Note: we must uniqify here
+
+;;; find-file
+(defun find-file ()
   (let ((filename (string-trim (prompt-filename "Find file: "))))
     (let ((buffer (find-buffer-visiting filename)))
-      (cond (buffer (select-buffer buffer))
-	    (t
-	     (setq buffer (file-name-nondirectory filename)) ; Note: we must uniqify here
-	     (generate-new-buffer buffer)
-	     (select-buffer buffer)
-	     (set-visited-filename filename)
-	     (let ((result (catch (fstat filename))))
-	       (cond ((eq (car result) 'not-found) (message "(New File)"))
-		     (t
-		      (let ((size (cadr (memq :size (caddr result)))))
-			(buffer-fread size (open filename)) )))))))))
+      (cond (buffer (select-buffer buffer)) ; file already loaded
+	    (t (find-file-noselect filename))))))
 
+(defun find-file-noselect (filename)
+  (let ((result (catch (open filename "r+"))) (fd nil) (ro nil) (directory nil))
+    (log-debug (concat "ff: " result))
+    (cond
+      ((null (car result)) (setq fd (caddr result)))
+      ((eq (car result) :is-directory) (setq directory t))
+      ((eq (car result) :permission-denied) (setq fd (open filename)  ro t))
+      ((eq (car result) :not-found))
+      (t (throw (car result) (cadr result) filename)) )
+    (cond (fd (find-file_load filename fd ro))
+	  (directory
+	   ;; Note: Workaround for current dired implementation.  Instead
+	   ;; dired should receive the directory as filename and it/we
+	   ;; should provide a file buffer with (set-visited-filename
+	   ;; directory)
+	   (setq dired-dir filename)
+	   (dired) )
+	  (t (find-file_new filename)) )))
+
+(defun find-file_load (filename fd ro)
+  (let ((result (fstat filename)) (size 0) (type nil))
+    (setq size (prop-get result :size)  type (prop-get result :type))
+    (cond
+      ((eq type "f")
+       (select-buffer (create-file-buffer filename))
+       (set-visited-filename filename)
+       (buffer-fread size (open filename))
+       (cond (ro
+	      ;; Note: read-only mode pending implementation
+	      (add-mode "read-only"))))
+      (t  (throw :invalid-value "neither file nor directory" filename)) )))
+
+(defun find-file_new (filename)
+  (select-buffer (create-file-buffer filename))
+  (set-visited-filename filename)
+  (message "(New file)") )
+
+
+;;;
 (setq primitive-write-file write-file)
 (defun femto-write-file ()
   (let ((p (prompt-filename (get-buffer-filename))))

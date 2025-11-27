@@ -204,7 +204,6 @@ void setup_keys(void)
     set_key_internal("backspace", "backspace",            "\x7f", backspace);
 
     set_key_internal("c-x c-c",   "exit"                  , "\x18\x03", quit_ask);
-    set_key_internal("c-x c-f",   "find-file"             , "\x18\x06", i_readfile);
     set_key_internal("c-x c-n",   "next-buffer"           , "\x18\x0E", next_buffer);
     set_key_internal("c-x c-s",   "save-buffer"           , "\x18\x13", savebuffer);
     set_key_internal("c-x c-w",   "write-file"            , "\x18\x17", writefile);

@@ -71,7 +71,6 @@ extern void insert_string(char *);
 extern void move_to_search_result(point_t);
 extern point_t search_forward(char *);
 extern point_t search_backwards(char *);
-extern void readfile(char *);
 extern void shell_command(char *);
 extern int goto_line(int);
 extern int add_mode_global(char *);
@@ -258,12 +257,6 @@ Object *e_set_buffer_filename(Interpreter *interp, Object **args, Object **env)
     safe_strncpy(curbp->b_fname, FLISP_ARG_ONE->string, NAME_MAX);
   }
   return nil;
-}
-
-Object *e_find_file(Interpreter *interp, Object **args, Object **env)
-{
-    readfile(FLISP_ARG_ONE->string);
-    return t;
 }
 
 Object *e_search_forward(Interpreter *interp, Object **args, Object **env)

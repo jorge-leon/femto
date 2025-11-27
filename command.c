@@ -295,38 +295,6 @@ int goto_line(int line)
     }
 }
 
-void i_readfile(void)
-{
-    if (FALSE == getfilename(str_read, (char*)response_buf, NAME_MAX))
-        return;
-
-    readfile(response_buf);
-}
-
-void readfile(char *fname)
-{
-    char bname[NBUFN];
-    buffer_t *bp = find_buffer_by_fname(fname);
-    if (bp == NULL) {
-        make_buffer_name(bname, fname);
-        make_buffer_name_uniq(bname);
-        bp = find_buffer(bname, TRUE);
-    }
-    disassociate_b(curwp); /* we are leaving the old buffer for a new one */
-    curbp = bp;
-    associate_b2w(curbp, curwp);
-
-    /* load the file if not already loaded */
-    if (bp != NULL && bp->b_fname[0] == '\0') {
-        clear_buffer();
-        if (!insert_file(fname, FALSE)) {
-            msg(m_newfile, fname);
-        }
-        safe_strncpy(curbp->b_fname, fname, NAME_MAX);
-        readhook(curbp);
-    }
-}
-
 void savebuffer(void)
 {
     if (curbp->b_fname[0] != '\0') {

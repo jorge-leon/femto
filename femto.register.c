@@ -48,7 +48,6 @@ available to be called as lisp functions
     {"rename-buffer",             1, 1, TYPE_STRING, e_rename_buffer},
     {"kill-buffer",               1, 1, TYPE_STRING, e_kill_buffer},
     {"erase-buffer",              0, 0, 0,         e_zero_buffer},
-    {"find-file",                 1, 1, TYPE_STRING, e_find_file},
     {"update-display",            0, 0, 0,         e_update_display},
     {"prompt-filename",           1, 1, TYPE_STRING, e_getfilename},
     {"clear-message-line",        0, 0, 0,         e_clear_message_line},

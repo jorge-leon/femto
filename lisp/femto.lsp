@@ -172,6 +172,24 @@
 	  (forward-char)
 	  (insert-string c))))))
 
+;;; Hooks
+(defun run-hook (hookvar)
+  (let process-hook-function ((hook (eval hookvar)))
+    (cond
+      ((null hook)  nil)
+      ((consp hook)
+       (let ((result (catch ((car hook)))))
+	 (cond ((car result)
+		(log-debug (concat "(run-hook hook) failed on function: "(car hook)": "result"\n")) ))
+	 (process-hook-function (cdr hook)) ))
+      (t  (throw invalid-value "(run-hook hook) - hook is not a list\n")) )))
+
+(defmacro run-hooks hooks
+  (cond
+    (hooks
+     (list 'progn
+	   (list 'catch (list 'run-hook (car hooks)))
+	   (cons 'run-hooks (cdr hooks)) ))))
 
 ;;; Buffers
 

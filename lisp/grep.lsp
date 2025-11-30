@@ -25,7 +25,7 @@
      (rename-buffer grep-buf))))
 
 (defun grep-next()
-  (select-buffer grep-buf)
+  (switch-to-buffer grep-buf)
   (setq grep-line (+ grep-line 1))
   (goto-line grep-line)
   (beginning-of-line)

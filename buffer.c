@@ -250,7 +250,7 @@ int delete_buffer_byname(char *bname)
 }
 
 
-int select_buffer(char *bname)
+void switch_to_buffer(char *bname)
 {
     buffer_t *bp = find_buffer(bname, TRUE);
 
@@ -260,7 +260,6 @@ int select_buffer(char *bname)
     disassociate_b(curwp);
     curbp = bp;
     associate_b2w(curbp,curwp);
-    return TRUE;
 }
 
 /* a version of save buffer specifically for calling by lisp */

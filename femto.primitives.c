@@ -52,16 +52,11 @@ extern char *get_input_key(void);
 extern char *get_key_name(void);
 extern char *get_key_funcname(void);
 extern char *get_clipboard(void);
-extern char *get_current_bufname(void);
-extern char *get_current_filename(void);
 extern void set_scrap(unsigned char *);
 extern void execute_key(void);
-extern int select_buffer(char *);
-extern int delete_buffer_byname(char *);
 extern int add_mode_current_buffer(char *);
 extern int delete_mode_current_buffer(char *);
 extern int get_mode_current_buffer(char *);
-extern int save_buffer_byname(char *);
 extern int count_buffers(void);
 extern void display_prompt_and_response(char *, char *);
 extern void msg(char *,...);
@@ -206,12 +201,10 @@ Object *e_goto_line(Interpreter *interp, Object **args, Object **env)
     return (result == 1 ? t : nil);
 }
 
-Object *e_select_buffer(Interpreter *interp, Object **args, Object **env)
+Object *e_switch_to_buffer(Interpreter *interp, Object **args, Object **env)
 {
-    // Note: select buffer always returns TRUE
-    //  so it seems to be superfluous to test for the return value
-    int result = select_buffer(FLISP_ARG_ONE->string);
-    return (result ? t : nil);
+    switch_to_buffer(FLISP_ARG_ONE->string);
+    return FLISP_ARG_ONE;
 }
 
 Object *e_rename_buffer(Interpreter *interp, Object **args, Object **env)

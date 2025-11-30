@@ -11,23 +11,23 @@
 
 (defun log-test-result(s)
   (setq obuf (get-buffer-name))
-  (select-buffer test_log_buf)
+  (switch-to-buffer test_log_buf)
   (end-of-buffer)
   (insert-string s)
-  (select-buffer obuf))
+  (switch-to-buffer obuf))
 
 (defun test1()
-  (select-buffer test_buf1)
+  (switch-to-buffer test_buf1)
   (foxline)
   (kill-buffer test_buf1)
-  (select-buffer test_buf1)
+  (switch-to-buffer test_buf1)
   (foxline)
-  (select-buffer test_buf2)
+  (switch-to-buffer test_buf2)
   (kill-buffer test_buf1)
   (log-test-result "TEST1: buffer functions PASSED\n"))
 
 (defun create-test-file()
-  (select-buffer test_buf1)
+  (switch-to-buffer test_buf1)
   (repeat 10 foxline)
   (beginning-of-buffer)
   (set-mark)
@@ -38,7 +38,7 @@
 (defun run-tests()
   (test1)
   (create-test-file)
-  (select-buffer test_log_buf)
+  (switch-to-buffer test_log_buf)
   (insert-string "TESTs completed\n"))
 
 
@@ -100,7 +100,7 @@
 ;save-buffer
 ;search-backwards
 ;search-forward
-;select-buffer
+;switch-to-buffer
 ;- set-clipboard
 ;set-key
 ;set-mark

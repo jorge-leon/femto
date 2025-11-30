@@ -3,7 +3,7 @@
 ;;
 
 (defun show-info()
-    (select-buffer "*info*")
+    (switch-to-buffer "*info*")
     (cond ((eq 0 (get-point-max))
 	   (insert-string ";******************************************************************************\n")
 	   (insert-string ";\n")
@@ -23,7 +23,7 @@
 	   (kill-buffer "*help*")
 	   (describe-bindings)
 	   (setq bd (get-buffer-string "*help*"))
-	   (select-buffer "*info*")
+	   (switch-to-buffer "*info*")
 	   (end-of-buffer)
 	   (insert-string bd)
 	   
@@ -33,7 +33,7 @@
 	   (kill-buffer "*help*")
 	   (describe-functions)
 	   (setq bd (get-buffer-string "*help*"))
-	   (select-buffer "*info*")
+	   (switch-to-buffer "*info*")
            (add-mode "lispmode")
 	   (end-of-buffer)
 	   (insert-string bd)
@@ -51,7 +51,7 @@
 ;; return the contents of a buffer
 ;;
 (defun get-buffer-string(tbuf)
-   (select-buffer tbuf)
+   (switch-to-buffer tbuf)
    (set-point 0)
    (set-mark)
    (end-of-buffer)

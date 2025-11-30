@@ -60,7 +60,7 @@ rename-buffer
 save-buffer
 search-backwards
 search-forward
-select-buffer
+switch-to-buffer
 set-clipboard
 set-key
 set-mark

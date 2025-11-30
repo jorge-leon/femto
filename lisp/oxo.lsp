@@ -39,7 +39,7 @@
 
 (defun init()
  (oxo-debug "(init)\n")
- (select-buffer "*oxo*")
+ (switch-to-buffer "*oxo*")
  (beginning-of-buffer)
  (end-of-buffer)
  (kill-region)

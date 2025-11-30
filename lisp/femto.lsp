@@ -41,7 +41,7 @@
 	(concat "error: failed to execute" command ": "  rc))
     (t
      (cond (not (eq rc 0)) (message "warning: " command " exited: " rc))
-     (select-buffer "*output*")
+     (switch-to-buffer "*output*")
      (erase-buffer)
      (insert-file-contents-literally temp)
      (system (concat "rm -f " temp))
@@ -197,15 +197,15 @@
   (generate-new-buffer (file-name-nondirectory filename))) ; Note: we must uniqify here
 
 ;;; find-file
+
 (defun find-file ()
   (let ((filename (string-trim (prompt-filename "Find file: "))))
     (let ((buffer (find-buffer-visiting filename)))
-      (cond (buffer (select-buffer buffer)) ; file already loaded
+      (cond (buffer (switch-to-buffer buffer)) ; file already loaded
 	    (t (find-file-noselect filename))))))
 
 (defun find-file-noselect (filename)
   (let ((result (catch (open filename "r+"))) (fd nil) (ro nil) (directory nil))
-    (log-debug (concat "ff: " result))
     (cond
       ((null (car result)) (setq fd (caddr result)))
       ((eq (car result) :is-directory) (setq directory t))
@@ -227,7 +227,7 @@
     (setq size (prop-get result :size)  type (prop-get result :type))
     (cond
       ((eq type "f")
-       (select-buffer (create-file-buffer filename))
+       (switch-to-buffer (create-file-buffer filename))
        (set-visited-filename filename)
        (buffer-fread size (open filename))
        (cond (ro
@@ -236,7 +236,7 @@
       (t  (throw :invalid-value "neither file nor directory" filename)) )))
 
 (defun find-file_new (filename)
-  (select-buffer (create-file-buffer filename))
+  (switch-to-buffer (create-file-buffer filename))
   (set-visited-filename filename)
   (message "(New file)") )
 

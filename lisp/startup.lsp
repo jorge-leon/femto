@@ -34,7 +34,7 @@
        ((eq "+" (substring (car opts) 0 1))
 	(getopts (cdr opts) (string-to-number (substring (car opts) 1))))
        (t
-	(find-file (car opts))
+	(find-file-noselect (car opts))
 	(cond ((> pos 0) (goto-line pos)))
 	(getopts (cdr opts) 0))))
     (t (throw wrong-type-argument "(getopts opts pos) - opts must be list"))))
@@ -101,15 +101,6 @@
 (set-key "c-x c-g" "git-menu")
 
 (show-startup-message)
-
-;;
-;; This is used to set modes for different types of file when they get loaded
-;;
-(defun read-hook (s)
-  (cond
-    ((string-search (get-buffer-file-extension) "|c|h|cpp|") (add-mode "cmode"))
-    ((string-search (get-buffer-file-extension) "|rc|lsp|")  (add-mode "lispmode"))
-    ((string-search (get-buffer-file-extension) "|py|")      (add-mode "python"))))
 
 ;;
 ;; Mark the scratch buffer as unmodified, set to lispmode so that the comment comes up green

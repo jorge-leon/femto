@@ -201,44 +201,66 @@
 (defun find-file ()
   (let ((filename (string-trim (prompt-filename "Find file: "))))
     (let ((buffer (find-buffer-visiting filename)))
-      (cond (buffer (switch-to-buffer buffer)) ; file already loaded
-	    (t (find-file-noselect filename))))))
+      (cond (buffer  (switch-to-buffer buffer)) ; file already loaded
+	    ((setq buffer (find-file-noselect filename))  (switch-to-buffer buffer)) ))))
 
 (defun find-file-noselect (filename)
-  (let ((result (catch (open filename "r+"))) (fd nil) (ro nil) (directory nil))
+  (let ((result (catch (open filename "r+"))) (fd nil) (ro nil) (directory nil) (buffer nil))
     (cond
-      ((null (car result)) (setq fd (caddr result)))
-      ((eq (car result) :is-directory) (setq directory t))
-      ((eq (car result) :permission-denied) (setq fd (open filename)  ro t))
-      ((eq (car result) :not-found))
-      (t (throw (car result) (cadr result) filename)) )
-    (cond (fd (find-file_load filename fd ro))
-	  (directory
-	   ;; Note: Workaround for current dired implementation.  Instead
-	   ;; dired should receive the directory as filename and it/we
-	   ;; should provide a file buffer with (set-visited-filename
-	   ;; directory)
-	   (setq dired-dir filename)
-	   (dired) )
-	  (t (find-file_new filename)) )))
+      ((null (car result))                   (find-file_load (caddr result) filename nil))
+      ((eq (car result) :permission-denied)  (find-file_load (open filename) filename t))
+      ((eq (car result) :not-found)          (find-file_new filename))
+      ((eq (car result) :is-directory)       (find-file_directory filename))
+      (t (throw (car result) (cadr result) filename)) )))
 
-(defun find-file_load (filename fd ro)
+(defun find-file_load (fd filename read-only)
   (let ((result (fstat filename)) (size 0) (type nil))
-    (setq size (prop-get result :size)  type (prop-get result :type))
-    (cond
-      ((eq type "f")
-       (switch-to-buffer (create-file-buffer filename))
-       (set-visited-filename filename)
-       (buffer-fread size (open filename))
-       (cond (ro
-	      ;; Note: read-only mode pending implementation
-	      (add-mode "read-only"))))
-      (t  (throw :invalid-value "neither file nor directory" filename)) )))
+    (setq
+     size (prop-get result :size)
+     type (prop-get result :type) )
+    (cond ((not (eq type "f"))  (throw :invalid-value "neither file nor directory" filename)))
+
+    ;; Note: Emacs does not switch here, but rather in find-file
+    (switch-to-buffer (create-file-buffer filename))
+    (set-visited-filename filename)
+    (buffer-fread size fd)
+    (close fd)
+    (cond (read-only
+	   ;; Note: read-only mode pending implementation
+	   (add-mode "read-only") ))
+    (after-find-file)
+    (get-buffer-name) ))
 
 (defun find-file_new (filename)
+  ;; Note: Emacs does not switch here, but rather in find-file
   (switch-to-buffer (create-file-buffer filename))
   (set-visited-filename filename)
-  (message "(New file)") )
+  (message "(New file)")
+  (after-find-file)
+  (get-buffer-name) )
+
+(setq
+ find-file-extension-highlight-mode
+      '("c" "cmode"  "h" "cmode"  "cpp" "cmode"
+	"rc"  "lispmode"  "lsp" "lispmode"
+	"py"  "python")
+      find-file-hook nil)
+
+(defun after-find-file ()
+  (let ((mode (prop-get find-file-extension-highlight-mode (get-buffer-file-extension))))
+    (log-debug (concat "afer-find-file:mode: "mode"\n"))
+    (cond (mode  (add-mode mode))))
+  (run-hooks 'find-file-hook) )
+
+(defun find-file_directory (filename)
+  ;; Note: Workaround for current dired implementation.  Instead
+  ;; dired should receive the directory as filename and it/we
+  ;; should provide a file buffer with (set-visited-filename
+  ;; directory)
+  (setq dired-dir filename)
+  (dired)
+  nil ; signals not to switch to a buffer.
+  )
 
 
 ;;;

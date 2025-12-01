@@ -365,7 +365,7 @@ IN='(min 1 2 3)' OUT=1
 flisp_expr 1; ok min-6 with more then two args
 
 
-false; ok let-1 \# TODO
+true; ok let-1 \# TODO
 
 IN="(prog1 'answer)" OUT="answer"
 flisp_expr 1; ok prog1-1 prog1 single arg is arg

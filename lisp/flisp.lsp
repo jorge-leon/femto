@@ -68,6 +68,12 @@
 	 (list 'cond (list pred then)  (cons 't else)) )
 	(t (list 'cond (list pred then))) ))
 
+(defmacro when (pred . body)
+  (cond (body  (list 'cond (cons pred body)))) )
+
+(defmacro unless (pred . body)
+  (cond (body (list 'cond (list pred nil) (cons 't body)))) )
+
 (defun equal (o1 o2)
   (or (and (atom o1) (atom o2)
 	   (eq o1 o2))

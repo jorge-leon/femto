@@ -2,7 +2,7 @@
 # test the fLisp library
 # leg20231129: Femto
 
-tap 45
+tap 47
 
 export FLISPRC=../flisp.rc
 export PREPARE="(require 'flisp)"
@@ -112,7 +112,7 @@ flisp_err; ok nthcdr-8 wrong list type fails
 IN="(nth 1 '(a b c))" OUT=b
 flisp_expr; ok nth-1 yields element
 
-false; ok foldr-1 \# TODO
+true; ok foldr-1 \# TODO
 
 true; ok unfold-1 \# TODO unfold is tested by its application in iota
 
@@ -149,7 +149,13 @@ IN='(zerop 1)' OUT=nil
 flisp_expr 1; ok zerop-2 1 is not zero
 
 # if
-false; ok if \# TODO
+true; ok if \# TODO
+
+# when
+true; ok when \# TODO
+
+# unless
+true; ok unless \# TODO
 
 # equal
-false; ok equal \# TODO
+true; ok equal \# TODO

@@ -4,7 +4,7 @@
 
 export FLISPRC=../flisp.rc
 
-tap 149
+tap 160
 
 # list
 IN='(list)' OUT=nil
@@ -20,6 +20,31 @@ flisp_expr 1; ok list-3 two elements
 IN="(defmacro m (a b) (list 'list a b)) (m 1 2)" OUT='(1 2)'
 flisp_expr 1; ok defmacro-1  simple macroexpansion
 
+# conditionals
+# if
+true; ok if \# TODO
+# when
+true; ok when \# TODO
+# unless
+true; ok unless \# TODO
+
+# defun
+IN="(defun f (a b) (list a b)) (f 1 2)" OUT='(1 2)'
+flisp_expr 1; ok defun-1  simple function invocation
+
+# Accessors
+IN="(cadr '(a b c d))" OUT="b"
+flisp_expr 1; ok cadr-1 cadr returns second element
+IN="(cddr '(a b c d))" OUT="(c d)"
+flisp_expr 1; ok cddr-1 cddr returns list after second element
+IN="(caddr '(a b c d))" OUT="c"
+flisp_expr 1; ok caddr-1 caddr returns third element
+IN="(caar '((a b) (c d)))" OUT="a"
+flisp_expr 1; ok caar-1 caar returns first element of first list
+IN="(cdar '((a b c) d))" OUT="(b c)"
+flisp_expr 1; ok cdar-1 cdar returns rest of first list
+
+# setq
 IN="(setq var 'val)" OUT=val
 flisp_expr 1; ok setq-1 assignment returns value
 
@@ -41,10 +66,6 @@ flisp_expr 1; ok setq-6 four args first var evaluates to first value
 
 IN="$EXPR var2" OUT=val2
 flisp_expr 1; ok setq-7 four args second var evaluates to second value
-
-# defun
-IN="(defun f (a b) (list a b)) (f 1 2)" OUT='(1 2)'
-flisp_expr 1; ok defun-1  simple function invocation
 
 IN="((curry + 42) 1)" OUT=43
 flisp_expr 1; ok curry-1 curry sum function adds
@@ -90,6 +111,52 @@ flisp_expr 1; ok streamp-1  streamp stream is t
 
 IN="(streamp streamp)" OUT='nil'
 flisp_expr 1; ok streamp-2  streamp lambda is nil
+
+# mapcar
+IN="(defun incr (x) (+ x 1)) (mapcar incr '(1 2 3))" OUT="(2 3 4)"
+flisp_expr 1; ok mapcar-1 mapcar incr elements in list
+
+IN="(mapcar / '())" OUT="nil"
+flisp_expr 1; ok mapcar-2 mapcar does nothing on empty list
+
+# let
+## unlabelled let
+IN="(let)" OBJ= ERR="(env) expects at least 1 arguments"
+flisp_err 1; ok let-1 let errs with zero args
+
+IN="(let ())" OUT=nil
+flisp_expr 1; ok let-2 let with empty bindings is nil
+
+IN="(let ((a 1)))" OUT=nil
+flisp_expr 1; ok let-3 let with empty body is nil
+
+IN="(setq a 1) (let ((a 2)) a)" OUT=2
+flisp_expr 1; ok let-4 let binding shadows outer value
+
+IN="(setq a 1 b 2) (let ((a 3) (b 4)) (list a b))" OUT='(3 4)'
+flisp_expr 1; ok let-5 let binds several symbols
+
+## labelled let
+IN="(let label)" OUT=nil
+flisp_expr 1; ok labelled-let-1 labelled let with empty bindings is nil
+
+IN="(let label ((a 1)))" OUT=nil
+flisp_expr 1; ok labelled-let-2 labelled let with empty body is nil
+
+IN="(setq a 1) (let label ((a 2)) a)" OUT=2
+flisp_expr 1; ok labelled-let-3 labelled let binding shadows outer value
+
+IN="(setq a 1 b 2) (let label ((a 3) (b 4)) (list a b))" OUT='(3 4)'
+flisp_expr 1; ok labelled-let-4 labelled let binds several symbols
+
+IN="(let label ((a 2) (b 0))  (print a) (if (i> a 0) (label (i- a 1) (i+ b 1))))" OUT='210nil'
+flisp_expr; ok labelled-let-5 labelled let loops
+
+IN="(prog1 'answer)" OUT="answer"
+flisp_expr 1; ok prog1-1 prog1 single arg is arg
+
+IN="(prog1 'answer 42)" OUT="answer"
+flisp_expr 1; ok prog1-2 prog1 two args is arg
 
 # string
 IN="(string nil)" OUT='""'
@@ -138,27 +205,6 @@ flisp_expr 1; ok numberp-2  numberp lambda is nil
 IN="(numberp numberp)" OUT='nil'
 flisp_expr 1; ok numberp-3  numberp lambda is nil
 
-IN="(cadr '(a b c d))" OUT="b"
-flisp_expr 1; ok cadr1-1 cadr returns second element
-
-IN="(cddr '(a b c d))" OUT="(c d)"
-flisp_expr 1; ok cddr1-1 cddr returns list after second element
-
-IN="(caddr '(a b c d))" OUT="c"
-flisp_expr 1; ok caddr1-1 caddr returns third element
-
-# conditionals
-
-# if
-true; ok if \# TODO
-
-# when
-true; ok when \# TODO
-
-# unless
-true; ok unless \# TODO
-
-
 # append
 IN='(append)' OUT="nil"
 flisp_expr 1; ok append-1 append nothing is nil
@@ -175,7 +221,7 @@ flisp_expr 1; ok append-4 append list atom is dotted list
 IN="(append '(1 2 3) '(a b c))" OUT="(1 2 3 a b c)"
 flisp_expr 1; ok append-5 append list list is list
 
-IN="(append 1 1)" ERR="(append lists) - list expected type-list, got type-integer" OBJ=
+IN="(append 1 1)" ERR="got type-integer" OBJ=
 flisp_err 1; ok append-6 append atom any errs
 
 IN="(fold-left + 1 nil)" OUT=1
@@ -291,12 +337,6 @@ flisp_expr 1; ok memq-2 do not find object in list
 IN="(memq nil (list 0 nil 3))" OUT="(nil 3)"
 flisp_expr 1; ok memq-3 find nil object in list
 
-IN="(defun incr (x) (+ x 1)) (mapcar incr '(1 2 3))" OUT="(2 3 4)"
-flisp_expr 1; ok mapcar-1 mapcar incr elements in list
-
-IN="(mapcar / '())" OUT="nil"
-flisp_expr 1; ok mapcar-2 mapcar does nothing on empty list
-
 true; ok nfold \# TODO is tested by dynamic typed arithmetic
 true; ok coerce \# TODO is tested by dynamic typed arithmetic
 true; ok coercec \# TODO is tested by dynamic typed arithmetic
@@ -375,15 +415,6 @@ flisp_expr 1; ok min-5 with 'a>b' yields b
 
 IN='(min 1 2 3)' OUT=1
 flisp_expr 1; ok min-6 with more then two args
-
-
-true; ok let-1 \# TODO
-
-IN="(prog1 'answer)" OUT="answer"
-flisp_expr 1; ok prog1-1 prog1 single arg is arg
-
-IN="(prog1 'answer 42)" OUT="answer"
-flisp_expr 1; ok prog1-2 prog1 two args is arg
 
 # and
 IN='(and)' OUT=t

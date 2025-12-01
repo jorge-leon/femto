@@ -10,19 +10,45 @@
 	     (list 'bind name (list (quote macro) params . body) 't) )
       t )
 
-(defmacro setq args
-  (cond (args
-	 (cond ((null (cdr args))
-		(throw wrong-number-of-arguments "(setq [s v ..]) expects a multiple of 2 arguments") )
-	       ((null (cdr (cdr args)))
-		(list 'bind (car args) (car (cdr args)) t) )
-	       (t
-		(list 'progn
-		      (list 'setq (car args) (car (cdr args)))
-		      (cons 'setq (cdr (cdr args))) ))))))
+;;; conditionals
 
-(defmacro defun (name params . body)
-  (list (quote setq) name (list (quote lambda) params . body)))
+(defmacro if (pred then . else)
+  (cond (else
+	 (list 'cond (list pred then)  (cons 't else)) )
+	(t (list 'cond (list pred then))) ))
+
+(defmacro when (pred . body)
+  (cond (body  (list 'cond (cons pred body)))) )
+
+(defmacro unless (pred . body)
+  (cond (body (list 'cond (list pred nil) (cons 't body)))) )
+
+(bind defun
+      (macro (name params . body)
+	     (list 'bind name (list (quote lambda) params . body) t))
+      t )
+
+;;; Accessors
+(defun cadr (l) (car (cdr l)))
+(defun cddr (l) (cdr (cdr l)))
+(defun caddr (l) (car (cdr (cdr l))))
+(defun caar (l)  (car (car l)))
+(defun cdar (l)  (cdr (car l)))
+(defun caaar (l) (car (car (car l))))
+(defun cdaar (l) (cdr (car (car l))))
+
+;; (setq) => nil
+;; (setq a): error
+;; (setq a b) => (bind a b t)
+;; (setq a b ...) => (progn (setq a b) (setq ...))
+(defmacro setq args
+  (when args
+    (unless (cdr args)
+      (throw wrong-number-of-arguments "(setq [s v ..]) expects a multiple of 2 arguments") )
+    (if (null (cddr args))  (list 'bind (car args) (cadr args) t)
+	(list 'progn
+	      (list 'setq (car args) (cadr args))
+	      (cons 'setq (cddr args)) ))))
 
 (defun curry (func arg1)
   (lambda (arg2) (func arg1 arg2)))
@@ -38,6 +64,50 @@
  lambdap (curry typep type-lambda)
  macrop (curry typep type-macro)
  streamp (curry typep type-stream))
+
+(defun mapcar (func xs)
+  (cond (xs (cons (func (car xs)) (mapcar func (cdr xs))))))
+
+;; (let bindings[ body])
+;; (let label[ bindings[ body])
+;; (let ()) => nil
+;; (let (bindings)) => nil
+(defmacro let (b-or-l . args)
+  (cond
+    ((null b-or-l) nil)
+    ((consp b-or-l) ; ((bindings) body)
+     (if args
+	 (cons ; apply
+	  (cons 'lambda (cons (mapcar car b-or-l) args)); vars
+	  (mapcar cadr b-or-l) ))) ; values
+    ((symbolp b-or-l) ; (label (bindings) body)
+     ;; bindings: (car args)
+     ;; body:     (cdr args)
+     (list
+      (list 'lambda ()
+;;;	    (list 'define (car args)
+	    (list 'bind b-or-l
+		  (cons 'lambda (cons (mapcar car (car args)) (cdr args))))
+	    (cons b-or-l (mapcar cadr (car args))) )))
+    (t (throw wrong-type-argument "(let bindings body) - bindings expected type-consp or type-symbol, got: " (type-of (car args)))) ))
+
+;; (let* () body) => ((lambda () body))
+;; (let* ((var val)) body) => ((lambda (var) body) val)
+;; (let* ((var val) ..) body) =>  ((lambda (var) (let* (..) body)) val)
+(defmacro let* args
+  (when args
+    (if (null (car args))  (cons 'lambda (cons () (cdr args)))
+	(let ((bindings (car args)) (body (cdr args))
+	      (unless (and (consp bindings)  (consp (car bindings)))
+		(throw wrong-type-argument "let*: first argument not a binding" bindings))
+	      (let ((var (caar bindings)) (val (cdar bindings)) (bindings (cdr bindings)))
+		;; ((lambda (var) body) val), args = ( ((var val)) body )
+		(if (null bindings)  (cons (cons 'lambda (cons (list var) body)) val)
+		    ;; ((lambda (var) (let* (..) body ...)) val))))
+		    (cons (cons 'lambda (cons (list var) (cons 'let* (list bindings) body)) val)) )))))))
+
+
+(defun prog1 (arg . args) arg)
 
 (defun string (o)
   ;; Convert argument to string.
@@ -71,76 +141,48 @@
 
 (defun numberp (o) (cond  ((integerp o)) ((doublep o))))
 
-(defun cadr (l) (car (cdr l)))
-(defun cddr (l) (cdr (cdr l)))
-(defun caddr (l) (car (cdr (cdr l))))
-
-;;; conditionals
-
-(defmacro if (pred then . else)
-  (cond (else
-	 (list 'cond (list pred then)  (cons 't else)) )
-	(t (list 'cond (list pred then))) ))
-
-(defmacro when (pred . body)
-  (cond (body  (list 'cond (cons pred body)))) )
-
-(defmacro unless (pred . body)
-  (cond (body (list 'cond (list pred nil) (cons 't body)))) )
-
-
-;;; https://www.scheme.com/tspl2d/objects.html#g2052
-(defun append lists
-  (let f ((ls nil) (lists lists))
-       (cond
-	 ((null lists) ls)
-         (t
-	  (let g ((ls ls))
-	       (cond
-		 ((null ls) (f (car lists) (cdr lists)))
-                 (t
-		  (cond ((not (consp ls))
-			 (throw invalid-value
-			   (concat "(append lists) - list expected type-list, got " (type-of ls))
-			   ls)))
-		  (cons (car ls) (g (cdr ls)))) ))))))
-
 
 (defun fold-left (f i l)
-  (cond ((null l) i)
-	(t (fold-left f (f i (car l)) (cdr l))) ))
+  (if (null l)  i
+      (fold-left f (f i (car l)) (cdr l)) ))
 
 (defun flip (func)  (lambda (o1 o2) (func o2 o1)))
 (defun reverse (l)  (fold-left (flip cons) nil l))
 
+;;; https://www.scheme.com/tspl2d/objects.html#g2052
+(defun append lists
+  (let f ((ls nil) (lists lists))
+       (if (null lists)  ls
+	   (let g ((ls ls))
+		(if (null ls)  (f (car lists) (cdr lists))
+		    (if (consp ls) ls
+			(throw invalid-value
+			  (concat "(append lists) - list expected type-list, got " (type-of ls)) ))
+		    (cons (car ls) (g (cdr ls))) )))))
+
+
 (defun apply (f . args)
-  (cond
-    ((null args) (f))
-    (t
-     (let ((rev (reverse args)))
-       (cond
-	 ((consp (car rev))
-          ;; if last element is list splice it
-	  (eval (cons f (append (reverse (cdr rev)) (car rev)))) )
-	 (t (f . args)) )))))
+  (if  (null args)  (f)
+       (let ((rev (reverse args)))
+	 ;; if last element is list splice it
+	 (if (consp (car rev))  (eval (cons f (append (reverse (cdr rev)) (car rev))))
+	     (f . args)) )))
 
 (defun print (o . fd)
-  (cond
-    ((null fd) (write o t))
-    (t (write o t car fd)) ))
+  (if fd  (write o t (car fd))
+      (write o t) ))
 
 (defun princ (o . fd)
-  (cond
-    ((null fd) (write o nil))
-    (t (write o nil (car fd))) ))
+  (if fd  (write o nil (car fd))
+      (write o nil) ))
 
 (defun string-to-number (string)
   (let ((f (open string "<")) (result nil))
     (setq  result (catch (read f)))
     (close f)
-    (cond ((car result) 0)
-	  (t (cond ((numberp (caddr result)) (caddr result))
-		   (t 0))))))
+    (if (car result)  0
+	(if (numberp (caddr result))  (caddr result)
+	    0 ))))
 	  
 (defun eq (o1 o2)
   (cond
@@ -169,9 +211,6 @@
     ((eq nil l) nil)
     ((eq o (car l)) l)
     (t (memq o (cdr l)))))
-
-(defun mapcar (func xs)
-  (cond (xs (cons (func (car xs)) (mapcar func (cdr xs))))))
 
 ;;; Wrap all math to Integer operations
 (defun nfold (f i l);  (3)  (1 2 3)
@@ -211,31 +250,6 @@
   (assert-number n "(max n[ arg ..]) n")
   (fold-left (lambda (a b) (cond ((< a b) b) (t a))) n args) )
 
-(defmacro let args
-  (cond
-    ((consp (car args))
-     (cond
-       ((consp (cadr args))
-;;; bindings: (car args)
-;;; body:     (cdr args)
-	(cons ; apply
-	 (cons 'lambda (cons (mapcar car (car args)) (cdr args))) ; (lambda (names) body)
-	 (mapcar cadr (car args)))) ; (values)
-       (t (throw wrong-type-argument "let: first argument neither label nor binding" (car args)))))
-    ((symbolp (car args))
-;;; label:    (car args)
-;;; bindings: (cadr args)
-;;; body:     (cddr args)
-     (list
-      (list 'lambda '()
-;;;	    (list 'define (car args)
-	    (list 'bind (car args)
-		  (cons 'lambda (cons (mapcar car (cadr args)) (cddr args))))
-	    (cons (car args) (mapcar cadr (cadr args))))))
-    (t (throw wrong-type-argument "let: first argument neither label nor binding" (car args)))))
-
-(defun prog1 (arg . args) arg)
-
 (defmacro and args
   (cond
     ((null args))
@@ -254,9 +268,9 @@
 (defun fload (f)
   (let loop ((o  nil) (r nil))
        (setq o (read f :eof))
-       (cond ((eq o :eof)  r)
-	     (t (setq r (eval o))
-		(loop nil r)))))
+       (if (eq o :eof)  r
+	   (setq r (eval o))
+	   (loop nil r) )))
 
 (defun load args
   (let ((f (open (car args))))
@@ -269,18 +283,16 @@
 (defun provide args
   ;; args: (feature [subfeature ..])
   ;; Elisp, subfeatures not implemented
-  (cond ((memq (car args) features) (car args))
-	(t (setq features (cons (car args) features)))))
+  (if (memq (car args) features)  (car args)
+      (setq features (cons (car args) features)) ))
 
 (defun require (feature . args)
   ;; args: (feature [filename [noerror]])
   ;; Elisp optional parameters not implemented
-  (cond
-    ((memq feature features) feature)
-    (t
-     ;; Emacs optionally uses provided filename here
-     (setq path (concat script_dir "/" (symbol-name feature) ".lsp"))
-     (setq r (catch (load path)))
-     (cond ((null (car r)) (cond ((memq feature features)  feature)))))))
+  (if (memq feature features)  feature
+      ;; Emacs optionally uses provided filename here
+      (let ((path (concat script_dir "/" (symbol-name feature) ".lsp")))
+	(let ((r (catch (load path))))
+	  (and (null (car r)) (memq feature features) feature) ))))
 
 (provide 'core)

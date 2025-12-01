@@ -4,7 +4,7 @@
 
 export FLISPRC=../flisp.rc
 
-tap 160
+tap 165
 
 # list
 IN='(list)' OUT=nil
@@ -152,6 +152,22 @@ flisp_expr 1; ok labelled-let-4 labelled let binds several symbols
 IN="(let label ((a 2) (b 0))  (print a) (if (i> a 0) (label (i- a 1) (i+ b 1))))" OUT='210nil'
 flisp_expr; ok labelled-let-5 labelled let loops
 
+# let*
+IN="(let*)" OBJ= ERR="(env) expects at least 1 arguments"
+flisp_err 1; ok 'let*-1 let* errs with zero args'
+
+IN="(let* ())" OUT=nil
+flisp_expr 1; ok 'let*-2 let* with empty bindings is nil'
+
+IN="(let* ((a 1)))" OUT=nil
+flisp_expr 1; ok 'let*-3 let with empty body is nil'
+
+IN="(setq a 1) (let* ((a 2)) a)" OUT=2
+flisp_expr; ok 'let*-4 let* binding shadows outer value'
+
+IN="(let* ((a 3) (b (+ a 1))) (list a b))" OUT='(3 4)'
+flisp_expr 1; ok 'let*-5 let* binds recursively symbols'
+
 IN="(prog1 'answer)" OUT="answer"
 flisp_expr 1; ok prog1-1 prog1 single arg is arg
 
@@ -221,7 +237,7 @@ flisp_expr 1; ok append-4 append list atom is dotted list
 IN="(append '(1 2 3) '(a b c))" OUT="(1 2 3 a b c)"
 flisp_expr 1; ok append-5 append list list is list
 
-IN="(append 1 1)" ERR="got type-integer" OBJ=
+IN="(append 1 1)" ERR="(append lists) - list expected type-list, got type-integer" OBJ=
 flisp_err 1; ok append-6 append atom any errs
 
 IN="(fold-left + 1 nil)" OUT=1

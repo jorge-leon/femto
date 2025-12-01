@@ -121,7 +121,7 @@ flisp_err () {
 	MSG=${REST#*, }
 	[ "$OBJ" ] && {
 	    EOBJ=${REST%%\',*}
-	    EOBJ=${EOBJ#\'}
+	    EOBJ=${EOBJ#*\'}
 	    [ "$PRE" = "error:" -a "$MSG" = "$ERR" -a "$OBJ" = "$EOBJ" ]
 	    RC=$? ERR= OBJ=
 	    return $RC

@@ -92,19 +92,12 @@
     (t (throw wrong-type-argument "(let bindings body) - bindings expected type-consp or type-symbol, got: " (type-of (car args)))) ))
 
 ;; (let* () body) => ((lambda () body))
-;; (let* ((var val)) body) => ((lambda (var) body) val)
 ;; (let* ((var val) ..) body) =>  ((lambda (var) (let* (..) body)) val)
-(defmacro let* args
-  (when args
-    (if (null (car args))  (cons 'lambda (cons () (cdr args)))
-	(let ((bindings (car args)) (body (cdr args))
-	      (unless (and (consp bindings)  (consp (car bindings)))
-		(throw wrong-type-argument "let*: first argument not a binding" bindings))
-	      (let ((var (caar bindings)) (val (cdar bindings)) (bindings (cdr bindings)))
-		;; ((lambda (var) body) val), args = ( ((var val)) body )
-		(if (null bindings)  (cons (cons 'lambda (cons (list var) body)) val)
-		    ;; ((lambda (var) (let* (..) body ...)) val))))
-		    (cons (cons 'lambda (cons (list var) (cons 'let* (list bindings) body)) val)) )))))))
+(defmacro let* (bindings . body)
+  (if (null bindings)  (list (cons 'lambda (cons (list) body)))
+      (unless (and (consp bindings)  (consp (car bindings)))
+	(throw wrong-type-argument "(let* bindings[ body]) - bindings: does not start with a binding" bindings))
+      (cons (cons 'lambda (cons (list (caar bindings)) (list (cons let* (cons (cdr bindings) body)))))  (cdar bindings)) ))
 
 
 (defun prog1 (arg . args) arg)
@@ -291,8 +284,8 @@
   ;; Elisp optional parameters not implemented
   (if (memq feature features)  feature
       ;; Emacs optionally uses provided filename here
-      (let ((path (concat script_dir "/" (symbol-name feature) ".lsp")))
-	(let ((r (catch (load path))))
-	  (and (null (car r)) (memq feature features) feature) ))))
+      (let* ((path (concat script_dir "/" (symbol-name feature) ".lsp"))
+	     (r (catch (load path))) )
+	(and (null (car r)) (memq feature features) feature) )))
 
 (provide 'core)

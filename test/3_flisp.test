@@ -2,7 +2,7 @@
 # test the fLisp library
 # leg20231129: Femto
 
-tap 47
+tap 44
 
 export FLISPRC=../flisp.rc
 export PREPARE="(require 'flisp)"
@@ -147,15 +147,6 @@ flisp_expr; ok zerop-1 0 is zero
 
 IN='(zerop 1)' OUT=nil
 flisp_expr 1; ok zerop-2 1 is not zero
-
-# if
-true; ok if \# TODO
-
-# when
-true; ok when \# TODO
-
-# unless
-true; ok unless \# TODO
 
 # equal
 true; ok equal \# TODO

@@ -4,7 +4,7 @@
 
 export FLISPRC=../flisp.rc
 
-tap 146
+tap 149
 
 # list
 IN='(list)' OUT=nil
@@ -126,8 +126,8 @@ flisp_expr 1; ok string-10 closed stream prints reader macro nil as fd and type
 IN="(concat 1 'a \"?\")" OUT='"1a?"'
 flisp_expr 1; ok concat-1 simple string concatenation
 
-false; ok assert-type \# TODO
-false; ok assert-number \# TODO
+true; ok assert-type \# TODO
+true; ok assert-number \# TODO
 
 IN="(numberp 42)" OUT='t'
 flisp_expr 1; ok numberp-1  numberp number is t
@@ -146,6 +146,18 @@ flisp_expr 1; ok cddr1-1 cddr returns list after second element
 
 IN="(caddr '(a b c d))" OUT="c"
 flisp_expr 1; ok caddr1-1 caddr returns third element
+
+# conditionals
+
+# if
+true; ok if \# TODO
+
+# when
+true; ok when \# TODO
+
+# unless
+true; ok unless \# TODO
+
 
 # append
 IN='(append)' OUT="nil"

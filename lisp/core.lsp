@@ -75,6 +75,20 @@
 (defun cddr (l) (cdr (cdr l)))
 (defun caddr (l) (car (cdr (cdr l))))
 
+;;; conditionals
+
+(defmacro if (pred then . else)
+  (cond (else
+	 (list 'cond (list pred then)  (cons 't else)) )
+	(t (list 'cond (list pred then))) ))
+
+(defmacro when (pred . body)
+  (cond (body  (list 'cond (cons pred body)))) )
+
+(defmacro unless (pred . body)
+  (cond (body (list 'cond (list pred nil) (cons 't body)))) )
+
+
 ;;; https://www.scheme.com/tspl2d/objects.html#g2052
 (defun append lists
   (let f ((ls nil) (lists lists))

@@ -61,3 +61,11 @@
 (defun file-name-nondirectory (s)
   (cond	((string-equal s "/") "")
 	(t  (car (reverse (string-split "/" s)))) ))
+
+(defun file-name-extension (s)
+  (let ((name (file-name-nondirectory s)))
+    (let ((extension (car (reverse (string-split "." name)))))
+      (cond
+	((eq extension name)  nil)
+	((eq extension "")    nil) ; . and ..
+	(t  extension) ))))

@@ -4,27 +4,32 @@
 
 $(cat lisp/core.lsp)
 
-(defun getopts (opts pos)
-  (setq o (car opts))
-  (cond
-    ((null o))
-    (t
-     (load o)
-     (getopts (cdr opts) 0))))
+(defun getopts (opts)
+  (when (car opts)
+     (load (car opts))
+     (getopts (cdr opts)) ))
 
-(defun prompt s
-  (cond ((fttyp)  (princ (concat "\n" s)))) )
+(defun repl-princ s  (princ (concat s)))
 
-(defun repl (r)
-  (prompt "> ")
-  (let ((result (catch (eval (read)))))
-    (cond ((same (car result) end-of-file) (prompt) r)
-	  ((car result)
-	   (prompt "error: "(car result)": '"(caddr result)"' - "(cadr result))
-	   (repl result) )
-	  (t
-	   (prompt (caddr result))
-	   (repl result)) )))
+(defun repl-print-error (result)
+  (repl-princ "error: "(car result)": '")
+  (print (caddr result))
+  (repl-princ "', "(cadr result)"\n")
+  result  )
+
+(defun repl-print-result (result)
+  (print (caddr result))
+  (princ "\n")
+  result )
+
+(defun repl (result)
+  (when (fttyp) (repl-princ "> "))
+  (setq result (catch (eval (read))))
+  (cond ((same (car result) end-of-file)
+	 (when (fttyp) (princ "\n"))
+	 result )
+	((car result)  (repl (repl-print-error result)))
+	(t  (repl (repl-print-result result))) ))
 
 (catch (load (concat (getenv "HOME") "/" ".config/flisp/flisp.rc")))
 
@@ -33,8 +38,8 @@ $(cat lisp/core.lsp)
 
 (progn
   (interp 'input (open "<0"))
-  (prompt (interp 'version))
-  (prompt "exit with C-d")
+  (when (fttyp)
+    (repl-princ (interp 'version)"\n"
+		"exit with C-d\n" ))
   (let ((result (repl nil)))
-    (cond ((car result) (apply throw result))
-	  (t (caddr result))) ))
+    (when (car result) (apply throw result)) ))

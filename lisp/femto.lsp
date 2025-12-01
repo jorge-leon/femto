@@ -205,7 +205,7 @@
 	    ((setq buffer (find-file-noselect filename))  (switch-to-buffer buffer)) ))))
 
 (defun find-file-noselect (filename)
-  (let ((result (catch (open filename "r+"))) (fd nil) (ro nil) (directory nil) (buffer nil))
+  (let ((result (catch (open filename "r+"))))
     (cond
       ((null (car result))                   (find-file_load (caddr result) filename nil))
       ((eq (car result) :permission-denied)  (find-file_load (open filename) filename t))

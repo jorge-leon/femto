@@ -179,17 +179,16 @@
       ((null hook)  nil)
       ((consp hook)
        (let ((result (catch ((car hook)))))
-	 (cond ((car result)
-		(log-debug (concat "(run-hook hook) failed on function: "(car hook)": "result"\n")) ))
+	 (when (car result)
+	   (log-debug (concat "(run-hook hook) failed on function: "(car hook)": "result"\n")) )
 	 (process-hook-function (cdr hook)) ))
       (t  (throw invalid-value "(run-hook hook) - hook is not a list\n")) )))
 
 (defmacro run-hooks hooks
-  (cond
-    (hooks
-     (list 'progn
-	   (list 'catch (list 'run-hook (car hooks)))
-	   (cons 'run-hooks (cdr hooks)) ))))
+  (when hooks
+    (list 'progn
+	  (list 'catch (list 'run-hook (car hooks)))
+	  (cons 'run-hooks (cdr hooks)) )))
 
 ;;; Buffers
 
@@ -199,10 +198,11 @@
 ;;; find-file
 
 (defun find-file ()
-  (let ((filename (string-trim (prompt-filename "Find file: "))))
-    (let ((buffer (find-buffer-visiting filename)))
-      (cond (buffer  (switch-to-buffer buffer)) ; file already loaded
-	    ((setq buffer (find-file-noselect filename))  (switch-to-buffer buffer)) ))))
+  (let* ((filename (string-trim (prompt-filename "Find file: ")))
+	 (buffer (find-buffer-visiting filename)) )
+    (if buffer  (switch-to-buffer buffer) ; file already loaded
+	(setq buffer (find-file-noselect filename))
+	(switch-to-buffer buffer) )))
 
 (defun find-file-noselect (filename)
   (let ((result (catch (open filename "r+"))))
@@ -214,20 +214,18 @@
       (t (throw (car result) (cadr result) filename)) )))
 
 (defun find-file_load (fd filename read-only)
-  (let ((result (fstat filename)) (size 0) (type nil))
-    (setq
-     size (prop-get result :size)
-     type (prop-get result :type) )
-    (cond ((not (eq type "f"))  (throw :invalid-value "neither file nor directory" filename)))
+  (let* ((result (fstat filename))
+	 (size (prop-get result :size))
+	 (type (prop-get result :type)) )
+    (unless (eq type "f")  (throw :invalid-value "neither file nor directory" filename))
 
     ;; Note: Emacs does not switch here, but rather in find-file
     (switch-to-buffer (create-file-buffer filename))
     (set-visited-filename filename)
     (buffer-fread size fd)
     (close fd)
-    (cond (read-only
-	   ;; Note: read-only mode pending implementation
-	   (add-mode "read-only") ))
+    ;; Note: read-only mode pending implementation
+    (when read-only  (add-mode "read-only"))
     (after-find-file)
     (get-buffer-name) ))
 
@@ -265,13 +263,13 @@
 ;;;
 (setq primitive-write-file write-file)
 (defun femto-write-file ()
-  (let ((p (prompt-filename (get-buffer-filename))))
-    (let ((d (file-name-directory p)))
-      (cond ((car (catch (fstat d)))
-	     (cond ((string-equal "y" (response (prompt (concat "Directory ‘"d"’ does not exist; create? (y or n) ") "")))
-		    (mkdir (file-name-directory d) t)
-		    (throw 'not-implemented "write buffer to file" p) )
-		   (t message "Cancelled") ))
-	    (t (throw 'not-implemented "write buffer to file" p) )))))
+  (let* ((p (prompt-filename (get-buffer-filename)))
+	 (d (file-name-directory p)) )
+    (if (not (car (catch (fstat d))))  (throw 'not-implemented "write buffer to file" p)
+	(if (not (string-equal "y" (response (prompt (concat "Directory ‘"d"’ does not exist; create? (y or n) ") ""))))
+	    (message "Cancelled")
+	    ;; else
+	    (mkdir (file-name-directory d) t)
+	    (throw 'not-implemented "write buffer to file" p) ))))
 
 (provide 'femto)

@@ -155,7 +155,8 @@ Object *e_buffer_fread(Interpreter *interp, Object **args, Object **env) {
   exception(interp, out_of_memory, "buffer_fread() failed, could not grow current buffer");
 }
 
-Object *e_getfilename(Interpreter *interp, Object **args, Object **env) {
+Object *e_getfilename(Interpreter *interp, Object **args, Object **env)
+{
 
     if (FALSE == getfilename(FLISP_ARG_ONE->string, (char*) response_buf, NAME_MAX))
 	return nil;
@@ -171,6 +172,32 @@ Object *e_find_buffer_by_fname(Interpreter *interp, Object **args, Object **env)
   buffer_t *bp = find_buffer_by_fname(FLISP_ARG_ONE->string);
 
   return bp == NULL ? nil : newString(interp, bp->b_bname);
+}
+
+Object *e_set_buffer(Interpreter *interp, Object **args, Object **env)
+{
+    buffer_t *bp = find_buffer(FLISP_ARG_ONE->string, FALSE);
+
+    if (!bp)
+      exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(set-buffer buffer) - buffer does not exist");
+
+    curbp = bp;
+    return FLISP_ARG_ONE;
+}
+Object *e_buffer_next(Interpreter *interp, Object **args,Object **env)
+{
+  if (!(FLISP_HAS_ARGS))
+    return newString(interp, bheadp->b_bname);
+
+  buffer_t *bp = find_buffer(FLISP_ARG_ONE->string, FALSE);
+
+  if (!bp)
+    exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(buffer-next buffer) - buffer does not exist");
+
+  if (bp->b_next)
+    return newString(interp, bp->b_next->b_bname);
+
+  return nil;
 }
 
 Object *e_show_prompt(Interpreter *interp, Object **args, Object **env)

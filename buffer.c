@@ -249,7 +249,6 @@ int delete_buffer_byname(char *bname)
     return TRUE;
 }
 
-
 void switch_to_buffer(char *bname)
 {
     buffer_t *bp = find_buffer(bname, TRUE);

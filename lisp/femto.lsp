@@ -23,6 +23,7 @@
 ;; Note: this emulates the original femto shell-command.
 ;;   The move from C to Lisp allows implementation of more
 ;;   powerful system interaction in the future
+;; Note: we have (fpopen) now, which should be used instead of shell-exec.
 (defun shell-command arg
   (let ((command nil))
     (cond
@@ -192,8 +193,35 @@
 
 ;;; Buffers
 
+(defun buffer-list ()
+  (let loop ((buffers nil)  (buf (buffer-next)))
+       (if buf (loop (cons buf buffers) (buffer-next buf))
+	   (reverse buffers) )))
+
+(defun buffer-list_filtered (name)
+  (filter (lambda (b)  (string-equal (buffer-basename b) name)) (buffer-list)) )
+
+(defun buffer-basename (name)  (car (string-split "#" name)))
+
+(defun buffer-name_split (name)
+  (let ((parts (string-split "#" name)))
+    (if (cdr parts) (cons (car parts) (string-to-number (cadr parts)))
+	(cons (car parts) 0) )))
+
+(defun buffer-name_index (name)  (cdr (buffer-name_split name)))
+
+
 (defun create-file-buffer (filename)
-  (generate-new-buffer (file-name-nondirectory filename))) ; Note: we must uniqify here
+  (generate-new-buffer (generate-new-buffer-name (file-name-nondirectory filename))) )
+
+(defun generate-new-buffer-name (name)
+  (let ((index (buffer-name_maxindex name)))
+    (if index (concat name "#" (+ 1 index))
+	name )))
+
+(defun buffer-name_maxindex (name)
+  (when (memq name (buffer-list))
+    (apply max (mapcar buffer-name_index (buffer-list_filtered name))) ))
 
 ;;; find-file
 
@@ -201,8 +229,7 @@
   (let* ((filename (string-trim (prompt-filename "Find file: ")))
 	 (buffer (find-buffer-visiting filename)) )
     (if buffer  (switch-to-buffer buffer) ; file already loaded
-	(setq buffer (find-file-noselect filename))
-	(switch-to-buffer buffer) )))
+	(switch-to-buffer (find-file-noselect filename))  )))
 
 (defun find-file-noselect (filename)
   (let ((result (catch (open filename "r+"))))
@@ -216,26 +243,34 @@
 (defun find-file_load (fd filename read-only)
   (let* ((result (fstat filename))
 	 (size (prop-get result :size))
-	 (type (prop-get result :type)) )
-    (unless (eq type "f")  (throw :invalid-value "neither file nor directory" filename))
-
-    ;; Note: Emacs does not switch here, but rather in find-file
-    (switch-to-buffer (create-file-buffer filename))
-    (set-visited-filename filename)
-    (buffer-fread size fd)
-    (close fd)
-    ;; Note: read-only mode pending implementation
-    (when read-only  (add-mode "read-only"))
-    (after-find-file)
-    (buffer-name) ))
+	 (type (prop-get result :type))
+	 (check (unless (eq type "f")  (throw :invalid-value "neither file nor directory" filename)))
+	 (current (buffer-name))
+	 (new (set-buffer (create-file-buffer filename)))
+	 (result
+	  (catch
+	      (progn
+		(set-visited-filename filename)
+		(buffer-fread size fd)
+		(close fd)
+		;; Note: read-only mode pending implementation
+		(when read-only  (add-mode "read-only"))
+		(after-find-file) ))))
+    (set-buffer current)
+    (when (car result) (apply throw result))
+    new ))
 
 (defun find-file_new (filename)
-  ;; Note: Emacs does not switch here, but rather in find-file
-  (switch-to-buffer (create-file-buffer filename))
-  (set-visited-filename filename)
-  (message "(New file)")
-  (after-find-file)
-  (buffer-name) )
+  (let* ((current buffer-name)
+	 (new (set-buffer (create-file-buffer filename)))
+	 (result
+	  (catch
+	      (progn
+		(set-visited-filename filename)
+		(after-find-file) ))))
+    (when (car result) (apply throw result))
+    (message "(New file)")
+    new ))
 
 (setq
  find-file-extension-highlight-mode

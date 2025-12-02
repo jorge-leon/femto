@@ -34,7 +34,7 @@
        ((eq "+" (substring (car opts) 0 1))
 	(getopts (cdr opts) (string-to-number (substring (car opts) 1))))
        (t
-	(find-file-noselect (car opts))
+	(switch-to-buffer (find-file-noselect (car opts)))
 	(cond ((> pos 0) (goto-line pos)))
 	(getopts (cdr opts) 0))))
     (t (throw wrong-type-argument "(getopts opts pos) - opts must be list"))))

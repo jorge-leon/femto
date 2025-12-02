@@ -10,7 +10,7 @@
   (insert-string "the quick brown fox jumps over the lazy dog\n"))
 
 (defun log-test-result(s)
-  (setq obuf (get-buffer-name))
+  (setq obuf (buffer-name))
   (switch-to-buffer test_log_buf)
   (end-of-buffer)
   (insert-string s)
@@ -69,7 +69,7 @@
 ;- forward-page
 ;- forward-word
 ;get-buffer-count
-;get-buffer-name
+;buffer-name
 ;get-char
 ;get-clipboard
 ;get-key

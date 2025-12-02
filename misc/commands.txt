@@ -28,7 +28,7 @@ forward-char
 forward-page
 forward-word
 get-buffer-count
-get-buffer-name
+buffer-name
 get-char
 get-clipboard
 get-key

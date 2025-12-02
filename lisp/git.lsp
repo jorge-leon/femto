@@ -70,7 +70,7 @@ then select one of the following letters to operate on the file
 
 (defun git-menu()
   (delete-other-windows)
-  (cond ((eq git-obuf "") (setq git-obuf (get-buffer-name))))
+  (cond ((eq git-obuf "") (setq git-obuf (buffer-name))))
   (kill-buffer git-buffer)
   (shell-command git-status-cmd)
   (rename-buffer git-buffer)
@@ -175,7 +175,7 @@ then select one of the following letters to operate on the file
   (git-menu))
 
 (defun git-help()
-  (setq buf (get-buffer-name))
+  (setq buf (buffer-name))
   (switch-to-buffer git-help-buffer)
   (insert-string git-help-string)
   (beginning-of-buffer)
@@ -207,8 +207,8 @@ then select one of the following letters to operate on the file
      (copy-region)
      (find-file git-commit-file)
      (yank)
-     (save-buffer (get-buffer-name))
-     (kill-buffer (get-buffer-name))
+     (save-buffer (buffer-name))
+     (kill-buffer (buffer-name))
      (kill-buffer git-commit-buffer)
      "commit")
     (t "cancel")))

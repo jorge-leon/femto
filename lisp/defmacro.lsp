@@ -14,7 +14,7 @@
 (setq dm-recording nil)
 
 (defun dm-record-key(k)
-  (setq dm-obuf (get-buffer-name))
+  (setq dm-obuf (buffer-name))
   (cond
     ((eq k "\n")
      (insert-string "\n")
@@ -32,7 +32,7 @@
      (update-display))))
 
 (defun dm-record-action(k)
-  (setq dm-obuf (get-buffer-name))
+  (setq dm-obuf (buffer-name))
   (execute-key)
   (switch-to-buffer dm-buffer)
   (insert-string "\n ")
@@ -43,7 +43,7 @@
 (defun dm-init()
   (setq dm-ops 0)
   (setq dm-recording t)
-  (setq dm-obuf (get-buffer-name))
+  (setq dm-obuf (buffer-name))
   (kill-buffer dm-buffer)
   (switch-to-buffer dm-buffer)
   (insert-string "(defun mymacro()")
@@ -59,7 +59,7 @@
   (cond
     (dm-recording
      (setq dm-recording nil)
-     (setq dm-obuf (get-buffer-name))
+     (setq dm-obuf (buffer-name))
      (switch-to-buffer dm-buffer)
      (insert-string ")\n")
      (setq dm-point (get-point))

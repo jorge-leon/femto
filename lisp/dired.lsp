@@ -43,7 +43,7 @@
   (cond 
      ((eq dired-dir "") (setq dired-dir (get-cwd))))
   (delete-other-windows)
-  (setq de-obuf (get-buffer-name))
+  (setq de-obuf (buffer-name))
   (kill-buffer dired-buffer)
   (shell-command (concat dired-ls-cmd dired-dir))
   (rename-buffer dired-buffer)
@@ -182,7 +182,7 @@
 ;; get current working directory, using let for lobal variables
 ;;
 (defun get-cwd() 
-   (let ((obuf (get-buffer-name))
+   (let ((obuf (buffer-name))
         (current_working_directory ""))
    (shell-command "pwd")   
    (switch-to-buffer "*output*")

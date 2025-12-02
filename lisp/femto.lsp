@@ -227,7 +227,7 @@
     ;; Note: read-only mode pending implementation
     (when read-only  (add-mode "read-only"))
     (after-find-file)
-    (get-buffer-name) ))
+    (buffer-name) ))
 
 (defun find-file_new (filename)
   ;; Note: Emacs does not switch here, but rather in find-file
@@ -235,7 +235,7 @@
   (set-visited-filename filename)
   (message "(New file)")
   (after-find-file)
-  (get-buffer-name) )
+  (buffer-name) )
 
 (setq
  find-file-extension-highlight-mode

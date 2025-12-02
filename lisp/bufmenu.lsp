@@ -38,7 +38,7 @@
 ;; 
 ;; (save-buffer bufm-buf)
 ;; (get-buffer-count)
-;; (get-buffer-name)
+;; (buffer-name)
 ;; (search-forward "str")
 ;; (switch-to-buffer "*scratch*"))
 ;; (string-trim)
@@ -72,7 +72,7 @@
 (defun buffer-menu()
   (bufm-debug "buffer-menu")
   (setq bufm-ops 0)
-  (setq bufm-obuf (get-buffer-name))
+  (setq bufm-obuf (buffer-name))
   (setq bufm-oclip (get-clipboard))
   (list-buffers)
   (setq bufm-line bufm-start-line)   

@@ -36,7 +36,7 @@ available to be called as lisp functions
     {"list-buffers",              0, 0, 0,         e_list_buffers},
     {"get-buffer-count",          0, 0, 0,         e_get_buffer_count},
     {"find-buffer-visiting",      1, 1, TYPE_STRING, e_find_buffer_by_fname},
-    {"get-buffer-name",           0, 0, 0,         e_get_buffer_name},
+    {"buffer-name",               0, 0, 0,         e_get_buffer_name},
     {"get-buffer-filename",       0, 0, 0,         e_get_buffer_filename},
     {"get-buffer-file-extension", 0, 0, 0,         e_get_buffer_file_extension},
     {"save-buffer",               1, 1, TYPE_STRING, e_save_buffer},

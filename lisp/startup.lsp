@@ -1,7 +1,7 @@
 ;; Femto startup
 
 (defun show-startup-message()
-  (cond ((eq "*scratch*" (get-buffer-name))
+  (cond ((eq "*scratch*" (buffer-name))
 	 (insert-string "\n\n\n\n")
 	 (insert-string " ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n")
 	 (insert-string " ;\n")

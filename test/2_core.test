@@ -221,6 +221,19 @@ flisp_expr 1; ok numberp-2  numberp lambda is nil
 IN="(numberp numberp)" OUT='nil'
 flisp_expr 1; ok numberp-3  numberp lambda is nil
 
+# list filtering
+IN="(filter integerp '(a 1 b 2))" OUT="(1 2)"
+flisp_expr;  ok filter-1 filter integers
+
+IN="(filter integerp '())" OUT=nil
+flisp_expr;  ok filter-2 filter empty list is nil
+
+IN="(remove integerp '(a 1 b 2))" OUT="(a b)"
+flisp_expr;  ok remove-1 remove integers
+
+IN="(remove integerp '())" OUT=nil
+flisp_expr;  ok remove-2 remove empty list is nil
+
 # append
 IN='(append)' OUT="nil"
 flisp_expr 1; ok append-1 append nothing is nil

@@ -134,6 +134,17 @@
 
 (defun numberp (o) (cond  ((integerp o)) ((doublep o))))
 
+; Schemish list filtering
+(defun filter (p l)
+  (when l
+    (if (p (car l))  (cons (car l) (filter p (cdr l)))
+	(filter p (cdr l)) )))
+
+(defun remove (p l)
+  (when l
+    (if (p (car l))  (remove p (cdr l))
+	(cons (car l) (remove p (cdr l))) )))
+
 
 (defun fold-left (f i l)
   (if (null l)  i

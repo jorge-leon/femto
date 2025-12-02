@@ -4,6 +4,7 @@
  */
 
 #include "buffer.h"
+#include "gap.h"
 #include "header.h"
 
 void search(void)

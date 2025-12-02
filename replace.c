@@ -2,6 +2,7 @@
 
 #include <string.h>
 #include "buffer.h"
+#include "gap.h"
 #include "header.h"
 
 /*search for a string and replace it with another string */

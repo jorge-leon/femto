@@ -5,6 +5,7 @@
 
 #include <sys/stat.h>
 #include "buffer.h"
+#include "gap.h"
 #include "header.h"
 
 /* Enlarge gap by n chars, position of gap cannot change */
@@ -111,6 +112,20 @@ int posix_file(char *fn)
     return (TRUE);
 }
 
+size_t buffer_fwrite(buffer_t *buffer, size_t size, FILE *stream)
+{
+    size_t len;
+
+    if (size == 0)
+        return 0;
+
+    buffer->b_point = movegap(buffer, buffer->b_point);
+    len = buffer->b_ebuf - buffer->b_egap;
+    if (size > len)
+        size = len;
+    return fwrite(buffer->b_egap, sizeof (char), size, stream);
+}
+
 int save_buffer(buffer_t *bp, char *fn)
 {
     FILE *fp;
@@ -143,6 +158,7 @@ int save_buffer(buffer_t *bp, char *fn)
 void clear_buffer(void)
 {
     zero_buffer(curbp);
+    /* Note: superfluous - zero_buffer() is already setting the point to the start */
     beginning_of_buffer();
 }
 
@@ -158,7 +174,7 @@ size_t buffer_fread(buffer_t *buffer, size_t size, FILE *stream)
         return 0;
 
     if (buffer->b_egap - buffer->b_gap < size * sizeof (char_t) && !growgap(buffer, size))
-        return 0;
+        return -1;
     buffer->b_point = movegap(buffer, buffer->b_point);
     len = fread(buffer->b_gap, sizeof (char), size, stream);
     if (len == size)

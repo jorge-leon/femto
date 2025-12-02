@@ -1,4 +1,5 @@
 #include "buffer.h"
+#include "gap.h"
 
 /************************* Editor Extensions **************************************/
 
@@ -135,24 +136,49 @@ Object *e_insert_file(Interpreter *interp, Object **args, Object **env) {
     return ((insert_file(FLISP_ARG_ONE->string, mflag) == TRUE) ? t : nil);
 }
 
-/** (buffer-fread size stream) - read size bytes from stream into current buffer at point */
-Object *e_buffer_fread(Interpreter *interp, Object **args, Object **env) {
-
-  CHECK_TYPE(FLISP_ARG_ONE, type_integer, "(buffer-read size stream) - size");
-  CHECK_TYPE(FLISP_ARG_TWO, type_stream, "(buffer-read size stream) - stream");
+/** (buffer-fread size stream) - read size bytes from stream into current buffer at point, return bytes read
+ *  If buffer cannot hold size more bytes, -1 is returned.
+ */
+Object *e_buffer_fread(Interpreter *interp, Object **args, Object **env)
+{
+  size_t len;
+  
+  CHECK_TYPE(FLISP_ARG_ONE, type_integer, "(buffer-fread size stream) - size");
+  CHECK_TYPE(FLISP_ARG_TWO, type_stream, "(buffer-fread size stream) - stream");
 
   if (FLISP_ARG_ONE->integer == 0)
-    return nil;
+    return newInteger(interp, 0);
 
   if (FLISP_ARG_ONE->integer < 0)
     exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(buffer-read size stream) - size is negative");
 
-  if (buffer_fread(curbp, FLISP_ARG_ONE->integer, FLISP_ARG_TWO->fd))
-    return nil;
-
+  len = buffer_fread(curbp, FLISP_ARG_ONE->integer, FLISP_ARG_TWO->fd);
   if (ferror(FLISP_ARG_TWO->fd))
     exceptionWithObject(interp, FLISP_ARG_TWO, io_error, "buffer_fread() failed: %s", strerror(errno));
-  exception(interp, out_of_memory, "buffer_fread() failed, could not grow current buffer");
+
+  if (len == -1)
+    exception(interp, out_of_memory, "buffer_fread() failed, could not grow current buffer");
+
+  return newInteger(interp, len);
+}
+
+/** (buffer-fwrite size stream) - write size bytes from current buffer at point to stream, return bytes written */
+Object *e_buffer_fwrite(Interpreter *interp, Object **args, Object **env)
+{
+  CHECK_TYPE(FLISP_ARG_ONE, type_integer, "(buffer-fwrite size stream) - size");
+  CHECK_TYPE(FLISP_ARG_TWO, type_stream, "(buffer-fwrite size stream) - stream");
+
+  if (FLISP_ARG_ONE->integer == 0)
+    return newInteger(interp, 0);
+
+  if (FLISP_ARG_ONE->integer < 0)
+    exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(buffer-fwrite size stream) - size is negative");
+
+  size_t len = buffer_fwrite(curbp, FLISP_ARG_ONE->integer, FLISP_ARG_TWO->fd);
+  if (ferror(FLISP_ARG_TWO->fd))
+    exceptionWithObject(interp, FLISP_ARG_TWO, io_error, "buffer_fwrite() failed: %s", strerror(errno));
+  
+  return newInteger(interp, len);
 }
 
 Object *e_getfilename(Interpreter *interp, Object **args, Object **env)
@@ -245,6 +271,7 @@ Object *e_save_buffer(Interpreter *interp, Object **args, Object **env)
 {
     int result = save_buffer_byname(FLISP_ARG_ONE->string);
     return (result ? t : nil);
+    
 }
 
 Object *e_kill_buffer(Interpreter *interp, Object **args, Object **env)

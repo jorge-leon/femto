@@ -5,6 +5,7 @@
 
 #include <signal.h>
 #include "buffer.h"
+#include "gap.h"
 #include "header.h"
 
 void beginning_of_buffer(void)

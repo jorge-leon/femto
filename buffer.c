@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <string.h>
 #include "buffer.h"
+#include "gap.h"
 #include "header.h"
 
 void buffer_init(buffer_t *bp)

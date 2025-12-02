@@ -7,6 +7,7 @@
 #define _XOPEN_SOURCE 500
 #include <wchar.h>
 #include "buffer.h"
+#include "gap.h"
 #include "header.h"
 
 /* Reverse scan for start of logical line containing offset */

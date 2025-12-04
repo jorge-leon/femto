@@ -295,43 +295,6 @@ int goto_line(int line)
     }
 }
 
-char *rename_current_buffer(char *bname)
-{
-    char bufn[NBUFN];
-
-    strcpy(bufn, bname);
-    make_buffer_name_uniq(bufn);
-    strcpy(curbp->b_bname, bufn);
-
-    return curbp->b_bname;
-}
-
-void kill_buffer(void)
-{
-    buffer_t *kill_bp = curbp;
-    int bcount = count_buffers();
-
-    /* do nothing if only buffer left is the scratch buffer */
-    if (bcount == 1 && 0 == strcmp(get_buffer_name(curbp), str_scratch))
-              return;
-
-    if (!(curbp->b_flags & B_SPECIAL) && curbp->modified) {
-        mvaddstr(MSGLINE, 0, str_notsaved);
-        clrtoeol();
-        if (!yesno(FALSE))
-            return;
-    }
-
-    /* create a scratch buffer */
-    if (bcount == 1) {
-        (void)find_buffer(str_scratch, TRUE);
-    }
-
-    next_buffer();
-    assert(kill_bp != curbp);
-    delete_buffer(kill_bp);
-}
-
 void i_set_mark(void)
 {
     set_mark();
@@ -731,7 +694,7 @@ void repl(void)
     } else {
         bp = find_buffer("*lisp_output*", TRUE);
         append_string(bp, output);
-        (void)popup_window(bp->b_bname);
+        (void)popup_window(bp->name);
     }
     free_lisp_output();
 }

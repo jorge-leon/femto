@@ -226,7 +226,6 @@ extern char *get_char(void);
 extern char *get_clipboard(void);
 extern char* get_temp_file(void);
 extern char *get_version_string(void);
-extern char *rename_current_buffer(char *);
 extern int add_mode_global(char *);
 extern int add_mode_current_buffer(char *);
 extern int delete_mode_current_buffer(char *);

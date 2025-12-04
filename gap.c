@@ -10,8 +10,22 @@
 #include "gap.h"
 #include "header.h"
 
-/* Enlarge gap by n chars, position of gap cannot change */
-int growgap(buffer_t *bp, point_t n)
+/** growgap() -  Enlarge gap by at least n chars.
+ *
+ * @param bp .. buffer.
+ * @param n  .. number of characters.
+ *
+ * @returns TRUE on success. FALSE if buffer has content but cannot grow.
+ *
+ * Exits with fatal error when no memory can be allocated the first time.
+ *
+ * The position of the gap is not changed after enlargment.
+ *
+ */
+/* Note: The fatal exit should be left to the caller, though these
+ *        mostly are careless and don't care.
+ */
+bool growgap(buffer_t *bp, point_t n)
 {
     char_t *new;
     point_t buflen, newlen, xgap, xegap;

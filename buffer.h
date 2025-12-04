@@ -61,7 +61,7 @@ typedef struct buffer_t
     int b_row;                  /* cursor row */
     int b_col;                  /* cursor col */
     char b_fname[NAME_MAX + 1]; /* filename */
-    char b_bname[NBUFN];        /* buffer name */
+    char *name;                 /* buffer name */
     ////buffer_mode_t mode;        /* buffer major mode */
     buffer_flags_t b_flags;
     /* buffer flags */
@@ -83,12 +83,13 @@ extern buffer_t *find_buffer(char *, int);
 extern char* get_buffer_filename(buffer_t *);
 extern char* get_buffer_modeline_name(buffer_t *);
 extern char* get_buffer_name(buffer_t *);
+extern bool set_buffer_name(buffer_t *, char *);
 extern char *get_current_bufname(void);
 extern char *get_current_filename(void);
 
 extern int buffer_is_empty(buffer_t *);
 extern int count_buffers(void);
-extern int delete_buffer(buffer_t *);
+extern bool delete_buffer(buffer_t *);
 extern int delete_buffer_byname(char *);
 extern int modified_buffers(void);
 extern int save_buffer_byname(char *);

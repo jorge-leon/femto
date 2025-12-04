@@ -228,7 +228,7 @@ void describe_bindings(void)
         append_string(bp, binding);
     }
 
-    (void)popup_window(bp->b_bname);
+    (void)popup_window(bp->name);
 }
 
 /* show all registered functions in a buffer */
@@ -247,7 +247,7 @@ void describe_functions(void)
         append_string(bp, funcname);
     }
 
-    (void)popup_window(bp->b_bname);
+    (void)popup_window(bp->name);
 }
 
 /* Esc-x execute command prompt */
@@ -317,7 +317,7 @@ void execute_command(void)
 
             if (tab_count > 1 || wp != NULL) {
                 zero_buffer(bp);
-                wp = popup_window(bp->b_bname); /* does nothing if already exists */
+                wp = popup_window(bp->name); /* does nothing if already exists */
                 column = 0;
 
                 /* show matched commands, start wrapping from 30 chars from end of screen */

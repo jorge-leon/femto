@@ -162,7 +162,8 @@ void setup_keys(void)
     set_key_internal("esc-m",   "set-mark"              , "\x1B\x6D", i_set_mark);
     set_key_internal("esc-n",   "next-buffer"           , "\x1B\x6E", next_buffer);
     set_key_internal("esc-o",   "delete-other-windows"  , "\x1B\x6F", delete_other_windows);
-    set_key_internal("esc-q",   "kill-buffer"           , "\x1B\x71", kill_buffer);
+    /* Note: in Emacs M-q is (c-fill-paragraph) */
+    set_key_internal("esc-q",   "kill-buffer"           , "\x1B\x71", user_func);
     set_key_internal("esc-r",   "query-replace"         , "\x1B\x72", query_replace);
     set_key_internal("esc-v",   "page-up"               , "\x1B\x76", backward_page);
     set_key_internal("esc-w",   "copy-region"           , "\x1B\x77", copy_region);
@@ -212,7 +213,7 @@ void setup_keys(void)
     set_key_internal("c-x =",     "cursor-position"       , "\x18\x3D", cursor_position);
     set_key_internal("c-x ?",     "user-func"             , "\x18\x3F", user_func);
     set_key_internal("c-x b",     "list-buffers"          , "\x18\x62", list_buffers);
-    set_key_internal("c-x k",     "kill-buffer"           , "\x18\x6B", kill_buffer);
+    set_key_internal("c-x k",     "kill-buffer"           , "\x18\x6B", user_func);
     set_key_internal("c-x n",     "next-buffer"           , "\x18\x6E", next_buffer);
     set_key_internal("c-x o",     "other-window"          , "\x18\x6F", other_window);
     set_key_internal("c-x @",     "user-func"             , "\x18\x40", user_func);

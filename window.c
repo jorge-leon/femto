@@ -102,7 +102,7 @@ window_t *find_window(char *bname)
     window_t *wp;
 
     for (wp = wheadp; wp != NULL; wp = wp->w_next)
-        if (strcmp(wp->w_bufp->b_bname, bname) == 0)
+        if (strcmp(wp->w_bufp->name, bname) == 0)
             return wp;
 
     return NULL;

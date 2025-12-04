@@ -9,8 +9,10 @@
   - make_buffer_name_uniq(), make_buffer_name() in utils.c
   - rename_current_buffer() in command.c -> set_buffer_name(), Implement
     (rename-buffer) in Lisp.
-  - buffer name handling: alloc/free string instead of fixed (too small) buffer.
+  - Buffer name handling: alloc/free string instead of fixed (too small) buffer.
+  - Implement save-some-buffers.
   - Move posix file name check to Lisp.
+  - Fix dired on find-file
   - Update all documentation.
 - Make fLisp read from /dev/null to avoid:
   https://github.com/hughbarney/femto/issues/10

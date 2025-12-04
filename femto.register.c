@@ -46,8 +46,8 @@ available to be called as lisp functions
     {"buffer-fwrite",             2, 2, 0,            e_buffer_fwrite},
     {"switch-to-buffer",          1, 1, TYPE_STRING,  e_switch_to_buffer},
     {"set-buffer",                1, 1, TYPE_STRING,  e_set_buffer},
-    {"rename-buffer",             1, 1, TYPE_STRING,  e_rename_buffer},
-    {"kill-buffer",               1, 1, TYPE_STRING,  e_kill_buffer},
+    {"set-buffer-name",           1, 1, TYPE_STRING,  e_set_buffer_name},
+    {"delete-buffer",             1, 1, TYPE_STRING,  e_delete_buffer},
     {"erase-buffer",              0, 0, 0,            e_zero_buffer},
     {"buffer-flag-modified",      0, 2, 0,            e_buffer_flag_modified},
 

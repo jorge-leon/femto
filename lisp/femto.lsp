@@ -207,7 +207,7 @@
 (defun buffer-basename (name)  (car (string-split "#" name)))
 
 (defun buffer-name_split (name)
-  (let ((parts (string-split "#" name)))
+  (let ((parts (string-split "/" name)))
     (if (cdr parts) (cons (car parts) (string-to-number (cadr parts)))
 	(cons (car parts) 0) )))
 
@@ -219,12 +219,22 @@
 
 (defun generate-new-buffer-name (name)
   (let ((index (buffer-name_maxindex name)))
-    (if index (concat name "#" (+ 1 index))
+    (if index (concat name "/" (+ 1 index))
 	name )))
 
 (defun buffer-name_maxindex (name)
   (when (memq name (buffer-list))
     (apply max (mapcar buffer-name_index (buffer-list_filtered name))) ))
+
+
+(defun rename-buffer (name)  (set-buffer-name (generate-new-buffer-name name)))
+
+(defun kill-buffer ()
+  ;; Note:
+  ;; prompt: "Kill buffer (default %current_buffer_name%): "
+  ;; if response is empty use that one.
+(throw invalid-value "kill-buffer tbd")
+  (delete-buffer name))
 
 (defun buffer-modified-p args  (buffer-flag-modified (when args (car args))) )
 (defun restore-buffer-modified-p (bool)  (buffer-flag-modified nil bool))

@@ -144,7 +144,7 @@ Object *e_insert_file(Interpreter *interp, Object **args, Object **env) {
 Object *e_buffer_fread(Interpreter *interp, Object **args, Object **env)
 {
     size_t len;
-  
+
     CHECK_TYPE(FLISP_ARG_ONE, type_integer, "(buffer-fread size stream) - size");
     CHECK_TYPE(FLISP_ARG_TWO, type_stream, "(buffer-fread size stream) - stream");
 
@@ -179,7 +179,7 @@ Object *e_buffer_fwrite(Interpreter *interp, Object **args, Object **env)
     size_t len = buffer_fwrite(curbp, FLISP_ARG_ONE->integer, FLISP_ARG_TWO->fd);
     if (ferror(FLISP_ARG_TWO->fd))
         exceptionWithObject(interp, FLISP_ARG_TWO, io_error, "buffer_fwrite() failed: %s", strerror(errno));
-  
+
     return newInteger(interp, len);
 }
 
@@ -187,7 +187,7 @@ Object *e_getfilename(Interpreter *interp, Object **args, Object **env)
 {
 
     if (FALSE == getfilename(FLISP_ARG_ONE->string, (char*) response_buf, NAME_MAX))
-	return nil;
+        return nil;
 
     return newString(interp, response_buf);
 }
@@ -196,10 +196,10 @@ Object *e_find_buffer_by_fname(Interpreter *interp, Object **args, Object **env)
 {
     if (FLISP_ARG_ONE->string[0] == '\0')
         return nil;
-  
+
     buffer_t *bp = find_buffer_by_fname(FLISP_ARG_ONE->string);
 
-    return bp == NULL ? nil : newString(interp, bp->b_bname);
+    return bp == NULL ? nil : newString(interp, bp->name);
 }
 
 Object *e_set_buffer(Interpreter *interp, Object **args, Object **env)
@@ -215,7 +215,7 @@ Object *e_set_buffer(Interpreter *interp, Object **args, Object **env)
 Object *e_buffer_next(Interpreter *interp, Object **args,Object **env)
 {
     if (!(FLISP_HAS_ARGS))
-        return newString(interp, bheadp->b_bname);
+        return newString(interp, bheadp->name);
 
     buffer_t *bp = find_buffer(FLISP_ARG_ONE->string, FALSE);
 
@@ -223,7 +223,7 @@ Object *e_buffer_next(Interpreter *interp, Object **args,Object **env)
         exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(buffer-next buffer) - buffer does not exist");
 
     if (bp->b_next)
-        return newString(interp, bp->b_next->b_bname);
+        return newString(interp, bp->b_next->name);
 
     return nil;
 }
@@ -234,17 +234,25 @@ Object *e_switch_to_buffer(Interpreter *interp, Object **args, Object **env)
     return FLISP_ARG_ONE;
 }
 
-Object *e_rename_buffer(Interpreter *interp, Object **args, Object **env)
+Object *e_set_buffer_name(Interpreter *interp, Object **args, Object **env)
 {
-    rename_current_buffer(FLISP_ARG_ONE->string);
-    char *bname = get_current_bufname();
-    return newStringWithLength(interp, bname, strlen(bname));
+    buffer_t *buffer = search_buffer(FLISP_ARG_ONE->string);
+
+    if (buffer != NULL)
+        exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(set-buffer-name name) - name, already exists");
+
+    if (!set_buffer_name(curbp, FLISP_ARG_ONE->string))
+        exceptionWithObject(interp, FLISP_ARG_ONE, out_of_memory, "(set-buffer-name name) - name, failed to allocate string");
+    return FLISP_ARG_ONE;
 }
 
-Object *e_kill_buffer(Interpreter *interp, Object **args, Object **env)
+Object *e_delete_buffer(Interpreter *interp, Object **args, Object **env)
 {
-    int result = delete_buffer_byname(FLISP_ARG_ONE->string);
-    return (result ? t : nil);
+    buffer_t *buffer = find_buffer(FLISP_ARG_ONE->string, FALSE);
+    if (buffer == NULL)
+        exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(kill-buffer buffer) - buffer does not exist");
+
+    return delete_buffer(buffer) ? t : nil;
 }
 
 Object *e_zero_buffer(Interpreter *interp, Object **args, Object **env)
@@ -293,7 +301,7 @@ Object *e_get_buffer_filename(Interpreter *interp, Object **args, Object **env)
 Object *e_buffer_flag_modified(Interpreter *interp, Object **args, Object **env)
 {
     buffer_t *bp = curbp;
-  
+
     if (FLISP_HAS_ARGS) {
         if (FLISP_ARG_ONE != nil) {
             CHECK_TYPE(FLISP_ARG_ONE, type_string, "(buffer-flag-modified[ buffer[ bool]])");

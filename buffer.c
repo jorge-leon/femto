@@ -28,7 +28,7 @@ void buffer_init(buffer_t *bp)
     bp->b_gap = NULL;
     bp->b_egap = NULL;
     bp->b_next = NULL;
-    bp->b_bname[0] = '\0';
+    bp->name = NULL;
     bp->b_fname[0] = '\0';
     bp->b_utail = NULL;
     bp->b_ucnt = -1;
@@ -76,46 +76,124 @@ buffer_t *search_buffer(char *name)
 {
     buffer_t *bp;
     for (bp = bheadp; bp != NULL; bp = bp->b_next)
-        if (strcmp(name, bp->b_bname) == 0)
+        if (strcmp(name, bp->name) == 0)
             break;
     return (bp);
 }
+
+/** set_buffer_name() name or rename buffer
+ *
+ * @param buffer .. pointer to buffer struct.
+ * @param name   .. pointer to string 
+ *
+ * @returns TRUE on success, else FALSE.
+ *
+ * If the buffer already has a name it is deallocated.
+ *
+ */
+bool set_buffer_name(buffer_t *buffer, char *name)
+{
+    if (buffer->name != NULL)
+        free(buffer->name);
+
+    return (buffer->name = strdup(name)) != NULL;
+}
+
+/** new_buffer() - allocate, initialize and register a buffer.
+ *
+ * @param name .. name of the buffer.
+ * @returns pointer to buffer or NULL if buffer name is empty or allocation fails.
+ *
+ * The buffer is inserted alphabetically (as of strcmp()) into the
+ * buffer list.
+ *
+ * If there is no *scratch* buffer already we create one and set it at
+ * the head of the list.
+ *
+ * If there is already a buffer with the same name, we return that
+ * one.
+ *
+ */
 buffer_t *new_buffer(char *name)
 {
     buffer_t *bp, *sb;
+
+
+    if (name == NULL || name[0] == '\n')
+        return NULL;
+    
     if ((bp = (buffer_t *) malloc (sizeof (buffer_t))) == NULL)
         return NULL;
 
     buffer_init(bp);
 
-    /* find the place in the list to insert this buffer */
-    if (bheadp == NULL) {
-        bheadp = bp;
-    } else if (strcmp(bheadp->b_bname, name) > 0) {
-        /* insert at the begining */
-        bp->b_next = bheadp;
-        bheadp = bp;
-    } else {
-        for (sb = bheadp; sb->b_next != NULL; sb = sb->b_next)
-            if (strcmp (sb->b_next->b_bname, name) > 0)
-                break;
-
-        /* and insert it */
-        bp->b_next = sb->b_next;
-        sb->b_next = bp;
-    }
-
-    safe_strncpy(bp->b_bname, name, NBUFN);
-    if (bp->b_bname[0] == '*')
+    if (name[0] == '*')
         add_mode(bp, B_SPECIAL); /* special buffers start with * in the name */
     else if (global_undo_mode)
         add_mode(bp, B_UNDO);
-
     /* a newly created buffer needs to have a gap otherwise it is not ready for insertion */
     if (!growgap(bp, MIN_GAP_EXPAND))
         msg(f_alloc);
+    /* Note: we probably never get here, because growgap fatal()s anyway */
 
+    if (bheadp == NULL) {
+        /* assure there is a scratch buffer */
+        debug("new_buffer(): bheadp is NULL, creating %s buffer\n", str_scratch);
+        if (!set_buffer_name(bp, str_scratch))
+            goto new_buffer_error;
+
+        bheadp = bp;
+        if (strcmp(bp->name, str_scratch) == 0)
+            return bp;
+        
+        if ((bp = new_buffer(name)) == NULL)
+            return NULL;
+    }
+    debug("new_buffer(): creating %s buffer\n", name);
+    if (!set_buffer_name(bp, name))
+        goto new_buffer_error;
+
+    /* find the place in the list to insert this buffer */
+    int cmp = 0;
+    for (sb = bheadp; sb->b_next != NULL; sb = sb->b_next) {
+        if ((cmp = strcmp(sb->b_next->name, name)) == 0) {
+            debug("new_buffer(): buffer name already registered\n");
+            free(bp->name);
+            free(bp);
+            return sb;
+        } else if (cmp > 0) {
+            debug("new_buffer(): place in list found after %s\n", sb->name);
+            bp->b_next = sb->b_next;
+            sb->b_next = bp;
+            return bp;
+        }
+    }
+    debug("new_buffer(): put in front of the list\n");
+    bp->b_next = bheadp;
+    bheadp = bp;
     return bp;
+    
+    /* if (strcmp(bheadp->name, name) > 0) { */
+        
+    /*     bp->b_next = bheadp; */
+    /*     bheadp = bp; */
+    /* } else { */
+    /*     debug("new_buffer(): search place in the list\n"); */
+    /*     for (sb = bheadp; sb->b_next != NULL; sb = sb->b_next) */
+    /*         if (strcmp (sb->b_next->name, name) > 0) */
+    /*             break; */
+
+    /*     /\* and insert it *\/ */
+    /*     bp->b_next = sb->b_next; */
+    /*     sb->b_next = bp; */
+    /* } */
+
+    /* return bp; */
+
+new_buffer_error:
+    free(bp);
+    debug("new_buffer(): failed to allocate memory\n");
+    return NULL;
 }
 
 /*
@@ -130,7 +208,7 @@ buffer_t *find_buffer_by_fname(char *fname)
     for (bp = bheadp; bp != NULL; bp = bp->b_next)
         if (strcmp(fname, bp->b_fname) == 0)
             break;
-    
+
     return bp;
 }
 
@@ -148,19 +226,30 @@ void delete_mode(buffer_t *bp, buffer_flags_t mode)
     bp->b_flags &= ~mode;
 }
 
-/*
- * Unlink from the list of buffers
- * Free the memory associated with the buffer
- * assumes that buffer has been saved if modified
+/** delete_buffer() - deallocate and unregister a buffer.
+ *
+ * @param bp  .. buffer
+ *
+ * @returns TRUE on success, FALSE if we try to delete the *scratch*
+ * buffer
+ *
+ * Assure that the head and the
+ * current buffer point to a live buffer and the *scratch* buffer is
+ * never deleted.
+ *
+ * Unlink from the list of buffers and free the memory associated with
+ * the buffer.
+ *
+ * Assumes that buffer has been saved if modified
  */
-int delete_buffer(buffer_t *bp)
+bool delete_buffer(buffer_t *bp)
 {
     buffer_t *sb = NULL;
 
-    /* we must have switched to a different buffer first */
-    assert(bp != curbp);
+    if (strcmp(bp->name, str_scratch) == 0)
+        return FALSE;
 
-    /* if buffer is the head buffer */
+    /* if buffer is the head buffer advance the head */
     if (bp == bheadp) {
         bheadp = bp->b_next;
     } else {
@@ -170,11 +259,17 @@ int delete_buffer(buffer_t *bp)
         assert(sb->b_next == bp || sb->b_next == NULL);
         sb->b_next = bp->b_next;
     }
+    
+    /* If buffer is the current buffer, switch the current buffer */
+    if (bp == curbp)
+        curbp = (bp->b_next == NULL) ? bheadp : bp->b_next;
 
     /* now we can delete */
     free_undos(bp->b_utail);
     free(bp->b_buf);
+    free(bp->name);
     free(bp);
+    
     return TRUE;
 }
 
@@ -189,8 +284,7 @@ void next_buffer(void)
 
 char* get_buffer_name(buffer_t *bp)
 {
-    assert(bp->b_bname != NULL);
-    return bp->b_bname;
+    return bp->name;
 }
 
 char* get_buffer_filename(buffer_t *bp)
@@ -201,9 +295,11 @@ char* get_buffer_filename(buffer_t *bp)
 
 char* get_buffer_modeline_name(buffer_t *bp)
 {
+    /* Note: construct a name string which fits into the
+     * modeline. don't use the filename */
     if (bp->b_fname[0] != '\0')
         return bp->b_fname;
-    return bp->b_bname;
+    return bp->name;
 }
 
 int count_buffers(void)
@@ -226,26 +322,6 @@ int modified_buffers(void)
             return TRUE;
 
     return FALSE;
-}
-
-int delete_buffer_byname(char *bname)
-{
-    buffer_t *bp = find_buffer(bname, FALSE);
-    int bcount = count_buffers();
-
-    if (bp == NULL) return FALSE;
-
-    /* if last buffer, create a scratch buffer */
-    if (bcount == 1) {
-        bp = find_buffer(str_scratch, TRUE);
-    }
-
-    /* switch out of buffer if we are the current buffer */
-    if (bp == curbp)
-        next_buffer();
-    assert(bp != curbp);
-    delete_buffer(bp);
-    return TRUE;
 }
 
 void switch_to_buffer(char *bname)
@@ -298,7 +374,7 @@ void list_buffers(void)
         if (bp != list_bp) {
             mod_ch  = ((bp->modified) ? '*' : ' ');
             over_ch = ((bp->b_flags & B_OVERWRITE) ? 'O' : ' ');
-            bn = (bp->b_bname[0] != '\0' ? bp->b_bname : blank);
+            bn = (bp->name[0] != '\0' ? bp->name : blank);
             fn = (bp->b_fname[0] != '\0' ? bp->b_fname : blank);
             snprintf(report_line, sizeof(report_line),  "%c%c %7d %-16s %s\n",  mod_ch, over_ch, bp->b_size, bn, fn);
             insert_string(report_line);

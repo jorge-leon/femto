@@ -508,7 +508,8 @@ void list_undo_stats(void)
     bp = bheadp;
     while (bp != NULL) {
         if (bp != list_bp) {
-            bn = (bp->b_bname[0] != '\0' ? bp->b_bname : blank);
+            /* Note: all buffers have non-empty names */
+            bn = (bp->name[0] != '\0' ? bp->name : blank);
             count = count_undos(bp);
             size = get_total_undo_size(bp);
 

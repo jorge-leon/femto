@@ -193,6 +193,9 @@
 
 ;;; Buffers
 
+;; Note: currently buffers are not Lisp objects, their handle is their name string.
+(defun current-buffer ()  (buffer-name))
+
 (defun buffer-list ()
   (let loop ((buffers nil)  (buf (buffer-next)))
        (if buf (loop (cons buf buffers) (buffer-next buf))
@@ -223,6 +226,10 @@
   (when (memq name (buffer-list))
     (apply max (mapcar buffer-name_index (buffer-list_filtered name))) ))
 
+(defun buffer-modified-p args  (buffer-flag-modified (when args (car args))) )
+(defun restore-buffer-modified-p (bool)  (buffer-flag-modified nil bool))
+(defun set-buffer-modified-p (bool)  (restore-buffer-modified-p bool) (refresh))
+
 ;;; find-file
 
 (defun find-file ()
@@ -245,7 +252,7 @@
 	 (size (prop-get result :size))
 	 (type (prop-get result :type))
 	 (check (unless (eq type "f")  (throw :invalid-value "neither file nor directory" filename)))
-	 (current (buffer-name))
+	 (current (current-buffer))
 	 (new (set-buffer (create-file-buffer filename)))
 	 (result
 	  (catch
@@ -253,6 +260,7 @@
 		(set-visited-filename filename)
 		(buffer-fread size fd)
 		(close fd)
+		(restore-buffer-modified-p nil)
 		;; Note: read-only mode pending implementation
 		(when read-only  (add-mode "read-only"))
 		(after-find-file) ))))
@@ -261,12 +269,13 @@
     new ))
 
 (defun find-file_new (filename)
-  (let* ((current buffer-name)
+  (let* ((current (current-buffer))
 	 (new (set-buffer (create-file-buffer filename)))
 	 (result
 	  (catch
 	      (progn
 		(set-visited-filename filename)
+		(restore-buffer-modified-p nil)
 		(after-find-file) ))))
     (when (car result) (apply throw result))
     (message "(New file)")
@@ -294,17 +303,51 @@
   nil ; signals not to switch to a buffer.
   )
 
+(defun save-buffer ()
+  (if (not (buffer-modified-p)) (message "(No changes need to be saved)")
+      (let* ((filename (get-buffer-filename))
+	    (directory (file-name-directory filename)) )
+	;; Note: we should handle unassociated files with write-contents-functions hooks.
+	(when (or (null filename) (string-equal "" filename))
+	  (throw invalid-value "(save-buffer) - is not associated with a file" (current-buffer)) )
+	;; Note: we should run the special hook write-file-functions here.
+	(when (and directory (memq directory '("" "./" "../")))
+	  (when (car (catch (fstat directory)))
+	    (if (not (string-equal "y" (prompt (concat "Directory ‘"directory"’ does not exist; create? (y or n) ") "")))
+		(message "Cancelled")
+		;; else
+		(mkdir directory t) )))
+	(let* ((fp    (open filename "w"))
+	       (point (get-point))
+	       (size  (get-point-max))
+	       (len   (progn
+			(beginning-of-buffer)
+			(buffer-fwrite (get-point-max) fp))) )
+	  (set-point point)
+	  (close fp)
+	  (unless (i= len size)  (throw io-error "(save-buffer) - error writing buffer to file: " filename))
+	  (set-buffer-modified-p nil)
+	  (message (concat "Wrote "size" bytes to "filename)) ))))
 
-;;;
-(setq primitive-write-file write-file)
-(defun femto-write-file ()
-  (let* ((p (prompt-filename (get-buffer-filename)))
-	 (d (file-name-directory p)) )
-    (if (not (car (catch (fstat d))))  (throw 'not-implemented "write buffer to file" p)
-	(if (not (string-equal "y" (response (prompt (concat "Directory ‘"d"’ does not exist; create? (y or n) ") ""))))
-	    (message "Cancelled")
-	    ;; else
-	    (mkdir (file-name-directory d) t)
-	    (throw 'not-implemented "write buffer to file" p) ))))
+(defun write-file ()
+  (let ((path (prompt-filename "Write file: ")))
+    (if (null path)  (message "Quit")
+	(let ((path (write-file_check_path path)))
+	  (if (null path)  (message "Canceled")
+	      (set-visited-filename path)
+	      (save-buffer) )))))
+
+(defun write-file_check_path (path)
+  (let* ((result (catch (fstat path)))
+	 (type (if (car result)  ""   (prop-get (caddr result) :type))) )
+    (cond ((car result) path) ; not found: go ahead / not accessible: err later
+	  ((string-equal type "f")
+	   ;; Found. Ask if we want to overwrite, if not return nil
+	   (when (string-equal "y" (prompt (concat "File '"path"' exists; overwrite? (y or n) ") "")) path) )
+	  ((string-equal type "d")
+	   ;; directory: create file path into directory from buffer name and check again
+	   (write-file_check_path (concat path "/" (buffer-basename (buffer-name)))) )
+	  (t  (throw invalid-value "Not a valid file or directory" path)) )))
+		 
 
 (provide 'femto)

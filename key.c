@@ -205,8 +205,8 @@ void setup_keys(void)
 
     set_key_internal("c-x c-c",   "exit"                  , "\x18\x03", quit_ask);
     set_key_internal("c-x c-n",   "next-buffer"           , "\x18\x0E", next_buffer);
-    set_key_internal("c-x c-s",   "save-buffer"           , "\x18\x13", savebuffer);
-    set_key_internal("c-x c-w",   "write-file"            , "\x18\x17", writefile);
+    set_key_internal("c-x c-s",   "save-buffer"           , "\x18\x13", user_func);
+    set_key_internal("c-x c-w",   "write-file"            , "\x18\x17", user_func);
     set_key_internal("c-x 1",     "delete-other-windows"  , "\x18\x31", delete_other_windows);
     set_key_internal("c-x 2",     "split-window"          , "\x18\x32", split_window);
     set_key_internal("c-x =",     "cursor-position"       , "\x18\x3D", cursor_position);

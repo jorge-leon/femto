@@ -289,7 +289,7 @@
       find-file-hook nil)
 
 (defun after-find-file ()
-  (let ((mode (prop-get find-file-extension-highlight-mode (get-buffer-file-extension))))
+  (let ((mode (prop-get find-file-extension-highlight-mode (file-name-extension (get-buffer-filename)))))
     (when mode  (add-mode mode)) )
   (run-hooks 'find-file-hook) )
 

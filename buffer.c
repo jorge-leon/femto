@@ -199,12 +199,6 @@ char* get_buffer_filename(buffer_t *bp)
     return bp->b_fname;
 }
 
-char* get_buffer_file_extension(buffer_t *bp)
-{
-    assert(bp->b_fname != NULL);
-    return get_file_extension(bp->b_fname);
-}
-
 char* get_buffer_modeline_name(buffer_t *bp)
 {
     if (bp->b_fname[0] != '\0')
@@ -266,18 +260,6 @@ void switch_to_buffer(char *bname)
     associate_b2w(curbp,curwp);
 }
 
-/* a version of save buffer specifically for calling by lisp */
-int save_buffer_byname(char *bname)
-{
-    buffer_t *bp = find_buffer(bname, FALSE);
-
-    if (bp == NULL) return FALSE;
-    if (bp->b_fname[0] == '\0') return FALSE;
-
-    save_buffer(bp, bp->b_fname);
-    return TRUE;
-}
-
 char *get_current_bufname(void)
 {
     assert(curbp != NULL);
@@ -288,19 +270,6 @@ char *get_current_filename(void)
 {
     assert(curbp != NULL);
     return get_buffer_filename(curbp);
-}
-
-char *get_current_file_extension(void)
-{
-    assert(curbp != NULL);
-    static char no_extension[] = "";
-
-    char *ext = get_buffer_file_extension(curbp);
-
-    if (ext == NULL)
-       return no_extension;
-  
-    return ext;
 }
 
 void list_buffers(void)

@@ -295,17 +295,6 @@ int goto_line(int line)
     }
 }
 
-void savebuffer(void)
-{
-    if (curbp->b_fname[0] != '\0') {
-        save_buffer(curbp, curbp->b_fname);
-        return;
-    } else {
-        writefile();
-    }
-    refresh();
-}
-
 char *rename_current_buffer(char *bname)
 {
     char bufn[NBUFN];
@@ -315,19 +304,6 @@ char *rename_current_buffer(char *bname)
     strcpy(curbp->b_bname, bufn);
 
     return curbp->b_bname;
-}
-
-void writefile(void)
-{
-    safe_strncpy(response_buf, curbp->b_fname, NAME_MAX);
-    if (getinput(str_write, (char*)response_buf, NAME_MAX, F_NONE)) {
-        if (save_buffer(curbp, response_buf) == TRUE) {
-            safe_strncpy(curbp->b_fname, response_buf, NAME_MAX);
-            // FIXME - what if name already exists, in editor
-            // FIXME? - do we want to change the name of the buffer when we save_as ?
-            make_buffer_name(curbp->b_bname, curbp->b_fname);
-        }
-    }
 }
 
 void kill_buffer(void)

@@ -279,7 +279,6 @@ extern void redraw(void);
 extern void repl(void);
 extern void resize_terminal(void);
 extern void right(void);
-extern void savebuffer(void);
 extern void set_mark(void);
 extern void set_point(point_t);
 extern void set_scrap(unsigned char *);
@@ -290,7 +289,6 @@ extern void unmark(void);
 extern void up(void);
 extern void user_func(void);
 extern void version(void);
-extern void writefile(void);
 extern void yank(void);
 
 /* functions in complete.c */
@@ -395,7 +393,6 @@ extern void make_buffer_name(char *, char *);
 extern void make_buffer_name_uniq(char *);
 extern void remove_control_chars(char_t *);
 extern void safe_strncpy(char *, char *, int);
-extern char* get_file_extension(char *);
 
 /* functions in window.c */
 extern int count_windows(void);

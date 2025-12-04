@@ -241,13 +241,6 @@ Object *e_rename_buffer(Interpreter *interp, Object **args, Object **env)
     return newStringWithLength(interp, bname, strlen(bname));
 }
 
-Object *e_save_buffer(Interpreter *interp, Object **args, Object **env)
-{
-    int result = save_buffer_byname(FLISP_ARG_ONE->string);
-    return (result ? t : nil);
-    
-}
-
 Object *e_kill_buffer(Interpreter *interp, Object **args, Object **env)
 {
     int result = delete_buffer_byname(FLISP_ARG_ONE->string);
@@ -293,13 +286,6 @@ Object *e_get_buffer_filename(Interpreter *interp, Object **args, Object **env)
 {
     char buf[128];
     strcpy(buf, get_current_filename());
-    return newStringWithLength(interp, buf, strlen(buf));
-}
-
-Object *e_get_buffer_file_extension(Interpreter *interp, Object **args, Object **env)
-{
-    char buf[20];
-    strcpy(buf, get_current_file_extension());
     return newStringWithLength(interp, buf, strlen(buf));
 }
 

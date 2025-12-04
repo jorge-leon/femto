@@ -81,12 +81,10 @@ extern buffer_t *new_buffer(char *);
 extern buffer_t *find_buffer_by_fname(char *);
 extern buffer_t *find_buffer(char *, int);
 extern char* get_buffer_filename(buffer_t *);
-extern char* get_buffer_file_extension(buffer_t *);
 extern char* get_buffer_modeline_name(buffer_t *);
 extern char* get_buffer_name(buffer_t *);
 extern char *get_current_bufname(void);
 extern char *get_current_filename(void);
-extern char *get_current_file_extension(void);
 
 extern int buffer_is_empty(buffer_t *);
 extern int count_buffers(void);

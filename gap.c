@@ -128,35 +128,6 @@ size_t buffer_fwrite(buffer_t *buffer, size_t size, FILE *stream)
     return fwrite(buffer->b_egap, sizeof (char), size, stream);
 }
 
-int save_buffer(buffer_t *bp, char *fn)
-{
-    FILE *fp;
-    point_t length;
-
-    if (!posix_file(fn)) {
-        msg(m_badname);
-        return (FALSE);
-    }
-    fp = fopen(fn, "w");
-    if (fp == NULL) {
-        msg(m_open, fn);
-        return (FALSE);
-    }
-    (void) movegap(bp, (point_t) 0);
-    length = (point_t) (bp->b_ebuf - bp->b_egap);
-    if (fwrite(bp->b_egap, sizeof (char), (size_t) length, fp) != length) {
-        msg(m_write, fn);
-        return (FALSE);
-    }
-    if (fclose(fp) != 0) {
-        msg(m_close, fn);
-        return (FALSE);
-    }
-    bp->modified = FALSE;
-    msg(m_saved, fn, pos(bp, bp->b_ebuf));
-    return (TRUE);
-}
-
 void clear_buffer(void)
 {
     zero_buffer(curbp);

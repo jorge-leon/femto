@@ -39,8 +39,6 @@ available to be called as lisp functions
     {"find-buffer-visiting",      1, 1, TYPE_STRING,  e_find_buffer_by_fname},
     {"buffer-name",               0, 0, 0,            e_get_buffer_name},
     {"get-buffer-filename",       0, 0, 0,            e_get_buffer_filename},
-    {"get-buffer-file-extension", 0, 0, 0,            e_get_buffer_file_extension},
-    {"save-buffer-named",         1, 1, TYPE_STRING,  e_save_buffer},
     {"insert-file-contents-literally", 1, 2, TYPE_STRING, e_insert_file},
     {"generate-new-buffer",       1, 1, TYPE_STRING,  e_new_buffer},
     {"set-visited-filename",      1, 1, 0,            e_set_buffer_filename},

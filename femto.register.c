@@ -8,9 +8,6 @@ available to be called as lisp functions
 
     {"get-temp-file",             0, 0, 0,            e_get_temp_file},
     {"add-mode-global",           1, 1, TYPE_STRING,  e_add_mode_global},
-    {"add-mode",                  1, 1, TYPE_STRING,  e_add_mode},
-    {"delete-mode",               1, 1, TYPE_STRING,  e_delete_mode},
-    {"get-mode",                  1, 1, TYPE_STRING,  e_get_mode},
     {"message",                   1, 1, TYPE_STRING,  e_message},
     {"log-message",               1, 1, TYPE_STRING,  e_log_message},
     {"log-debug",                 1, 1, TYPE_STRING,  e_log_debug},
@@ -33,6 +30,9 @@ available to be called as lisp functions
     {"search-forward",            1, 1, TYPE_STRING,  e_search_forward},
     {"search-backward",           1, 1, TYPE_STRING,  e_search_backward},
 
+    {"add-mode",                  1, 1, TYPE_STRING,  e_add_mode},
+    {"delete-mode",               1, 1, TYPE_STRING,  e_delete_mode},
+    {"get-mode",                  1, 1, TYPE_STRING,  e_get_mode},
     {"list-buffers",              0, 0, 0,            e_list_buffers},
     {"buffer-next",               0, 1, TYPE_STRING,  e_buffer_next},
     {"get-buffer-count",          0, 0, 0,            e_get_buffer_count},
@@ -40,7 +40,7 @@ available to be called as lisp functions
     {"buffer-name",               0, 0, 0,            e_get_buffer_name},
     {"get-buffer-filename",       0, 0, 0,            e_get_buffer_filename},
     {"get-buffer-file-extension", 0, 0, 0,            e_get_buffer_file_extension},
-    {"save-buffer",               1, 1, TYPE_STRING,  e_save_buffer},
+    {"save-buffer-named",         1, 1, TYPE_STRING,  e_save_buffer},
     {"insert-file-contents-literally", 1, 2, TYPE_STRING, e_insert_file},
     {"generate-new-buffer",       1, 1, TYPE_STRING,  e_new_buffer},
     {"set-visited-filename",      1, 1, 0,            e_set_buffer_filename},
@@ -51,6 +51,8 @@ available to be called as lisp functions
     {"rename-buffer",             1, 1, TYPE_STRING,  e_rename_buffer},
     {"kill-buffer",               1, 1, TYPE_STRING,  e_kill_buffer},
     {"erase-buffer",              0, 0, 0,            e_zero_buffer},
+    {"buffer-flag-modified",      0, 2, 0,            e_buffer_flag_modified},
+
     {"update-display",            0, 0, 0,            e_update_display},
     {"prompt-filename",           1, 1, TYPE_STRING,  e_getfilename},
     {"clear-message-line",        0, 0, 0,            e_clear_message_line},

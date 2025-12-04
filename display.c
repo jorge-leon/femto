@@ -229,7 +229,7 @@ void modeline(window_t *wp)
     attron(COLOR_PAIR(ID_MODELINE));
     move(wp->w_top + wp->w_rows, 0);
     lch = (wp == curwp ? '=' : '-');
-    mch = ((wp->w_bufp->b_flags & B_MODIFIED) ? '*' : lch);
+    mch = ((wp->w_bufp->modified) ? '*' : lch);
     och = ((wp->w_bufp->b_flags & B_OVERWRITE) ? 'O' : lch);
 
     sprintf(modeline, "%c%c%c Femto: %c%c %s",  lch,och,mch,lch,lch, get_buffer_name(wp->w_bufp));

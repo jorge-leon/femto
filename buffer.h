@@ -6,21 +6,25 @@
 
 
 #include <stdint.h>
+#include <stdbool.h>
 #include <limits.h>
 
 #define NBUFN           17      /* size of buffer name 16 chars + null terminator */
 
 typedef enum {
-    B_MODIFIED = 0x01,
-    B_OVERWRITE = 0x02,         /* overwite mode */
-    B_SPECIAL = 0x04,           /* is a special buffer name of form '*name*' */
-    B_READONLY = 0x08,
-    B_UNDO = 0x10,              /* undo mode */
-    B_CMODE = 0x20,             /* c mode overrides TEXT mode */
-    B_LISP = 0x40,              /* lisp mode */
-    B_PYTHON = 0x80,            /* python mode */
+    /* State flags */
+    ////B_MODIFIED =  0x00001,
+    B_OVERWRITE = 0x00002,         /* overwite mode */
+    B_SPECIAL =   0x00004,           /* is a special buffer name of form '*name*' */
+    B_READONLY =  0x00008,
+    B_UNDO =      0x00010,              /* undo mode */
+    /* Syntax highlighting, text modes */
+    B_CMODE =     0x10000,             /* c mode overrides TEXT mode */
+    B_LISP =      0x40000,              /* lisp mode */
+    B_PYTHON =    0x80000,            /* python mode */
 } buffer_flags_t;
 
+////typedef enum { C, LISP, PYTHON } buffer_mode_t;
 
 typedef int64_t point_t;
 typedef unsigned char char_t;
@@ -58,10 +62,18 @@ typedef struct buffer_t
     int b_col;                  /* cursor col */
     char b_fname[NAME_MAX + 1]; /* filename */
     char b_bname[NBUFN];        /* buffer name */
-    buffer_flags_t b_flags;     /* buffer flags */
+    ////buffer_mode_t mode;        /* buffer major mode */
+    buffer_flags_t b_flags;
+    /* buffer flags */
+    bool modified: 1;
+    bool overwrite: 1;
+    bool special: 1;
+    bool readonly: 1;
+    bool undo: 1;
     undo_tt *b_utail;           /* recent end of undo list */
     int b_ucnt;                 /* count of how many chars to undo on current undo */
 } buffer_t;
+
 
 
 extern buffer_t *search_buffer(char *);
@@ -92,3 +104,10 @@ extern void zero_buffer(buffer_t *);
 
 
 #endif
+/*
+ * Local Variables:
+ * c-file-style: "k&r"
+ * c-basic-offset: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

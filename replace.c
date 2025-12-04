@@ -112,7 +112,7 @@ void replace_string(buffer_t *bp, char *s, char *r, int slen, int rlen)
 
     /* now just overwrite the chars at point in the buffer */
     memcpy(ptr(bp, bp->b_point), r, rlen * sizeof (char_t));
-    add_mode(bp, B_MODIFIED);
+    curbp->modified = TRUE;
 
     add_undo(curbp, UNDO_T_REPLACE, curbp->b_point, (char_t *)s, (char_t *)r);
     curbp->b_point = found - (slen - rlen); /* set point to end of replacement */

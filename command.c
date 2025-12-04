@@ -188,7 +188,7 @@ void insert(void)
         /* the point is set so that and undo will backspace over the char */
         add_undo(curbp, UNDO_T_INSERT, curbp->b_point, the_char, NULL);
     }
-    add_mode(curbp, B_MODIFIED);
+    curbp->modified = TRUE;
 }
 
 /*
@@ -224,8 +224,7 @@ void insert_at(void)
         /* the point is set so that and undo will DELETE the char */
         add_undo(curbp, UNDO_T_INSAT, curbp->b_point, the_char, NULL);
     }
-
-    add_mode(curbp, B_MODIFIED);
+    curbp->modified = TRUE;
 }
 
 void backspace(void)
@@ -237,7 +236,7 @@ void backspace(void)
 
     if (curbp->b_buf < (curbp->b_gap - (n - 1)) ) {
         curbp->b_gap -= n; /* increase start of gap by size of char */
-        add_mode(curbp, B_MODIFIED);
+        curbp->modified = TRUE;
 
         /* record the backspaced chars in the undo structure */
         memcpy(the_char, curbp->b_gap, n);
@@ -265,7 +264,7 @@ void delete(void)
         //debug("deleted = '%s'\n", the_char);
         curbp->b_egap += n;
         curbp->b_point = pos(curbp, curbp->b_egap);
-        add_mode(curbp, B_MODIFIED);
+        curbp->modified = TRUE;
         add_undo(curbp, UNDO_T_DELETE, curbp->b_point, the_char, NULL);
     }
 }
@@ -340,7 +339,7 @@ void kill_buffer(void)
     if (bcount == 1 && 0 == strcmp(get_buffer_name(curbp), str_scratch))
               return;
 
-    if (!(curbp->b_flags & B_SPECIAL) && curbp->b_flags & B_MODIFIED) {
+    if (!(curbp->b_flags & B_SPECIAL) && curbp->modified) {
         mvaddstr(MSGLINE, 0, str_notsaved);
         clrtoeol();
         if (!yesno(FALSE))
@@ -439,7 +438,7 @@ void copy_cut(int cut)
             add_undo(curbp, UNDO_T_KILL, (curbp->b_point < curbp->b_mark ? curbp->b_point : curbp->b_mark), scrap, NULL);
             curbp->b_egap += nscrap; /* if cut expand gap down */
             curbp->b_point = pos(curbp, curbp->b_egap); /* set point to after region */
-            add_mode(curbp, B_MODIFIED);
+            curbp->modified = TRUE;
             msg(m_cut, nscrap);
         } else {
             msg(m_copied, nscrap);
@@ -493,7 +492,7 @@ void insert_string(char *str)
         memcpy(curbp->b_gap, str, len * sizeof (char_t));
         curbp->b_gap += len;
         curbp->b_point = pos(curbp, curbp->b_egap);
-        add_mode(curbp, B_MODIFIED);
+        curbp->modified = TRUE;
     }
 }
 
@@ -515,7 +514,7 @@ void append_string(buffer_t *bp, char *str)
         memcpy(bp->b_gap, str, len * sizeof (char_t));
         bp->b_gap += len;
         bp->b_point = pos(bp, bp->b_egap);
-        add_mode(curbp, B_MODIFIED);
+        curbp->modified = TRUE;
         bp->b_epage = bp->b_point = pos(bp, bp->b_ebuf); /* goto end of buffer */
 
         /* if window is displayed mark all windows for update */
@@ -827,7 +826,7 @@ int add_mode_current_buffer(char* modename)
         add_mode(curbp, B_SPECIAL);
         return 1;
     } else if (strcmp(modename, "modified") == 0) {
-        add_mode(curbp, B_MODIFIED);
+        curbp->modified = TRUE;
         return 1;
     } else if (strcmp(modename, "cmode") == 0) {
         add_mode(curbp, B_CMODE);;
@@ -849,7 +848,7 @@ int delete_mode_current_buffer(char* modename)
         delete_mode(curbp, B_SPECIAL);
         return 1;
     } else if (strcmp(modename, "modified") == 0) {
-        delete_mode(curbp, B_MODIFIED);
+        curbp->modified = FALSE;
         return 1;
     } else if (strcmp(modename, "cmode") == 0) {
         delete_mode(curbp, B_CMODE);;

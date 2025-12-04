@@ -1,6 +1,8 @@
 /*
  * gap.c, femto, Hugh Barney, Public Domain, 2017
  * Derived from: Anthony's Editor January 93, (Public Domain 1991, 1993 by Anthony Howe)
+ *
+ * Buffer content handling.
  */
 
 #include <sys/stat.h>
@@ -150,7 +152,7 @@ int save_buffer(buffer_t *bp, char *fn)
         msg(m_close, fn);
         return (FALSE);
     }
-    delete_mode(bp, B_MODIFIED);
+    bp->modified = FALSE;
     msg(m_saved, fn, pos(bp, bp->b_ebuf));
     return (TRUE);
 }
@@ -215,7 +217,7 @@ int insert_file(char *fn, int modflag)
         msg(m_close, fn);
         return (FALSE);
     }
-    curbp->b_flags &= (modflag ? B_MODIFIED : ~B_MODIFIED);
+    curbp->modified = modflag;
     msg(m_loaded, fn, len);
     return (TRUE);
 }

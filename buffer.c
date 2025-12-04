@@ -1,4 +1,7 @@
-/* buffer.c, femto, Hugh Barney, Public Domain, 2017 */
+/* buffer.c, femto, Hugh Barney, Public Domain, 2017
+ *
+ * Buffer management.
+ */
 
 #include <assert.h>
 #include <string.h>
@@ -18,6 +21,7 @@ void buffer_init(buffer_t *bp)
     bp->b_size = 0;
     bp->b_psize = 0;
     bp->b_flags = 0;
+    bp->modified = FALSE;
     bp->b_cnt = 0;
     bp->b_buf = NULL;
     bp->b_ebuf = NULL;
@@ -224,7 +228,7 @@ int modified_buffers(void)
     buffer_t* bp;
 
     for (bp=bheadp; bp != NULL; bp = bp->b_next)
-        if (!(bp->b_flags & B_SPECIAL) && bp->b_flags & B_MODIFIED)
+        if (!(bp->b_flags & B_SPECIAL) && bp->modified)
             return TRUE;
 
     return FALSE;
@@ -323,7 +327,7 @@ void list_buffers(void)
     bp = bheadp;
     while (bp != NULL) {
         if (bp != list_bp) {
-            mod_ch  = ((bp->b_flags & B_MODIFIED) ? '*' : ' ');
+            mod_ch  = ((bp->modified) ? '*' : ' ');
             over_ch = ((bp->b_flags & B_OVERWRITE) ? 'O' : ' ');
             bn = (bp->b_bname[0] != '\0' ? bp->b_bname : blank);
             fn = (bp->b_fname[0] != '\0' ? bp->b_fname : blank);

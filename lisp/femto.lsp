@@ -226,15 +226,40 @@
   (when (memq name (buffer-list))
     (apply max (mapcar buffer-name_index (buffer-list_filtered name))) ))
 
+;;; (rename-buffer name[ unique-p])
+(defun rename-buffer (name . opts)
+  (if (and opts (car opts))  (set-buffer-name (generate-new-buffer-name name))
+      (set-buffer-name name) ))
 
-(defun rename-buffer (name)  (set-buffer-name (generate-new-buffer-name name)))
+;;; return any buffer other then current
+(defun other-buffer ()  (or (buffer-next (current-buffer)) (buffer-next)))
 
+
+
+;;; Interactive
 (defun kill-buffer ()
-  ;; Note:
-  ;; prompt: "Kill buffer (default %current_buffer_name%): "
-  ;; if response is empty use that one.
-(throw invalid-value "kill-buffer tbd")
-  (delete-buffer name))
+  (let ((response (prompt "Kill buffer: " (buffer-name))))
+    (if (string-equal "" response) (message "Canceled")
+	(kill-buffer-noselect response) )))
+
+;;; (kill-buffer-noselect name)
+;;; Offers saving modified buffers, switches to other buffer if the buffer to kill is current.
+(defun kill-buffer-noselect (name)
+  (let* ((current (current-buffer))
+	 (result (catch (set-buffer name))) )
+    (when (car result) (apply throw result))
+    (if (not (buffer-modified-p)) (kill-buffer_and_switch name current)
+	(let ((response
+	       (prompt (concat "Buffer "name" modified; kill anyway? (yes/no/save and then kill) ") "")))
+	  (cond ((string-equal response "yes")  (kill-buffer_and_switch name current))
+		((string-equal response "save")
+		 (save-buffer)
+		 (kill-buffer_and_switch name current) )) ))))
+
+(defun kill-buffer_and_switch (name current)
+  (if (eq name current)  (switch-to-buffer (other-buffer))
+      (set-buffer current) )
+  (delete-buffer name) )
 
 (defun buffer-modified-p args  (buffer-flag-modified (when args (car args))) )
 (defun restore-buffer-modified-p (bool)  (buffer-flag-modified nil bool))
@@ -345,6 +370,7 @@
 	(let ((path (write-file_check_path path)))
 	  (if (null path)  (message "Canceled")
 	      (set-visited-filename path)
+	      (rename-buffer (generate-new-buffer-name (file-name-nondirectory path)))
 	      (save-buffer) )))))
 
 (defun write-file_check_path (path)
@@ -358,6 +384,6 @@
 	   ;; directory: create file path into directory from buffer name and check again
 	   (write-file_check_path (concat path "/" (buffer-basename (buffer-name)))) )
 	  (t  (throw invalid-value "Not a valid file or directory" path)) )))
-		 
+
 
 (provide 'femto)

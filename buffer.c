@@ -84,7 +84,7 @@ buffer_t *search_buffer(char *name)
 /** set_buffer_name() name or rename buffer
  *
  * @param buffer .. pointer to buffer struct.
- * @param name   .. pointer to string 
+ * @param name   .. pointer to string
  *
  * @returns TRUE on success, else FALSE.
  *
@@ -121,7 +121,7 @@ buffer_t *new_buffer(char *name)
 
     if (name == NULL || name[0] == '\n')
         return NULL;
-    
+
     if ((bp = (buffer_t *) malloc (sizeof (buffer_t))) == NULL)
         return NULL;
 
@@ -145,7 +145,7 @@ buffer_t *new_buffer(char *name)
         bheadp = bp;
         if (strcmp(bp->name, str_scratch) == 0)
             return bp;
-        
+
         if ((bp = new_buffer(name)) == NULL)
             return NULL;
     }
@@ -172,23 +172,7 @@ buffer_t *new_buffer(char *name)
     bp->b_next = bheadp;
     bheadp = bp;
     return bp;
-    
-    /* if (strcmp(bheadp->name, name) > 0) { */
-        
-    /*     bp->b_next = bheadp; */
-    /*     bheadp = bp; */
-    /* } else { */
-    /*     debug("new_buffer(): search place in the list\n"); */
-    /*     for (sb = bheadp; sb->b_next != NULL; sb = sb->b_next) */
-    /*         if (strcmp (sb->b_next->name, name) > 0) */
-    /*             break; */
 
-    /*     /\* and insert it *\/ */
-    /*     bp->b_next = sb->b_next; */
-    /*     sb->b_next = bp; */
-    /* } */
-
-    /* return bp; */
 
 new_buffer_error:
     free(bp);
@@ -244,32 +228,39 @@ void delete_mode(buffer_t *bp, buffer_flags_t mode)
  */
 bool delete_buffer(buffer_t *bp)
 {
-    buffer_t *sb = NULL;
+    buffer_t *sb;
 
     if (strcmp(bp->name, str_scratch) == 0)
         return FALSE;
 
+    /* find place where the bp buffer is next */
+    for (sb = bheadp; sb->b_next != NULL; sb = sb->b_next)
+        if (sb->b_next == bp)
+            break;
+    if (sb == bp) {
+        /* lone buffer */
+        bheadp = NULL; /* from scratch */
+        bheadp = new_buffer(str_scratch);
+        if (bheadp == NULL)
+            return FALSE;
+    }
     /* if buffer is the head buffer advance the head */
-    if (bp == bheadp) {
+    else if (bp == bheadp) {
         bheadp = bp->b_next;
     } else {
-        /* find place where the bp buffer is next */
-        for (sb = bheadp; sb->b_next != bp && sb->b_next != NULL; sb = sb->b_next)
-            ;
-        assert(sb->b_next == bp || sb->b_next == NULL);
         sb->b_next = bp->b_next;
     }
-    
     /* If buffer is the current buffer, switch the current buffer */
+    /* Note: we might want a different "other-buffer" algorithm here */
     if (bp == curbp)
-        curbp = (bp->b_next == NULL) ? bheadp : bp->b_next;
+        switch_to_buffer((bp->b_next == NULL) ? bheadp : bp->b_next);
 
     /* now we can delete */
     free_undos(bp->b_utail);
     free(bp->b_buf);
     free(bp->name);
     free(bp);
-    
+
     return TRUE;
 }
 
@@ -324,13 +315,8 @@ int modified_buffers(void)
     return FALSE;
 }
 
-void switch_to_buffer(char *bname)
+void switch_to_buffer(buffer_t *bp)
 {
-    buffer_t *bp = find_buffer(bname, TRUE);
-
-    assert(bp != NULL);
-    assert(curbp != NULL);
-
     disassociate_b(curwp);
     curbp = bp;
     associate_b2w(curbp,curwp);

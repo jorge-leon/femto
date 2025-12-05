@@ -230,6 +230,7 @@ void setup_keys(void)
 
     // command will be registered so that it will get searched for when prompted as execute-command (esc-x)
     register_command("show-version", version);
+    register_command("exit", quit_ask);
 }
 
 char_t *get_key(keymap_t *keys, keymap_t **key_return)

@@ -1,27 +1,30 @@
 ;; Femto startup
 
 (defun show-startup-message()
-  (cond ((eq "*scratch*" (buffer-name))
-	 (insert-string "\n\n\n\n")
-	 (insert-string " ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n")
-	 (insert-string " ;\n")
-	 (insert-string " ;\n")
-	 (insert-string " ;\n")
-	 (insert-string " ;  / _| ___ _ __ ___ | |_ ___     \n")
-	 (insert-string " ; | |_ / _ \ '_ ` _ \| __/ _ \    \n")
-	 (insert-string " ; |  _|  __/ | | | | | || (_) |   \n")
-	 (insert-string " ; |_|  \___|_| |_| |_|\__\___/'    \n")
-	 (insert-string " ;\n")
-	 (insert-string " ;\n")
-	 (insert-string " ;\n")
-	 (insert-string " ; C-x h   for help\n")
-	 (insert-string " ; Esc : (exit)  to quit\n")
-	 (insert-string " ;\n")
-	 (insert-string " ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n\n\n\n")
-	 (insert-string "  Tiny Emacs clone with Tiny-Lisp extension language\n  ")
-	 (insert-string (get-version-string))
-	 (insert-string "\n\n\n")
-	 (end-of-buffer))))
+  (let* ((current  (current-buffer))
+	 (result   (catch (set-buffer "*scratch*"))) )
+    (if (car result)  (progn (set-buffer current) (apply throw result))
+	(insert-string "\n\n\n\n
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;
+ ;
+ ;
+ ;  / _| ___ _ __ ___ | |_ ___     
+ ; | |_ / _ \ '_ ` _ \| __/ _ \    
+ ; |  _|  __/ | | | | | || (_) |   
+ ; |_|  \___|_| |_| |_|\__\___/'   
+ ;
+ ;
+ ;
+ ; C-x h       for help
+ ; Esc x exit  emergency exit
+ ;
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n\n\n\n
+  Tiny Emacs clone with tiny Lisp extension language\n  ")
+	(insert-string (get-version-string))
+	(insert-string "\n\n\n")
+	(end-of-buffer)
+	(set-buffer current) )))
 
 (defun getopts (opts pos)
   (cond

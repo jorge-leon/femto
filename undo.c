@@ -435,6 +435,18 @@ void list_undos(void)
     dump_undos(curbp);
 }
 
+/* replace control chars with spaces in string s */
+void remove_control_chars(char_t *s)
+{
+    char_t *p = s;
+
+    while (*p != '\0') {
+        if (*p < 32)
+            *p = ' ';
+        p++;
+    }
+}
+
 /* show the undo data associated with this buffer */
 void dump_undos(buffer_t *bp)
 {

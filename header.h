@@ -388,9 +388,6 @@ extern void list_undo_stats(void);
 extern void undo_command(void);
 
 /* functions in utils.c */
-extern void make_buffer_name(char *, char *);
-extern void make_buffer_name_uniq(char *);
-extern void remove_control_chars(char_t *);
 extern void safe_strncpy(char *, char *, int);
 
 /* functions in window.c */

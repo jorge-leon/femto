@@ -205,7 +205,7 @@ void setup_keys(void)
     set_key_internal("backspace", "backspace",            "\x7f", backspace);
 
     set_key_internal("c-x c-b",   "list-buffers"          , "\x18\x0b", list_buffers);
-    set_key_internal("c-x c-c",   "save-buffers-kill-terminal", "\x18\x03", quit_ask);
+    set_key_internal("c-x c-c",   "save-buffers-kill-terminal", "\x18\x03", user_func);
     set_key_internal("c-x c-n",   "next-buffer"           , "\x18\x0E", user_func);
     set_key_internal("c-x c-s",   "save-buffer"           , "\x18\x13", user_func);
     set_key_internal("c-x c-w",   "write-file"            , "\x18\x17", user_func);

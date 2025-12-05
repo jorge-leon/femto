@@ -11,6 +11,7 @@
     (rename-buffer) in Lisp.
     - oxo stopped working
   + Buffer name handling: alloc/free string instead of fixed (too small) buffer.
+  - undo does not reset modified flag 
   - Rethink buffer list, simplify with ring?
   - Implement save-some-buffers.
   - Move posix file name check to Lisp: can't start with -, all chars must be isalnum() or in "._-/".

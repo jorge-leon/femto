@@ -231,9 +231,10 @@
   (if (and opts (car opts))  (set-buffer-name (generate-new-buffer-name name))
       (set-buffer-name name) ))
 
-;;; return any buffer other then current
-(defun other-buffer ()  (or (buffer-next (current-buffer)) (buffer-next)))
 
+(defun next-buffer_rr ()  (or (buffer-next (current-buffer)) (buffer-next)))
+(defun next-buffer ()  (switch-to-buffer (next-buffer_rr)))
+(setq other-buffer next-buffer_rr)
 
 
 ;;; Interactive
@@ -385,5 +386,7 @@
 	   (write-file_check_path (concat path "/" (buffer-basename (buffer-name)))) )
 	  (t  (throw invalid-value "Not a valid file or directory" path)) )))
 
+
+(defun save-buffers-kill-terminal () (prompt "high " "low"))
 
 (provide 'femto)

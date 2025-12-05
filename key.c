@@ -160,7 +160,7 @@ void setup_keys(void)
     set_key_internal("esc-k",   "kill-region"           , "\x1B\x6B", kill_region);
     set_key_internal("esc-l",   "describe-bindings"     , "\x1B\x6C", describe_bindings);
     set_key_internal("esc-m",   "set-mark"              , "\x1B\x6D", i_set_mark);
-    set_key_internal("esc-n",   "next-buffer"           , "\x1B\x6E", next_buffer);
+    set_key_internal("esc-n",   "next-buffer"           , "\x1B\x6E", user_func);
     set_key_internal("esc-o",   "delete-other-windows"  , "\x1B\x6F", delete_other_windows);
     /* Note: in Emacs M-q is (c-fill-paragraph) */
     set_key_internal("esc-q",   "kill-buffer"           , "\x1B\x71", user_func);
@@ -204,17 +204,19 @@ void setup_keys(void)
     set_key_internal("pgdn",      "page-down",            "\x1B\x5B\x36\x7E", forward_page);
     set_key_internal("backspace", "backspace",            "\x7f", backspace);
 
-    set_key_internal("c-x c-c",   "exit"                  , "\x18\x03", quit_ask);
-    set_key_internal("c-x c-n",   "next-buffer"           , "\x18\x0E", next_buffer);
+    set_key_internal("c-x c-b",   "list-buffers"          , "\x18\x0b", list_buffers);
+    set_key_internal("c-x c-c",   "save-buffers-kill-terminal", "\x18\x03", quit_ask);
+    set_key_internal("c-x c-n",   "next-buffer"           , "\x18\x0E", user_func);
     set_key_internal("c-x c-s",   "save-buffer"           , "\x18\x13", user_func);
     set_key_internal("c-x c-w",   "write-file"            , "\x18\x17", user_func);
     set_key_internal("c-x 1",     "delete-other-windows"  , "\x18\x31", delete_other_windows);
     set_key_internal("c-x 2",     "split-window"          , "\x18\x32", split_window);
     set_key_internal("c-x =",     "cursor-position"       , "\x18\x3D", cursor_position);
     set_key_internal("c-x ?",     "user-func"             , "\x18\x3F", user_func);
+    /* Note: is set to interactive switch-to-buffer in Emacs */
     set_key_internal("c-x b",     "list-buffers"          , "\x18\x62", list_buffers);
     set_key_internal("c-x k",     "kill-buffer"           , "\x18\x6B", user_func);
-    set_key_internal("c-x n",     "next-buffer"           , "\x18\x6E", next_buffer);
+    set_key_internal("c-x n",     "next-buffer"           , "\x18\x6E", user_func);
     set_key_internal("c-x o",     "other-window"          , "\x18\x6F", other_window);
     set_key_internal("c-x @",     "user-func"             , "\x18\x40", user_func);
     set_key_internal("c-x (",     "user-func"             , "\x18\x28", user_func);

@@ -75,9 +75,6 @@ int main(int argc, char **argv)
 
     /* buffers */
     setlocale(LC_ALL, "") ; /* required for 3,4 byte UTF8 chars */
-    ///curbp = find_buffer(str_scratch, TRUE);
-    ///strncpy(curbp->b_bname, str_scratch, STRBUF_S);
-    ///beginning_of_buffer();
     curbp = new_buffer(str_scratch);
     /* windows */
     wheadp = curwp = new_window();

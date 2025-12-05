@@ -98,7 +98,6 @@ extern point_t document_size(buffer_t *);
 extern void add_mode(buffer_t *, buffer_flags_t);
 extern void delete_mode(buffer_t *, buffer_flags_t);
 extern void list_buffers(void);
-extern void next_buffer(void);
 extern void zero_buffer(buffer_t *);
 
 

@@ -264,15 +264,6 @@ bool delete_buffer(buffer_t *bp)
     return TRUE;
 }
 
-void next_buffer(void)
-{
-    assert(curbp != NULL);
-    assert(bheadp != NULL);
-    disassociate_b(curwp);
-    curbp = (curbp->b_next != NULL ? curbp->b_next : bheadp);
-    associate_b2w(curbp,curwp);
-}
-
 char* get_buffer_name(buffer_t *bp)
 {
     return bp->name;
@@ -324,7 +315,6 @@ void switch_to_buffer(buffer_t *bp)
 
 char *get_current_bufname(void)
 {
-    assert(curbp != NULL);
     return get_buffer_name(curbp);
 }
 
@@ -346,6 +336,7 @@ void list_buffers(void)
 
     list_bp = find_buffer(str_buffers, TRUE);
 
+    /* Notes: should'n we use popup-buffer here? */
     disassociate_b(curwp); /* we are leaving the old buffer for a new one */
     curbp = list_bp;
     associate_b2w(curbp, curwp);

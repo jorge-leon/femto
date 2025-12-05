@@ -6,7 +6,7 @@
   fmkdir. https://github.com/hughbarney/femto/issues/14
   - remove remaining file reading C-code
 	  - insert_file() in gap.c
-  - make_buffer_name_uniq(), make_buffer_name() in utils.c
+  + make_buffer_name_uniq(), make_buffer_name() in utils.c
   + rename_current_buffer() in command.c -> set_buffer_name(), Implement
     (rename-buffer) in Lisp.
     - oxo stopped working

@@ -463,7 +463,7 @@ void dump_undos(buffer_t *bp)
     disassociate_b(curwp); /* we are leaving the old buffer for a new one */
     curbp = list_bp;
     associate_b2w(curbp, curwp);
-    clear_buffer(); /* throw away previous content */
+    zero_buffer(curbp); /* throw away previous content */
 
     /*             123 123456 123456789 1234 1234567890123456789012345678901234567890 */
     insert_string("Num Type   Point     Size String\n");
@@ -511,7 +511,7 @@ void list_undo_stats(void)
     disassociate_b(curwp); /* we are leaving the old buffer for a new one */
     curbp = list_bp;
     associate_b2w(curbp, curwp);
-    clear_buffer(); /* throw away previous content */
+    zero_buffer(curbp); /* throw away previous content */
 
     /*             1234567890123456 1234 123456789 */
     insert_string("Buffer            Num      Size\n");

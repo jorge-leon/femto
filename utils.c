@@ -8,6 +8,20 @@
 #include "header.h"
 
 
+int posix_file(char *fn)
+{
+    if (fn[0] == '-')
+        return (FALSE);
+
+    for (; *fn != '\0'; ++fn) {
+        if (!isalnum(*fn) && *fn != '.' && *fn != '_' && *fn != '-' && *fn != '/')
+            return (FALSE);
+    }
+    return (TRUE);
+}
+
+
+
 /* a safe version of strncpy that ensure null terminate in case of overflows */
 void safe_strncpy(char *dest, char *src, int nchars)
 {

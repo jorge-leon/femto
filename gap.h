@@ -15,7 +15,9 @@ extern int posix_file(char *);
 extern point_t line_to_point(int);
 extern point_t movegap(buffer_t *, point_t);
 extern point_t pos(buffer_t *, register char_t *);
-extern void clear_buffer(void);
 extern void get_line_stats(int *, int *);
+extern int buffer_is_empty(buffer_t *);
+extern point_t document_size(buffer_t *);
+extern void zero_buffer(buffer_t *);
 
 #endif

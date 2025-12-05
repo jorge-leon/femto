@@ -116,18 +116,6 @@ point_t pos(buffer_t *bp, register char_t *cp)
     return (cp - bp->b_buf - (cp < bp->b_egap ? 0 : bp->b_egap - bp->b_gap));
 }
 
-int posix_file(char *fn)
-{
-    if (fn[0] == '-')
-        return (FALSE);
-
-    for (; *fn != '\0'; ++fn) {
-        if (!isalnum(*fn) && *fn != '.' && *fn != '_' && *fn != '-' && *fn != '/')
-            return (FALSE);
-    }
-    return (TRUE);
-}
-
 size_t buffer_fwrite(buffer_t *buffer, size_t size, FILE *stream)
 {
     size_t len;
@@ -142,12 +130,28 @@ size_t buffer_fwrite(buffer_t *buffer, size_t size, FILE *stream)
     return fwrite(buffer->b_egap, sizeof (char), size, stream);
 }
 
-void clear_buffer(void)
+void zero_buffer(buffer_t *bp)
 {
-    zero_buffer(curbp);
-    /* Note: superfluous - zero_buffer() is already setting the point to the start */
-    beginning_of_buffer();
+    /* reset the gap, make it the whole buffer */
+    bp->b_gap = bp->b_buf;
+    bp->b_egap = bp->b_ebuf;
+    bp->b_point = 0; /* goto start of buffer */
+    bp->b_mark = NOMARK;
 }
+
+/* get the size of the document in the buffer */
+point_t document_size(buffer_t *bp)
+{
+    return (bp->b_ebuf - bp->b_buf) - (bp->b_egap - bp->b_gap);
+}
+
+int buffer_is_empty(buffer_t *bp)
+{
+    if (bp->b_gap == bp->b_buf && bp->b_egap == bp->b_ebuf)
+        return 1;
+    return 0;
+}
+
 
 /** Read size bytes from stream into buffer starting at point
     

@@ -1,6 +1,7 @@
 /* funcmap.c, femto, Hugh Barney, Public Domain, 2017 */
 
 #include "buffer.h"
+#include "gap.h"
 #include "header.h"
 
 #include <string.h>

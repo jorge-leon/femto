@@ -33,29 +33,6 @@ void buffer_init(buffer_t *bp)
     bp->b_utail = NULL;
     bp->b_ucnt = -1;
 }
-
-void zero_buffer(buffer_t *bp)
-{
-    /* reset the gap, make it the whole buffer */
-    bp->b_gap = bp->b_buf;
-    bp->b_egap = bp->b_ebuf;
-    bp->b_point = 0; /* goto start of buffer */
-    bp->b_mark = NOMARK;
-}
-
-/* get the size of the document in the buffer */
-point_t document_size(buffer_t *bp)
-{
-    return (bp->b_ebuf - bp->b_buf) - (bp->b_egap - bp->b_gap);
-}
-
-int buffer_is_empty(buffer_t *bp)
-{
-    if (bp->b_gap == bp->b_buf && bp->b_egap == bp->b_ebuf)
-        return 1;
-    return 0;
-}
-
 /*
  * Find a buffer, by buffer name. Return a pointer to the buffer_t
  * structure associated with it. If the buffer is not found and the
@@ -91,6 +68,7 @@ buffer_t *search_buffer(char *name)
  * If the buffer already has a name it is deallocated.
  *
  */
+
 bool set_buffer_name(buffer_t *buffer, char *name)
 {
     if (buffer->name != NULL)
@@ -340,7 +318,7 @@ void list_buffers(void)
     disassociate_b(curwp); /* we are leaving the old buffer for a new one */
     curbp = list_bp;
     associate_b2w(curbp, curwp);
-    clear_buffer(); /* throw away previous content */
+    zero_buffer(curbp); /* throw away previous content */
 
     /*             12 1234567 12345678901234567 */
     insert_string("CO    Size Buffer           File\n");

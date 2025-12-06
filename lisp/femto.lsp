@@ -386,45 +386,54 @@
 	   (write-file_check_path (concat path "/" (buffer-basename (buffer-name)))) )
 	  (t  (throw invalid-value "Not a valid file or directory" path)) )))
 
+;;; Saving buffers
 
+(defun buffer_file_modified-p (buffer)
+  (set-buffer buffer)
+  (and (buffer-modified-p) (not (eq "" (get-buffer-filename)))) )
+
+;;; (save-some-buffers) - interactively save modified file buffers
+;;; returns t if user 'quits', nil otherwise
 (defun save-some-buffers ()
-  (setq save-some-buffers_save-all nil)
   (let* ((current   (current-buffer))
-	 (response  (let loop ((buffers (buffer-list_file_modified)))
-			 (and buffers
-			      (save-buffer_query (car buffers))
-			      (loop (cdr buffers)) ))))
+	 (response
+	  (let loop ((buffers (filter buffer_file_modified-p (buffer-list))) (mode :ask))
+	       (if (null buffers) mode
+		   (setq mode (save-buffer_query (car buffers) mode))
+		   (if (memq mode '(abort break)) mode
+		       (loop (cdr buffers) mode) )))))
     (set-buffer current)
     response ))
-  
-(defun save-buffer_query (buffer)
-  (set-buffer buffer)
-  (let* ((filename  (get-buffer-filename))
-	 (response   (unless save-some-buffers_save-all
-		       (prompt (concat "Safe file "filename"? (y, n, !, ., q,) ") "") )))
-    (cond (save-some-buffers_save-all (save-buffer) t)
-	  ((eq response "y")  (save-buffer) t)
-	  ((eq response "n") t)
-	  ((eq response "!") (save-buffer) (setq save-some-buffers_save-all t))
-	  ((eq response ".") (save-buffer) :abort)
-	  ((eq response "q") :abort) )))
 
-(defun buffer-list_file_modified ()
-  (let* ((current (current-buffer))
-	 (bufferlist (filter buffer_file_modified (buffer-list) )) )
-    (set-buffer current)
-    bufferlist ))
-
-(defun buffer_file_modified (buffer)
+;;; (save-buffer_query buffer mode) - interactively save buffer if file buffer
+;;; mode:
+;;; - ask ..
+;;; - force .. save w/o asking
+;;; returns:
+;;; - ask
+;;; - abort .. if user quits with q
+;;; - break .. if user enters . - save this buffer and exit
+;;; - force .. if user enters ! - save all remaining buffers and exit
+;;;
+;;; Sets the current buffer and does not restore it
+(defun save-buffer_query (buffer mode)
   (set-buffer buffer)
-  (and
-   (not (string-equal "" (get-buffer-filename)))
-   (buffer-modified-p) ))
+  (let ((filename  (get-buffer-filename)))
+    (if (string-equal filename "") mode ; skip buffers w/o file association
+	(if (eq mode :force) (save-buffer) :force
+	    (let ((response  (prompt (concat "Safe file "filename"? (y, n, !, ., q,) ") "")))
+	      (cond ((eq mode :force) (save-buffer) :force)
+		    ((eq response "y")  (save-buffer) :ask)
+		    ((eq response "n") :ask)
+		    ((eq response "!") (save-buffer) :force)
+		    ((eq response ".") (save-buffer) :break)
+		    ((eq response "q") :abort)
+		    (t :abort) ))))))
 
 (defun save-buffers-kill-terminal ()
-  (and (not (eq :abort (save-some-buffers)))
-       (buffer-list_file_modified)
-       (string-equal "yes" (prompt "Modified buffers exist; exit anyway? (yes or no) " ""))
-       (exit)) )
+  (unless  (eq :abort (save-some-buffers))
+    (if (not (filter buffer_file_modified-p (buffer-list))) (exit)
+	(when (string-equal "yes" (prompt "Modified buffers exist; exit anyway? (yes or no) " ""))
+	  (exit) ))))
 
 (provide 'femto)

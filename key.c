@@ -218,6 +218,7 @@ void setup_keys(void)
     set_key_internal("c-x k",     "kill-buffer"           , "\x18\x6B", user_func);
     set_key_internal("c-x n",     "next-buffer"           , "\x18\x6E", user_func);
     set_key_internal("c-x o",     "other-window"          , "\x18\x6F", other_window);
+    set_key_internal("c-x s",     "save-some-buffers"     , "\x18\x73", user_func);
     set_key_internal("c-x @",     "user-func"             , "\x18\x40", user_func);
     set_key_internal("c-x (",     "user-func"             , "\x18\x28", user_func);
     set_key_internal("c-x )",     "user-func"             , "\x18\x29", user_func);

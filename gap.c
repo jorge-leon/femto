@@ -173,44 +173,6 @@ size_t buffer_fread(buffer_t *buffer, size_t size, FILE *stream)
     return len;
 }
 
-/* reads file into buffer at point */
-int insert_file(char *fn, int modflag)
-{
-    FILE *fp;
-    size_t len;
-    struct stat sb;
-
-    if (stat(fn, &sb) < 0) {
-        msg(m_stat, fn);
-        return (FALSE);
-    }
-    if (MAX_SIZE_T < sb.st_size) {
-        msg(m_toobig, fn);
-        return (FALSE);
-    }
-    if (sb.st_size == 0) {
-        msg(m_empty, fn);
-        return (FALSE);
-    }
-    if ((fp = fopen(fn, "r")) == NULL) {
-        msg(m_open, fn);
-        return (FALSE);
-    }
-    len = buffer_fread(curbp, sb.st_size, fp);
-    if (len == 0) {
-        msg(m_read, fn);
-        (void) fclose(fp);
-        return (FALSE);
-    }
-    if (fclose(fp) != 0) {
-        msg(m_close, fn);
-        return (FALSE);
-    }
-    curbp->modified = modflag;
-    msg(m_loaded, fn, len);
-    return (TRUE);
-}
-
 /* find the point for start of line ln */
 point_t line_to_point(int ln)
 {

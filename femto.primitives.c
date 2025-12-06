@@ -127,16 +127,6 @@ Object *e_get_mode(Interpreter *interp, Object **args, Object **env)
 {
     return (1 == get_mode_current_buffer(FLISP_ARG_ONE->string) ? t : nil);
 }
-Object *e_insert_file(Interpreter *interp, Object **args, Object **env) {
-
-    // Note: want to give an optional modify flag, but then it segfaults
-    int mflag;
-
-//    mflag = (FLISP_ARG_ONE->cdr != nil && arg->cdr->car != nil);
-    mflag = FALSE;
-
-    return ((insert_file(FLISP_ARG_ONE->string, mflag) == TRUE) ? t : nil);
-}
 
 /** (buffer-fread size stream) - read size bytes from stream into current buffer at point, return bytes read
  *  If buffer cannot hold size more bytes, -1 is returned.

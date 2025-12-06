@@ -16,8 +16,21 @@
 (defun load-script(fn)
   (load (concat script_dir "/" fn)))
 
-(defun repeat (n func)
-  (cond ((> n 0) (func) (repeat (- n 1) func))))
+(defun insert-file-contents-literally (path)
+  (let* ((result (fstat path))
+	 (size  (prop-get result :size))
+	 (type  (prop-get result :type))
+	 (check (unless (eq type "f")  (throw invalid-value "not a regular file" filename)))
+	 (fd    (open path))
+	 (len   (buffer-fread size fd)) )
+    (close fd)
+    (when (not (= size len))
+      (throw io-error (concat "short read: expected "size" bytes, got "len) path) )))
+
+(defun insert-file ()
+  (setq fn (prompt-filename "Insert file: "))
+  (cond (fn (insert-file-contents-literally fn))))
+
 
 ;; OS interaction
 ;; Note: this emulates the original femto shell-command.
@@ -48,9 +61,23 @@
      (system (concat "rm -f " temp))
      (clear-message-line) )))
 
-(defun insert-file ()
-  (setq fn (prompt-filename "Insert file: "))
-  (cond (fn (insert-file-contents-literally fn))))
+
+(defun repeat (n func)
+  (cond ((> n 0) (func) (repeat (- n 1) func))))
+
+;;; Note: propably inefficient implementation of (posix-filename) validation.
+;;; (string-restrict-chars-p r s)
+;;; Returns t if all characters in s are members of string r
+(defun string-restrict-chars-p (r s)
+  (fold-left and t (mapcar (curry (flip memq) (string-split "" r)) (string-split "" s))) )
+
+(setq file-name_posix_chars
+      (curry string-restrict-chars-p
+	     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._-/" ))
+
+(defun posix-filename (s)
+  (and (not (string-equal "-" (substring s 0 1)))
+       (file-name_posix_chars s)))
 
 ;; delete next word
 (defun delete-next-word()
@@ -284,18 +311,13 @@
       (t (throw (car result) (cadr result) filename)) )))
 
 (defun find-file_load (fd filename read-only)
-  (let* ((result (fstat filename))
-	 (size (prop-get result :size))
-	 (type (prop-get result :type))
-	 (check (unless (eq type "f")  (throw :invalid-value "neither file nor directory" filename)))
-	 (current (current-buffer))
+  (let* ((current (current-buffer))
 	 (new (set-buffer (create-file-buffer filename)))
 	 (result
 	  (catch
 	      (progn
+		(insert-file-contents-literally filename)
 		(set-visited-filename filename)
-		(buffer-fread size fd)
-		(close fd)
 		(restore-buffer-modified-p nil)
 		;; Note: read-only mode pending implementation
 		(when read-only  (add-mode "read-only"))

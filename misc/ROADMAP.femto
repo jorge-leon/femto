@@ -2,18 +2,20 @@
 
 # Next
 
-- Fix file save bug by using
-  fmkdir. https://github.com/hughbarney/femto/issues/14
-  - remove remaining file reading C-code
-	  - insert_file() in gap.c
-  + make_buffer_name_uniq(), make_buffer_name() in utils.c
-  + rename_current_buffer() in command.c -> set_buffer_name(), Implement
-    (rename-buffer) in Lisp.
+- Fix file save bug by using fmkdir.
+  https://github.com/hughbarney/femto/issues/14
+  - Buffer file name handling: alloc/free string instead of fixed buffer.
+    - then move safe_strncpy from util.c to undo and delete util.c
+  + remove remaining file reading C-code
+	  + insert_file() in gap.c
+      + make_buffer_name_uniq(), make_buffer_name() in utils.c
+      + rename_current_buffer() in command.c -> set_buffer_name(),
+  + Implement (rename-buffer) in Lisp.
     - oxo stopped working
   + Buffer name handling: alloc/free string instead of fixed (too small) buffer.
   - undo does not reset modified flag 
   - Rethink buffer list, simplify with ring?
-  - Implement save-some-buffers.
+  + Implement save-some-buffers.
   - Move posix file name check to Lisp: can't start with -, all chars must be isalnum() or in "._-/".
   - Fix dired on find-file
   - Update all documentation.

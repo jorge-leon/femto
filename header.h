@@ -387,9 +387,6 @@ extern void list_undos(void);
 extern void list_undo_stats(void);
 extern void undo_command(void);
 
-/* functions in utils.c */
-extern void safe_strncpy(char *, char *, int);
-
 /* functions in window.c */
 extern int count_windows(void);
 extern void associate_b2w(buffer_t *, window_t *);

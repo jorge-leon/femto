@@ -4,6 +4,14 @@
 #include "gap.h"
 #include "header.h"
 
+
+/* a safe version of strncpy that ensure null terminate in case of overflows */
+void safe_strncpy(char *dest, char *src, int nchars)
+{
+    strncpy(dest, src, nchars);
+    *(dest + nchars - 1) = '\0';  /* force null termination */
+}
+
 undo_tt *new_undo(void)
 {
     undo_tt *up = (undo_tt *)malloc(sizeof(undo_tt));

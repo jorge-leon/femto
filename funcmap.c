@@ -153,21 +153,22 @@ int shortest_string_len(string_list_t *list)
 
 char *shortest_common_string(string_list_t *list)
 {
-    static char str[60];
+    static char str[STRBUF_M+1];
     static char empty_string[] = "";
     int pos;
     int len = shortest_string_len(list);
 
     if (len == 0) return empty_string;
 
-    for (pos = 0; pos < len; pos++)
+    for (pos = 0; pos < len && pos < STRBUF_M; pos++)
         if (match_string_position(list, pos) == FALSE)
             break;
 
     pos++;
 
     /* return pos chars from first string */
-    safe_strncpy(str, list->string, pos);
+    strncpy(str, list->string, pos);
+    str[pos+1] = '\0';
     return str;
 }
 

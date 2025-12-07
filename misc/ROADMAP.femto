@@ -10,6 +10,7 @@
 	  + insert_file() in gap.c
       + make_buffer_name_uniq(), make_buffer_name() in utils.c
       + rename_current_buffer() in command.c -> set_buffer_name(),
+	  - remove all unneeded message strings
   + Implement (rename-buffer) in Lisp.
     - oxo stopped working
   + Buffer name handling: alloc/free string instead of fixed (too small) buffer.

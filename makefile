@@ -27,7 +27,7 @@ SCRIPTDIR = $(DATADIR)/femto
 INITFILE = $(SCRIPTDIR)/femto.rc
 
 OBJ = command.o display.o complete.o data.o gap.o key.o search.o	\
-	buffer.o replace.o window.o undo.o funcmap.o utils.o hilite.o	\
+	buffer.o replace.o window.o undo.o funcmap.o hilite.o	\
 	femto_lisp.o file.o double.o main.o
 
 FLISP_OBJ = flisp.o lisp.o double.o file.o
@@ -130,9 +130,6 @@ search.o: search.c header.h
 
 undo.o: undo.c header.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c undo.c
-
-utils.o: utils.c header.h
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c utils.c
 
 window.o: window.c header.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c window.c

@@ -38,11 +38,10 @@ char *f_alloc = "%s: Failed to allocate required memory.\n";
 char *m_ok = "Ok.";
 char *m_version = E_VERSION_STR;
 char *m_alloc = "No more memory available.";
+/* Note: not used, insert-file moved to Lisp, but file size check is
+ * not implemented there */
 char *m_toobig = "File \"%s\" is too big to load.";
 char *m_empty = "Nothing to insert.";
-char *m_stat = "Failed to find file \"%s\".";
-char *m_open = "Failed to open file \"%s\".";
-char *m_close = "Failed to close file \"%s\".";
 char *m_write = "Failed to write file \"%s\".";
 char *m_read = "Failed to read file \"%s\".";
 char *m_badname = "Not a portable POSIX file name.";

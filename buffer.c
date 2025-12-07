@@ -29,7 +29,7 @@ void buffer_init(buffer_t *bp)
     bp->b_egap = NULL;
     bp->b_next = NULL;
     bp->name = NULL;
-    bp->b_fname[0] = '\0';
+    bp->fname = NULL;
     bp->b_utail = NULL;
     bp->b_ucnt = -1;
 }
@@ -166,11 +166,12 @@ buffer_t *find_buffer_by_fname(char *fname)
 {
     buffer_t *bp;
 
-    bp = bheadp;
-    for (bp = bheadp; bp != NULL; bp = bp->b_next)
-        if (strcmp(fname, bp->b_fname) == 0)
+    for (bp = bheadp; bp != NULL; bp = bp->b_next) {
+        if (bp->fname == NULL)
+            continue;
+        if (strcmp(fname, bp->fname) == 0)
             break;
-
+    }
     return bp;
 }
 
@@ -237,6 +238,7 @@ bool delete_buffer(buffer_t *bp)
     free_undos(bp->b_utail);
     free(bp->b_buf);
     free(bp->name);
+    free(bp->fname);
     free(bp);
 
     return TRUE;
@@ -247,19 +249,13 @@ char* get_buffer_name(buffer_t *bp)
     return bp->name;
 }
 
-char* get_buffer_filename(buffer_t *bp)
-{
-    assert(bp->b_fname != NULL);
-    return bp->b_fname;
-}
-
 char* get_buffer_modeline_name(buffer_t *bp)
 {
     /* Note: construct a name string which fits into the
      * modeline. don't use the filename */
-    if (bp->b_fname[0] != '\0')
-        return bp->b_fname;
-    return bp->name;
+    if (bp->fname == NULL)
+        return bp->name;
+    return bp->fname;
 }
 
 int count_buffers(void)
@@ -296,12 +292,6 @@ char *get_current_bufname(void)
     return get_buffer_name(curbp);
 }
 
-char *get_current_filename(void)
-{
-    assert(curbp != NULL);
-    return get_buffer_filename(curbp);
-}
-
 void list_buffers(void)
 {
     buffer_t *bp;
@@ -330,7 +320,7 @@ void list_buffers(void)
             mod_ch  = ((bp->modified) ? '*' : ' ');
             over_ch = ((bp->b_flags & B_OVERWRITE) ? 'O' : ' ');
             bn = (bp->name[0] != '\0' ? bp->name : blank);
-            fn = (bp->b_fname[0] != '\0' ? bp->b_fname : blank);
+            fn = (bp->fname != NULL ? bp->fname : blank);
             snprintf(report_line, sizeof(report_line),  "%c%c %7d %-16s %s\n",  mod_ch, over_ch, bp->b_size, bn, fn);
             insert_string(report_line);
         }

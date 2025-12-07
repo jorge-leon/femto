@@ -266,14 +266,19 @@ Object *e_new_buffer(Interpreter *interp, Object **args, Object **env)
 /** (set-visited-filename name) */
 Object *e_set_buffer_filename(Interpreter *interp, Object **args, Object **env)
 {
-    if (FLISP_ARG_ONE == nil)
-        curbp->b_fname[0] = '\0';
-    else {
-        CHECK_TYPE(FLISP_ARG_ONE, type_string, "(set-visited-filename name) - name");
-        safe_strncpy(curbp->b_fname, FLISP_ARG_ONE->string, NAME_MAX);
-        curbp->modified = TRUE;
+    if (FLISP_ARG_ONE == nil) {
+        if (curbp->fname != NULL)
+            free(curbp->fname);
+        curbp->fname = NULL;
+        return nil;
     }
-    return nil;
+
+    CHECK_TYPE(FLISP_ARG_ONE, type_string, "(set-visited-filename name) - name");
+    curbp->fname = strdup(FLISP_ARG_ONE->string);
+    if (curbp->fname == NULL)
+        exception(interp, out_of_memory, "(set-visited-filename name) - name, cannot allocate memory for filename");
+    curbp->modified = TRUE;
+    return FLISP_ARG_ONE;
 }
 
 
@@ -286,9 +291,10 @@ Object *e_get_buffer_name(Interpreter *interp, Object **args, Object **env)
 
 Object *e_get_buffer_filename(Interpreter *interp, Object **args, Object **env)
 {
-    char buf[128];
-    strcpy(buf, get_current_filename());
-    return newStringWithLength(interp, buf, strlen(buf));
+    if (curbp->fname == NULL)
+        return nil;
+
+    return newString(interp, curbp->fname);
 }
 
 /* (buffer-flag-modified[ buffer[ bool]]) */

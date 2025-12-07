@@ -60,7 +60,7 @@ typedef struct buffer_t
     char_t *b_egap;             /* end of gap */
     int b_row;                  /* cursor row */
     int b_col;                  /* cursor col */
-    char b_fname[NAME_MAX + 1]; /* filename */
+    char *fname;                /* filename */
     char *name;                 /* buffer name */
     ////buffer_mode_t mode;        /* buffer major mode */
     buffer_flags_t b_flags;
@@ -80,7 +80,6 @@ extern buffer_t *search_buffer(char *);
 extern buffer_t *new_buffer(char *);
 extern buffer_t *find_buffer_by_fname(char *);
 extern buffer_t *find_buffer(char *, int);
-extern char* get_buffer_filename(buffer_t *);
 extern char* get_buffer_modeline_name(buffer_t *);
 extern char* get_buffer_name(buffer_t *);
 extern bool set_buffer_name(buffer_t *, char *);

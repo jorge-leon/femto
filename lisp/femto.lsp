@@ -66,18 +66,18 @@
   (cond ((> n 0) (func) (repeat (- n 1) func))))
 
 ;;; Note: propably inefficient implementation of (posix-filename) validation.
-;;; (string-restrict-chars-p r s)
-;;; Returns t if all characters in s are members of string r
-(defun string-restrict-chars-p (r s)
-  (fold-left and t (mapcar (curry (flip memq) (string-split "" r)) (string-split "" s))) )
+;;; (string-restrict-chars-p rl s)
+;;; Returns t if all characters in s are members of list of charachters rl
+(defun string-restrict-chars-p (rl s)
+  (fold-left and t (mapcar (curry (flip memq) rl) (string-split "" s))) )
 
 (setq file-name_posix_chars
       (curry string-restrict-chars-p
-	     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._-/" ))
+	     (string-split "" "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._-/") ))
 
 (defun posix-filename (s)
   (and (not (string-equal "-" (substring s 0 1)))
-       (file-name_posix_chars s)))
+       (consp (file-name_posix_chars s)) ))
 
 ;; delete next word
 (defun delete-next-word()

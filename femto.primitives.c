@@ -67,7 +67,6 @@ extern void insert_string(char *);
 extern void move_to_search_result(point_t);
 extern point_t search_forward(char *);
 extern point_t search_backwards(char *);
-extern void shell_command(char *);
 extern int goto_line(int);
 extern int add_mode_global(char *);
 extern char *get_version_string(void);

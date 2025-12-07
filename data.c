@@ -30,27 +30,16 @@ window_t *curwp;
 window_t *wheadp;
 command_t *cheadp = NULL;
 
-char *f_ok = "%s: Terminated successfully.\n";
-char *f_error = "%s: Unspecified error.\n";
-char *f_usage = "usage: %s [-f <config>] [file]\n";
 char *f_initscr = "%s: Failed to initialize the screen.\n";
 char *f_alloc = "%s: Failed to allocate required memory.\n";
-char *m_ok = "Ok.";
 char *m_version = E_VERSION_STR;
 char *m_alloc = "No more memory available.";
 /* Note: not used, insert-file moved to Lisp, but file size check is
  * not implemented there */
 char *m_toobig = "File \"%s\" is too big to load.";
 char *m_empty = "Nothing to insert.";
-char *m_write = "Failed to write file \"%s\".";
-char *m_read = "Failed to read file \"%s\".";
-char *m_badname = "Not a portable POSIX file name.";
-char *m_file = "File \"%s\" %ld bytes.";
-char *m_saved = "File \"%s\" %ld bytes saved.";
-char *m_loaded = "File \"%s\" %ld bytes read.";
 char *m_copied = "%ld bytes copied.";
 char *m_cut = "%ld bytes cut.";
-char *m_newfile = "New file %s";
 char *m_line = "Line %d";
 char *m_lnot_found = "Line %d, not found";
 char *m_replace = "Query replace: ";
@@ -62,11 +51,7 @@ char *m_rephelp = "(y)es, (n)o, (!)do the rest, (q)uit";
 char *m_nomark = "No mark set";
 char *m_noregion = "No region defined, mark and point are the same place";
 
-char *str_notsaved = "Discard changes (y/n) ?";
 char *str_modified_buffers = "Modified buffers exist; really exit (y/n) ?";
-char *str_read = "Find file: ";
-char *str_insert_file ="Insert file: ";
-char *str_write = "Write file: ";
 char *str_yes = " y\b";
 char *str_no = " n\b";
 char *str_mark = "Mark set";
@@ -74,14 +59,12 @@ char *str_pos = "Char = %s 0x%x  Line = %d/%d  Point = %d/%d";
 char *str_endpos = "[EOB] Line = %d/%d  Point = %d/%d";
 char *str_scratch = "*scratch*";
 char *str_output = "*output*";
-char *str_shell_cmd = "Shell Command: ";
 char *str_buffers = "*buffers*";
 char *str_clip_too_big = "Region exceeds lisp clipboard limit of %d bytes";
 char *str_not_bound  = "Not bound";
 char *str_help_buf = "*help*";
 char *str_completions = "*completions*";
 char *str_apropos = "apropos: ";
-char *str_exec_command = "Execute command: ";
 
 /*
  * Local Variables:

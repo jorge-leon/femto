@@ -738,27 +738,6 @@ void user_func(void)
     free_lisp_output();
 }
 
-/*
- * readhook
- *
- * this will be called everytime a file is loaded into
- * a buffer, it will execute the lisp function read-hook
- *
- */
-
-void readhook(buffer_t *bp)
-{
-
-    // we dont want any output from the read-hook, leaving message line available
-    // the only thing that could go wrong are errors in the lisp code or
-    // a missing read-hook function in startup.lsp
-
-    if (eval_string(true, "(read-hook \"%s\")", bp->fname) == NULL)
-        return;
-
-    free_lisp_output();
-}
-
 int add_mode_current_buffer(char* modename)
 {
     if (strcmp(modename, "special") == 0) {

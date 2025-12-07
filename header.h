@@ -162,26 +162,16 @@ extern keymap_t *khead;
 extern keymap_t *ktail;
 
 /* fatal() messages. */
-extern char *f_ok;              /* EXIT_OK */
-extern char *f_error;           /* EXIT_ERROR */
-extern char *f_usage;           /* EXIT_USAGE */
 extern char *f_initscr;         /* EXIT_FAILURE ... */
 extern char *f_alloc;
 
 /* Messages. */
-extern char *m_ok;
 extern char *m_version;
 extern char *m_alloc;
 extern char *m_toobig;
 extern char *m_empty;
-extern char *m_read;
-extern char *m_write;
 extern char *m_copied;
 extern char *m_cut;
-extern char *m_badname;
-extern char *m_saved;
-extern char *m_loaded;
-extern char *m_newfile;
 extern char *m_line;
 extern char *m_lnot_found;
 extern char *m_replace;
@@ -199,20 +189,14 @@ extern char *str_not_bound;
 extern char *str_help_buf;
 extern char *str_completions;
 extern char *str_apropos;
-extern char *str_exec_command;
 
 
 /* Prompts */
-extern char *str_notsaved;
 extern char *str_modified_buffers;
-extern char *str_read;
-extern char *str_insert_file;
-extern char *str_write;
 extern char *str_yes;
 extern char *str_no;
 extern char *str_scratch;
 extern char *str_output;
-extern char *str_shell_cmd;
 extern char *str_buffers;
 extern char *str_clip_too_big;
 
@@ -252,10 +236,8 @@ extern void forward_word(void);
 extern void i_gotoline(void);
 extern void insert(void);
 extern void insert_at(void);
-extern void insertfile(void);
 extern void insert_string(char *);
 extern void i_set_mark(void);
-extern void i_shell_command(void);
 extern void kill_buffer(void);
 extern void kill_region(void);
 extern void left(void);
@@ -270,7 +252,6 @@ extern void match_parens(void);
 extern void suspend(void);
 extern void quit(void);
 extern void quit_ask(void);
-extern void readhook(buffer_t *);
 extern void redraw(void);
 extern void repl(void);
 extern void resize_terminal(void);
@@ -278,7 +259,6 @@ extern void right(void);
 extern void set_mark(void);
 extern void set_point(point_t);
 extern void set_scrap(unsigned char *);
-extern void shell_command(char *);
 extern void cursor_position(void);
 extern void toggle_overwrite_mode(void);
 extern void unmark(void);

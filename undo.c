@@ -239,6 +239,7 @@ void undo_command(void)
             msg("Out of Undo");
             //debug("\n====OUT OF UNDO====\n");
             curbp->b_ucnt = -1;
+            curbp->modified = FALSE;
             return;
         }
         continue_undo = get_undo_again();

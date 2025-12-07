@@ -220,9 +220,11 @@ Object *e_buffer_next(Interpreter *interp, Object **args,Object **env)
 Object *e_switch_to_buffer(Interpreter *interp, Object **args, Object **env)
 {
     buffer_t *bp = find_buffer(FLISP_ARG_ONE->string, FALSE);
-    if (!bp)
-        exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(switch-to-buffer buffer) - buffer does not exist");
-
+    if (!bp) {
+        bp = new_buffer(FLISP_ARG_ONE->string);
+	if (!bp)
+            exceptionWithObject(interp, FLISP_ARG_ONE, out_of_memory, "(generate-new-buffer name) failed, out of memory");
+    }
     switch_to_buffer(bp);
     return FLISP_ARG_ONE;
 }

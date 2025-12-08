@@ -129,6 +129,18 @@ void dispmsg(void)
 }
 
 
+void display_utf8(buffer_t *bp, int n)
+{
+    char sbuf[6];
+    int i = 0;
+
+    for (i=0; i<n; i++) {
+        sbuf[i] = *ptr(bp, bp->b_epage + i);
+    }
+    sbuf[n] = '\0';
+    addstr(sbuf);
+}
+
 void display(window_t *wp, int flag)
 {
     char_t *p;
@@ -218,18 +230,6 @@ void display(window_t *wp, int flag)
         refresh();
     }
     wp->w_update = FALSE;
-}
-
-void display_utf8(buffer_t *bp, int n)
-{
-    char sbuf[6];
-    int i = 0;
-
-    for (i=0; i<n; i++) {
-        sbuf[i] = *ptr(bp, bp->b_epage + i);
-    }
-    sbuf[n] = '\0';
-    addstr(sbuf);
 }
 
 void modeline(window_t *wp)

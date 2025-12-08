@@ -12,6 +12,7 @@
 #include "gap.h"
 #include "key.h"
 #include "display.h"
+#include "search.h"
 #include "replace.h"
 
 /*search for a string and replace it with another string */

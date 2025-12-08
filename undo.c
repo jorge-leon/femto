@@ -37,6 +37,24 @@ undo_tt *new_undo(void)
 
 
 /*
+ * look back 1,2,3 chars in buf, starting at position pos
+ * and determine utf8 size otherwise default to 1 byte
+ *
+ * if ptr points to buf[1] and buf[0] shows that it is a 2 byte UTF8 return 2
+ * if ptr points to buf[2] and buf[0] shows that it is a 3 byte UTF8 return 3 etc
+ *
+ */
+int get_buf_utf8_size(char_t *buf, int pos)
+{
+    int n;
+    for (n=1;n<4;n++)
+        if (-1 < pos - n && (utf8_size(buf[pos - n])) == n + 1)
+            return (n + 1);
+    return 1;
+}
+
+
+/*
  * this is where the actual undo work takes place
  *
  */
@@ -165,6 +183,33 @@ undo_tt *execute_undo(undo_tt *up)
     return up->u_prev;
 }
 
+/*
+ * wait for next key, if undo return true
+ * otherwise handle the key and return false
+ */
+int get_undo_again(void)
+{
+    input = get_key(khead, &key_return);
+
+    if (key_return != NULL) {
+        if (key_return->k_func == undo_command) {
+            return true;
+        } else {
+            (key_return->k_func)();
+            return false;
+        }
+    } else {
+        /*
+         * if first char of input is a control char then
+         * key is not bound, except TAB and NEWLINE
+         */
+        if (*input > 31 || *input == 0x0A || *input == 0x09)
+            insert();
+        else
+            msg(str_not_bound);
+    }
+    return false;
+}
 
 
 /* the undo command called by the keyboard binding C-u */
@@ -204,34 +249,6 @@ void undo_command(void)
     curbp->b_ucnt = -1;
 }
 
-/*
- * wait for next key, if undo return true
- * otherwise handle the key and return false
- */
-int get_undo_again(void)
-{
-    input = get_key(khead, &key_return);
-
-    if (key_return != NULL) {
-        if (key_return->k_func == undo_command) {
-            return true;
-        } else {
-            (key_return->k_func)();
-            return false;
-        }
-    } else {
-        /*
-         * if first char of input is a control char then
-         * key is not bound, except TAB and NEWLINE
-         */
-        if (*input > 31 || *input == 0x0A || *input == 0x09)
-            insert();
-        else
-            msg(str_not_bound);
-    }
-    return false;
-}
-
 /* append a string to the undo structure member u_string */
 void append_undo_string(undo_tt *up, char_t *str)
 {
@@ -256,23 +273,6 @@ void append_undo_string(undo_tt *up, char_t *str)
     up->u_string[newlen - 1] = '\0';
 }
 
-
-/*
- * look back 1,2,3 chars in buf, starting at position pos
- * and determine utf8 size otherwise default to 1 byte
- *
- * if ptr points to buf[1] and buf[0] shows that it is a 2 byte UTF8 return 2
- * if ptr points to buf[2] and buf[0] shows that it is a 3 byte UTF8 return 3 etc
- *
- */
-int get_buf_utf8_size(char_t *buf, int pos)
-{
-    int n;
-    for (n=1;n<4;n++)
-        if (-1 < pos - n && (utf8_size(buf[pos - n])) == n + 1)
-            return (n + 1);
-    return 1;
-}
 
 void discard_buffer_undo_history(buffer_t *bp)
 {
@@ -319,6 +319,14 @@ int count_undos(buffer_t *bp)
     return i;
 }
 
+/* return the footprint of this undo structure */
+int get_undo_size(undo_tt *up)
+{
+    if (up->u_string != NULL) return ((int)sizeof(undo_tt) + strlen((char *)up->u_string));
+    return (int)sizeof(undo_tt);
+
+}
+
 /* work out the total memory footprint of all the undo structures on this buffer */
 int get_total_undo_size(buffer_t *bp)
 {
@@ -334,33 +342,6 @@ int get_total_undo_size(buffer_t *bp)
     }
 
     return sz;
-}
-
-/* return the footprint of this undo structure */
-int get_undo_size(undo_tt *up)
-{
-    if (up->u_string != NULL) return ((int)sizeof(undo_tt) + strlen((char *)up->u_string));
-    return (int)sizeof(undo_tt);
-
-}
-
-void debug_undo(char *msg, undo_tt *up, buffer_t *bp) {
-    int len = 0;
-    char str[41];
-
-    if (up->u_string != NULL) {
-        /*
-         * make a summary of the string, we do not want
-         * to cause a SEGFAULT by overrunning the debug buffer 
-         */
-        len = strlen((char *)up->u_string);
-        safe_strncpy((char *)str, (char *)up->u_string, 40);
-    } else {
-        strcpy(str,"");
-    }
-
-    debug("%s: typ=%s pt=%ld str='%s' len=%d ucnt=%d\n", 
-          msg, get_undo_type_name(up), up->u_point, str, len, bp->b_ucnt);
 }
 
 /* translate the type into a string for the list-undos command */
@@ -386,6 +367,25 @@ char *get_undo_type_name(undo_tt *up)
     }
 
     return STR_T_NONE;
+}
+
+void debug_undo(char *msg, undo_tt *up, buffer_t *bp) {
+    int len = 0;
+    char str[41];
+
+    if (up->u_string != NULL) {
+        /*
+         * make a summary of the string, we do not want
+         * to cause a SEGFAULT by overrunning the debug buffer 
+         */
+        len = strlen((char *)up->u_string);
+        safe_strncpy((char *)str, (char *)up->u_string, 40);
+    } else {
+        strcpy(str,"");
+    }
+
+    debug("%s: typ=%s pt=%ld str='%s' len=%d ucnt=%d\n", 
+          msg, get_undo_type_name(up), up->u_point, str, len, bp->b_ucnt);
 }
 
 /* replace control chars with spaces in string s */

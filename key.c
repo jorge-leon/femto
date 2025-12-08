@@ -16,6 +16,7 @@
 #include "key.h"
 #include "command.h"
 #include "funcmap.h"
+#include "search.h"
 #include "replace.h"
 
 /* Globals */

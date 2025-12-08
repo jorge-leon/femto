@@ -14,10 +14,6 @@ extern keymap_t *key_return;    /* Command key return */
 extern keymap_t *khead;
 extern keymap_t *ktail;
 
-//extern keymap_t *new_key(char *, char *);
-//extern void make_key(char *, char *);
-//extern void create_keys(void);
-//extern int set_key_internal(char *, char *, char *, void (*)(void));
 extern int set_key(char *, char *);
 extern void setup_keys(void);
 extern char_t *get_key(keymap_t *, keymap_t **);

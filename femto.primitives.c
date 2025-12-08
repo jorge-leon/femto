@@ -4,7 +4,7 @@
 #include "gap.h"
 #include "key.h"
 #include "command.h"
-
+#include "search.h"
 
 /************************* Editor Extensions **************************************/
 

@@ -158,20 +158,9 @@ extern int getfilename(char *, char *, int);
 
 
 /* functions in main.c */
-extern int main(int argc, char **);
 extern void debug(char *format, ...);
-extern void debug_stats(char *s);
 extern void fatal(char *msg);
 extern void msg(char *m, ...);
-extern void gui(void);              /* The GUI loop used in interactive mode */
-
-
-/* functions in search.c */
-extern point_t search_backwards(char *);
-extern point_t search_forward(char *);
-extern void display_search_result(point_t found, int, char *, char *);
-extern void move_to_search_result(point_t);
-extern void search(void);
 
 
 extern char *eval_string(bool, char *, ...);

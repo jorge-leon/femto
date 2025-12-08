@@ -13,6 +13,21 @@
 #include "buffer.h"
 #include "gap.h"
 #include "display.h"
+#include "search.h"
+
+
+void display_search_result(point_t found, int dir, char *prompt, char *search)
+{
+    if (found != -1 ) {
+        curbp->b_point = found;
+        msg("%s%s",prompt, search);
+        display(curwp, TRUE);
+    } else {
+        msg("Failing %s%s",prompt, search);
+        dispmsg();
+        curbp->b_point = (dir == FWD_SEARCH ? 0 : pos(curbp, curbp->b_ebuf));
+    }
+}
 
 void search(void)
 {
@@ -77,20 +92,6 @@ void move_to_search_result(point_t found)
         display(curwp, TRUE);
     }
 }
-
-void display_search_result(point_t found, int dir, char *prompt, char *search)
-{
-    if (found != -1 ) {
-        curbp->b_point = found;
-        msg("%s%s",prompt, search);
-        display(curwp, TRUE);
-    } else {
-        msg("Failing %s%s",prompt, search);
-        dispmsg();
-        curbp->b_point = (dir == FWD_SEARCH ? 0 : pos(curbp, curbp->b_ebuf));
-    }
-}
-
 point_t search_forward(char *stext)
 {
     point_t end_p = pos(curbp, curbp->b_ebuf);

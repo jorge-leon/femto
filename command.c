@@ -477,18 +477,6 @@ void append_string(buffer_t *bp, char *str)
     }
 }
 
-void log_debug_message(char *format, ...)
-{
-    char buffer[256];
-    va_list args;
-
-    va_start(args, format);
-    (void)vsnprintf(buffer, sizeof(buffer), format, args);
-    va_end(args);
-
-    log_message(buffer);
-}
-
 void log_message(char *str)
 {
     buffer_t *bp = find_buffer("*messages*", TRUE);
@@ -528,43 +516,6 @@ char* get_temp_file(void)
     }
 
     return temp_file;
-}
-
-void match_parens(void)
-{
-    assert(curwp != NULL);
-    buffer_t *bp = curwp->w_bufp;
-    assert(bp != NULL);
-
-    if (buffer_is_empty(bp))
-        return;
-
-    // Note: valgrind: Invalid read of size 1
-    char p = *ptr(bp, bp->b_point);
-
-    switch(p) {
-    case '{':
-        match_paren_forwards(bp, '{', '}');
-        break;
-    case '[':
-        match_paren_forwards(bp, '[', ']');
-        break;
-    case '(':
-        match_paren_forwards(bp, '(', ')');
-        break;
-    case '}':
-        match_paren_backwards(bp, '{', '}');
-        break;
-    case ']':
-        match_paren_backwards(bp, '[', ']');
-        break;
-    case ')':
-        match_paren_backwards(bp, '(', ')');
-        break;
-    default:
-        bp->b_paren = NOPAREN;
-        break;
-    }
 }
 
 void match_paren_forwards(buffer_t *bp, char open_paren, char close_paren)
@@ -613,6 +564,44 @@ void match_paren_backwards(buffer_t *bp, char open_paren, char close_paren)
     bp->b_paren = NOPAREN;
 }
 
+
+void match_parens(void)
+{
+    assert(curwp != NULL);
+    buffer_t *bp = curwp->w_bufp;
+    assert(bp != NULL);
+
+    if (buffer_is_empty(bp))
+        return;
+
+    // Note: valgrind: Invalid read of size 1
+    char p = *ptr(bp, bp->b_point);
+
+    switch(p) {
+    case '{':
+        match_paren_forwards(bp, '{', '}');
+        break;
+    case '[':
+        match_paren_forwards(bp, '[', ']');
+        break;
+    case '(':
+        match_paren_forwards(bp, '(', ')');
+        break;
+    case '}':
+        match_paren_backwards(bp, '{', '}');
+        break;
+    case ']':
+        match_paren_backwards(bp, '[', ']');
+        break;
+    case ')':
+        match_paren_backwards(bp, '(', ')');
+        break;
+    default:
+        bp->b_paren = NOPAREN;
+        break;
+    }
+}
+
 int add_mode_global(char *mode_name)
 {
     if (0 == strcmp(mode_name, "undo")) {
@@ -630,11 +619,6 @@ void version(void)
 char *get_version_string(void)
 {
     return m_version;
-}
-
-void log_debug(char *s)
-{
-    debug(s);
 }
 
 void resize_terminal(void)

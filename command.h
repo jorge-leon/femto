@@ -1,8 +1,6 @@
 #ifndef COMMAND_H
 #define COMMAND_H
 
-
-/* functions in command.c */
 extern char *get_char(void);
 extern char *get_clipboard(void);
 extern char* get_temp_file(void);
@@ -43,11 +41,7 @@ extern void kill_region(void);
 extern void left(void);
 extern void lnbegin(void);
 extern void lnend(void);
-extern void log_debug(char *);
-extern void log_debug_message(char *format, ...);
 extern void log_message(char *);
-extern void match_paren_backwards(buffer_t *, char, char);
-extern void match_paren_forwards(buffer_t *, char, char);
 extern void match_parens(void);
 extern void suspend(void);
 extern void quit(void);

@@ -80,7 +80,6 @@ extern int count_buffers(void);
 extern bool delete_buffer(buffer_t *);
 extern int delete_buffer_byname(char *);
 extern int modified_buffers(void);
-extern int save_buffer_byname(char *);
 extern void switch_to_buffer(buffer_t *);
 extern void add_mode(buffer_t *, buffer_flags_t);
 extern void delete_mode(buffer_t *, buffer_flags_t);

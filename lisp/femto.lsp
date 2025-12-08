@@ -366,7 +366,7 @@
       (let* ((filename (get-buffer-filename))
 	    (directory (file-name-directory filename)) )
 	;; Note: we should handle unassociated files with write-contents-functions hooks.
-	(when (or (null filename) (string-equal "" filename))
+	(when (null filename)
 	  (throw invalid-value "(save-buffer) - is not associated with a file" (current-buffer)) )
 	;; Note: we should run the special hook write-file-functions here.
 	(when (and directory (memq directory '("" "./" "../")))
@@ -441,7 +441,7 @@
 (defun save-buffer_query (buffer mode)
   (set-buffer buffer)
   (let ((filename  (get-buffer-filename)))
-    (if (string-equal filename "") mode ; skip buffers w/o file association
+    (if (not filename) mode ; skip buffers w/o file association
 	(if (eq mode :force) (save-buffer) :force
 	    (let ((response  (prompt (concat "Safe file "filename"? (y, n, !, ., q,) ") "")))
 	      (cond ((eq mode :force) (save-buffer) :force)

@@ -1,10 +1,24 @@
 /* funcmap.c, femto, Hugh Barney, Public Domain, 2017 */
 
+#include <stdlib.h>
+#include <string.h>
+
+#include <curses.h>
+
+#include <assert.h>
+
+#include "femto.h"
+#include "window.h"
 #include "buffer.h"
 #include "gap.h"
-#include "header.h"
+#include "key.h"
+#include "display.h"
+#include "command.h"
+#include "funcmap.h"
 
-#include <string.h>
+/* Globals */
+command_t *cheadp = NULL;
+
 
 void free_string_list(string_list_t *list)
 {
@@ -124,15 +138,15 @@ int match_string_position(string_list_t *list, int pos)
     char ch;
 
     if (list == NULL)
-        return FALSE;
+        return false;
 
     ch = list->string[pos];
 
     for (sl = list; sl != NULL; sl = sl->next) {
         if (sl->string[pos] != ch)
-            return FALSE;
+            return false;
     }
-    return TRUE;
+    return true;
 }
 
 int shortest_string_len(string_list_t *list)
@@ -161,7 +175,7 @@ char *shortest_common_string(string_list_t *list)
     if (len == 0) return empty_string;
 
     for (pos = 0; pos < len && pos < STRBUF_M; pos++)
-        if (match_string_position(list, pos) == FALSE)
+        if (match_string_position(list, pos) == false)
             break;
 
     pos++;
@@ -184,7 +198,7 @@ void apropos(void)
     if (0 == getinput(str_apropos, response_buf, STRBUF_M, F_CLEAR))
         return;
 
-    bp = find_buffer(str_help_buf, TRUE);
+    bp = find_buffer(str_help_buf, true);
     assert(bp != NULL);
     zero_buffer(bp);
 
@@ -221,7 +235,7 @@ void describe_bindings(void)
     keymap_t *ky;
     char binding[80];
 
-    bp = find_buffer(str_help_buf, TRUE);
+    bp = find_buffer(str_help_buf, true);
     assert(bp != NULL);
     zero_buffer(bp);
 
@@ -240,7 +254,7 @@ void describe_functions(void)
     command_t *cp;
     char funcname[80];
 
-    bp = find_buffer(str_help_buf, TRUE);
+    bp = find_buffer(str_help_buf, true);
     assert(bp != NULL);
     zero_buffer(bp);
 
@@ -270,7 +284,7 @@ void execute_command(void)
     char *shortest_match;
 
     command_name[0] = '\0';
-    bp = find_buffer(str_completions, TRUE);
+    bp = find_buffer(str_completions, true);
     assert(bp != NULL);
 
     display_prompt_and_response(prompt, command_name);
@@ -333,7 +347,7 @@ void execute_command(void)
                         column = 0;
                     }
                 }
-                display(wp, TRUE);
+                display(wp, true);
             }
             free_string_list(cmd_list);
             display_prompt_and_response(prompt, command_name);

@@ -26,20 +26,6 @@ typedef enum {
 
 ////typedef enum { C, LISP, PYTHON } buffer_mode_t;
 
-typedef int64_t point_t;
-typedef unsigned char char_t;
-
-/*
- * This structure supports the unlimited undo feature
- * Its members must be kept to a minimum as each instance takes up to 32 bytes
- */
-typedef struct undo_tt {
-    point_t  u_point;
-    char_t  *u_string;
-    char_t  *u_replace;
-    char_t   u_type;
-    struct undo_tt *u_prev;
-} undo_tt;
 
 typedef struct buffer_t
 {
@@ -75,6 +61,10 @@ typedef struct buffer_t
 } buffer_t;
 
 
+extern point_t nscrap;          /* Length of scrap buffer. */
+extern buffer_t *curbp;         /* current buffer */
+extern buffer_t *bheadp;        /* head of list of buffers */
+
 
 extern buffer_t *search_buffer(char *);
 extern buffer_t *new_buffer(char *);
@@ -95,7 +85,6 @@ extern void switch_to_buffer(buffer_t *);
 extern void add_mode(buffer_t *, buffer_flags_t);
 extern void delete_mode(buffer_t *, buffer_flags_t);
 extern void list_buffers(void);
-
 
 #endif
 /*

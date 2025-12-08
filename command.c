@@ -3,10 +3,23 @@
  * Derived from: Anthony's Editor January 93, (Public Domain 1991, 1993 by Anthony Howe)
  */
 
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <curses.h>
 #include <signal.h>
+
+#include <assert.h>
+
+#include "femto.h"
+#include "window.h"
+#include "undo.h"
 #include "buffer.h"
 #include "gap.h"
-#include "header.h"
+#include "key.h"
+#include "display.h"
+#include "command.h"
+
 
 void beginning_of_buffer(void)
 {

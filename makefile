@@ -28,7 +28,7 @@ INITFILE = $(SCRIPTDIR)/femto.rc
 
 OBJ = command.o display.o complete.o data.o gap.o key.o search.o	\
 	buffer.o replace.o window.o undo.o funcmap.o hilite.o	\
-	femto_lisp.o file.o double.o main.o
+	femto_lisp.o file.o double.o femto.o
 
 FLISP_OBJ = flisp.o lisp.o double.o file.o
 FLISP_LIBS = -lm
@@ -59,22 +59,22 @@ FLISP_DOCFILES = README.flisp.md docs/flisp.md pdoc/flisp.html 		\
 # Artifacts
 all: femto
 
-buffer.o: buffer.c header.h
+buffer.o: buffer.c femto.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c buffer.c
 
-complete.o: complete.c header.h
+complete.o: complete.c femto.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c complete.c
 
-command.o: command.c header.h lisp.h
+command.o: command.c femto.h lisp.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c command.c
 
-data.o: data.c header.h
+data.o: data.c femto.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c data.c
 
 debug: CPPFLAGS += -UNDEBUG -g
 debug: femto flisp
 
-display.o: display.c header.h
+display.o: display.c femto.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c display.c
 
 double.o: double.c double.h lisp.h
@@ -102,36 +102,36 @@ flisp.o: flisp.c lisp.h
 
 flisp.rc: flisp.sht lisp/core.lsp
 
-funcmap.o: funcmap.c header.h lisp.h
+funcmap.o: funcmap.c femto.h lisp.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c funcmap.c
 
-gap.o: gap.c header.h
+gap.o: gap.c femto.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c gap.c
 
-hilite.o: hilite.c header.h
+hilite.o: hilite.c femto.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c hilite.c
 
-key.o: key.c header.h
+key.o: key.c femto.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c key.c
 
 lisp.o: lisp.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -D FLISP_FILE_EXTENSION  -D FLISP_DOUBLE_EXTENSION -c lisp.c
 
-main.o: main.c header.h lisp.h
+femto.o: femto.c femto.h lisp.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) \
 	  -D E_SCRIPTDIR=$(SCRIPTDIR) \
 	  -D E_INITFILE=$(INITFILE) \
-	  -c main.c
-replace.o: replace.c header.h
+	  -c femto.c
+replace.o: replace.c femto.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c replace.c
 
-search.o: search.c header.h
+search.o: search.c femto.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c search.c
 
-undo.o: undo.c header.h
+undo.o: undo.c femto.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c undo.c
 
-window.o: window.c header.h
+window.o: window.c femto.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c window.c
 
 # Additional documentation formats

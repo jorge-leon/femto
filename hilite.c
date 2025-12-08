@@ -1,8 +1,10 @@
 /* hlite.c, generic syntax hilighting, Atto Emacs, Hugh Barney, Public Domain, 2016 */
 
+#include "femto.h"
+#include "undo.h"
 #include "buffer.h"
 #include "gap.h"
-#include "header.h"
+#include "hilite.h"
 
 int state = ID_DEFAULT;
 int next_state = ID_DEFAULT;

@@ -17,8 +17,8 @@
 
 // Note: can this be untangled?
 #ifdef FLISP_FEMTO_EXTENSION
+#include "femto.h"
 #include "buffer.h"
-#include "header.h"
 #endif
 #include "lisp.h"
 

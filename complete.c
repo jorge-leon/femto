@@ -1,8 +1,18 @@
 /* complete.c, Atto Emacs, Hugh Barney, Public Domain, 2016 */
 
+
+#include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
+
+#include <curses.h>
+
+#include "femto.h"
+#include "window.h"
+#include "undo.h"
 #include "buffer.h"
-#include "header.h"
+#include "key.h"
+#include "display.h"
 
 /* basic filename completion, based on code in uemacs/PK */
 int getfilename(char *prompt, char *buf, int nbuf)

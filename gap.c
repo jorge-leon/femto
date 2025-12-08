@@ -5,10 +5,17 @@
  * Buffer content handling.
  */
 
+#include <stdlib.h>
+#include <stdbool.h>
 #include <sys/stat.h>
+
+#include <assert.h>
+
+#include "femto.h"
+#include "undo.h"
 #include "buffer.h"
 #include "gap.h"
-#include "header.h"
+#include "key.h"
 
 /** growgap() -  Enlarge gap by at least n chars.
  *
@@ -51,12 +58,12 @@ bool growgap(buffer_t *bp, point_t n)
     } else {
         if (newlen < 0 || MAX_SIZE_T < newlen) {
             msg(m_alloc);
-            return (FALSE);
+            return false;
         }
         new = (char_t*) realloc(bp->b_buf, (size_t) newlen);
         if (new == NULL) {
             msg(m_alloc); /* Report non-fatal error. */
-            return (FALSE);
+            return false;
         }
     }
 
@@ -75,7 +82,7 @@ bool growgap(buffer_t *bp, point_t n)
     assert(bp->b_buf <= bp->b_gap);
     assert(bp->b_gap < bp->b_egap);          /* Gap must grow only. */
     assert(bp->b_egap <= bp->b_ebuf);
-    return (TRUE);
+    return true;
 }
 
 point_t movegap(buffer_t *bp, point_t offset)

@@ -1,13 +1,23 @@
 /*
- * main.c, femto, Hugh Barney, Public Domain, 2017
+ * femto.c, femto, Hugh Barney, Public Domain, 2017
  * Derived from: Anthony's Editor January 93, (Public Domain 1991, 1993 by Anthony Howe)
  */
 
+#include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 #include <errno.h>
+#include <locale.h>
+
+#include <curses.h>
+
+#include "femto.h"
+#include "window.h"
 #include "buffer.h"
-#include "header.h"
+#include "key.h"
+#include "display.h"
+#include "command.h"
 
 #include <unistd.h>
  #include <fcntl.h>

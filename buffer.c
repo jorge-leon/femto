@@ -3,11 +3,23 @@
  * Buffer management.
  */
 
-#include <assert.h>
+#include <stdlib.h>
 #include <string.h>
+
+#include <assert.h>
+
+#include "femto.h"
+#include "window.h"
+#include "undo.h"
 #include "buffer.h"
 #include "gap.h"
-#include "header.h"
+#include "command.h"
+
+/* Globals */
+point_t nscrap;
+buffer_t *curbp;                /* current buffer */
+buffer_t *bheadp;               /* head of list of buffers */
+
 
 void buffer_init(buffer_t *bp)
 {
@@ -21,7 +33,7 @@ void buffer_init(buffer_t *bp)
     bp->b_size = 0;
     bp->b_psize = 0;
     bp->b_flags = 0;
-    bp->modified = FALSE;
+    bp->modified = false;
     bp->b_cnt = 0;
     bp->b_buf = NULL;
     bp->b_ebuf = NULL;
@@ -210,7 +222,7 @@ bool delete_buffer(buffer_t *bp)
     buffer_t *sb;
 
     if (strcmp(bp->name, str_scratch) == 0)
-        return FALSE;
+        return false;
 
     /* find place where the bp buffer is next */
     for (sb = bheadp; sb->b_next != NULL; sb = sb->b_next)
@@ -221,7 +233,7 @@ bool delete_buffer(buffer_t *bp)
         bheadp = NULL; /* from scratch */
         bheadp = new_buffer(str_scratch);
         if (bheadp == NULL)
-            return FALSE;
+            return false;
     }
     /* if buffer is the head buffer advance the head */
     else if (bp == bheadp) {
@@ -241,7 +253,7 @@ bool delete_buffer(buffer_t *bp)
     free(bp->fname);
     free(bp);
 
-    return TRUE;
+    return true;
 }
 
 char* get_buffer_name(buffer_t *bp)
@@ -275,9 +287,9 @@ int modified_buffers(void)
 
     for (bp=bheadp; bp != NULL; bp = bp->b_next)
         if (!(bp->b_flags & B_SPECIAL) && bp->modified)
-            return TRUE;
+            return true;
 
-    return FALSE;
+    return false;
 }
 
 void switch_to_buffer(buffer_t *bp)
@@ -302,7 +314,7 @@ void list_buffers(void)
     char *bn;
     char *fn;
 
-    list_bp = find_buffer(str_buffers, TRUE);
+    list_bp = find_buffer(str_buffers, true);
 
     /* Notes: should'n we use popup-buffer here? */
     disassociate_b(curwp); /* we are leaving the old buffer for a new one */

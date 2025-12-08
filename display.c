@@ -6,9 +6,22 @@
 
 #define _XOPEN_SOURCE 500
 #include <wchar.h>
+
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+
+#include <curses.h>
+
+#include "femto.h"
+#include "window.h"
+#include "undo.h"
 #include "buffer.h"
 #include "gap.h"
-#include "header.h"
+#include "key.h"
+#include "display.h"
+#include "hilite.h"
+#include "command.h"
 
 /* Reverse scan for start of logical line containing offset */
 point_t lnstart(buffer_t *bp, register point_t off)

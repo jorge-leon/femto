@@ -1,5 +1,10 @@
+#include <curses.h>
+
 #include "buffer.h"
 #include "gap.h"
+#include "key.h"
+#include "command.h"
+
 
 /************************* Editor Extensions **************************************/
 
@@ -46,15 +51,8 @@ DEFINE_EDITOR_FUNC(split_window)
 DEFINE_EDITOR_FUNC(other_window)
 DEFINE_EDITOR_FUNC(execute_key)
 
-extern int set_key(char *, char *);
-extern int getinput(char *, char *, int, int);
-extern char *get_char(void);
-extern char *get_input_key(void);
-extern char *get_key_name(void);
-extern char *get_key_funcname(void);
 extern char *get_clipboard(void);
 extern void set_scrap(unsigned char *);
-extern void execute_key(void);
 extern int add_mode_current_buffer(char *);
 extern int delete_mode_current_buffer(char *);
 extern int get_mode_current_buffer(char *);

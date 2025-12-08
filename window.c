@@ -1,7 +1,24 @@
 /* window.c, femto, Hugh Barney, Public Domain, 2017 */
 
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+
+#include <curses.h>
+
+#include <assert.h>
+
+#include "femto.h"
+#include "undo.h"
 #include "buffer.h"
-#include "header.h"
+#include "display.h"
+#include "command.h"
+#include "window.h"
+
+/* Globals */
+window_t *curwp;
+window_t *wheadp;
+
 
 int win_cnt = 0;
 
@@ -17,7 +34,7 @@ window_t* new_window(void)
     wp->w_mark = NOMARK;
     wp->w_top = 0;
     wp->w_rows = 0;
-    wp->w_update = FALSE;
+    wp->w_update = false;
     sprintf(wp->w_name, "W%d", ++win_cnt);
     return wp;
 }
@@ -66,7 +83,7 @@ window_t *split_current_window(void)
 }
 
 void other_window(void) {
-    curwp->w_update = TRUE; /* make sure modeline gets updated */
+    curwp->w_update = true; /* make sure modeline gets updated */
     curwp = (curwp->w_next == NULL ? wheadp : curwp->w_next);
     curbp = curwp->w_bufp;
 
@@ -127,7 +144,7 @@ window_t *popup_window(char *bname)
     if (wp != NULL)
         return wp;
 
-    bp = find_buffer(bname, FALSE);
+    bp = find_buffer(bname, false);
     assert(bp != NULL);
 
     if (count_windows() == 1) {
@@ -148,7 +165,7 @@ window_t *popup_window(char *bname)
         hijack_window(wp, bp);
     }
 
-    wp->w_update = TRUE;
+    wp->w_update = true;
     return wp;
 }
 
@@ -157,7 +174,7 @@ void mark_all_windows(void)
     window_t *wp;
 
     for (wp=wheadp; wp != NULL; wp = wp->w_next)
-        wp->w_update = TRUE;
+        wp->w_update = true;
 }
 
 int count_windows(void)
@@ -184,7 +201,7 @@ void hijack_window(window_t *wp, buffer_t *bp)
 
     disassociate_b(wp);
     associate_b2w(bp,wp);
-    wp->w_update = TRUE;
+    wp->w_update = true;
 }
 
 void restore_hijacked_window(window_t *wp)
@@ -195,7 +212,7 @@ void restore_hijacked_window(window_t *wp)
     disassociate_b(wp);
     associate_b2w(wp->w_hijack, wp);
     wp->w_hijack = NULL;
-    wp->w_update = TRUE;
+    wp->w_update = true;
 }
 
 void associate_b2w(buffer_t *bp, window_t *wp)

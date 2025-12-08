@@ -1,9 +1,18 @@
 /* replace.c, femto, Hugh Barney, Public Domain, 2017 */
 
 #include <string.h>
+#include <stdbool.h>
+
+#include <curses.h>
+
+#include "femto.h"
+#include "window.h"
+#include "undo.h"
 #include "buffer.h"
 #include "gap.h"
-#include "header.h"
+#include "key.h"
+#include "display.h"
+#include "replace.h"
 
 /*search for a string and replace it with another string */
 void query_replace(void)
@@ -14,7 +23,7 @@ void query_replace(void)
     char question[STRBUF_L];
     int slen, rlen;   /* length of search and replace strings */
     int numsub = 0;   /* number of substitutions */
-    int ask = TRUE;
+    bool ask = true;
     int c;
 
     searchtext[0] = '\0';
@@ -34,7 +43,7 @@ void query_replace(void)
 
     /* scan through the file, from point */
     numsub = 0;
-    while(TRUE) {
+    while(true) {
         found = search_forward(searchtext);
 
         /* if not found set the point to the last point of replacement, or where we started */
@@ -47,12 +56,12 @@ void query_replace(void)
         /* search_forward places point at end of search, move to start of search */
         curbp->b_point -= slen;
 
-        if (ask == TRUE) {
+        if (ask) {
             msg(question);
             clrtoeol();
 
         qprompt:
-            display(curwp, TRUE);
+            display(curwp, true);
             c = getch();
 
             switch (c) {
@@ -112,7 +121,7 @@ void replace_string(buffer_t *bp, char *s, char *r, int slen, int rlen)
 
     /* now just overwrite the chars at point in the buffer */
     memcpy(ptr(bp, bp->b_point), r, rlen * sizeof (char_t));
-    curbp->modified = TRUE;
+    curbp->modified = true;
 
     add_undo(curbp, UNDO_T_REPLACE, curbp->b_point, (char_t *)s, (char_t *)r);
     curbp->b_point = found - (slen - rlen); /* set point to end of replacement */

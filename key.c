@@ -3,8 +3,26 @@
  * Derived from: Anthony's Editor January 93, (Public Domain 1991, 1993 by Anthony Howe)
  */
 
+#include <stdlib.h>
+#include <string.h>
+#include <curses.h>
+
+#include <assert.h>
+
+#include "femto.h"
+#include "window.h"
+#include "undo.h"
 #include "buffer.h"
-#include "header.h"
+#include "key.h"
+#include "command.h"
+#include "funcmap.h"
+#include "replace.h"
+
+/* Globals */
+keymap_t *key_return;
+keymap_t *khead = NULL;
+keymap_t *ktail = NULL;
+
 
 keymap_t *new_key(char *name, char *bytes)
 {

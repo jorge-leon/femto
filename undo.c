@@ -1,9 +1,18 @@
 /* undo.c, femto, Hugh Barney, Public Domain, 2017 */
 
+#include <stdlib.h>
+#include <string.h>
+
+#include <assert.h>
+
+#include "femto.h"
+#include "window.h"
 #include "buffer.h"
 #include "gap.h"
-#include "header.h"
-
+#include "key.h"
+#include "command.h"
+#include "replace.h"
+#include "undo.h"
 
 /* a safe version of strncpy that ensure null terminate in case of overflows */
 void safe_strncpy(char *dest, char *src, int nchars)
@@ -26,67 +35,6 @@ undo_tt *new_undo(void)
     return up;
 }
 
-/*
- * called by specific functions to register details so that they can be reversed
- * later by calling the equal and opposite function.
- */
-void add_undo(buffer_t *bp, char type, point_t p, char_t *str, char_t *rep)
-{
-    int len = 1;
-    assert(bp != NULL);
-
-    /* do nothing if undo mode is not active for this buffer */
-    if (!(bp->b_flags & B_UNDO))
-        return;
-
-    assert(bp->b_gap <= bp->b_egap);
-    assert(bp->b_buf <= bp->b_gap);
-    assert(bp->b_egap <= bp->b_ebuf);
-    assert(str != NULL);
-    len = strlen((char *)str);
-
-    /* handle insert, accumulate inserts as long as they are next to the last insert */
-    if (bp->b_utail != NULL && bp->b_utail->u_type == type && type == UNDO_T_INSERT && (bp->b_utail->u_point + 1) == p) {
-
-        bp->b_utail->u_point = p; /* update it */
-        append_undo_string(bp->b_utail, str);
-        //debug_undo("ADD-i", bp->b_utail, bp);
-
-        /* handle backspace, accumulate backspaces as long as they are next to the last backspace */
-    } else if (bp->b_utail != NULL && bp->b_utail->u_type == type && type == UNDO_T_BACKSPACE && (bp->b_utail->u_point - len) == p) {
-
-        bp->b_utail->u_point = p; /* update it */
-        append_undo_string(bp->b_utail, str);
-        //debug_undo("ADD-bs", bp->b_utail, bp);
-
-        /* handle delete-char, accumulate deletes as long as they are at the point of the last delete */
-    } else if (bp->b_utail != NULL && bp->b_utail->u_type == type && type == UNDO_T_DELETE && (bp->b_utail->u_point) == p) {
-
-        bp->b_utail->u_point = p; /* update it */
-        append_undo_string(bp->b_utail, str);
-        //debug_undo("ADD-del", bp->b_utail, bp);
-
-        /* handle insert_at(), accumulate insert_at()s as long as they are next to the last insert_at() */
-    } else if (bp->b_utail != NULL && bp->b_utail->u_type == type && type == UNDO_T_INSAT && (bp->b_utail->u_point) == p) {
-
-        bp->b_utail->u_point = p; /* update it */
-        append_undo_string(bp->b_utail, str);
-        //debug_undo("ADD-at", bp->b_utail, bp);
-
-    } else {
-        undo_tt *up = new_undo();
-
-        assert(up != NULL);
-        up->u_prev = bp->b_utail;
-        bp->b_utail = up;
-        up->u_type = type;
-        up->u_point = p;
-        up->u_string = (char_t *)strdup((char *)str);
-        if (type == UNDO_T_REPLACE)
-            up->u_replace = (char_t *)strdup((char *)rep);
-        //debug_undo("ADD-new", up, bp);
-    }
-}
 
 /*
  * this is where the actual undo work takes place
@@ -247,7 +195,7 @@ void undo_command(void)
             msg("Out of Undo");
             //debug("\n====OUT OF UNDO====\n");
             curbp->b_ucnt = -1;
-            curbp->modified = FALSE;
+            curbp->modified = false;
             return;
         }
         continue_undo = get_undo_again();
@@ -257,8 +205,8 @@ void undo_command(void)
 }
 
 /*
- * wait for next key, if undo return TRUE
- * otherwise handle the key and return FALSE
+ * wait for next key, if undo return true
+ * otherwise handle the key and return false
  */
 int get_undo_again(void)
 {
@@ -266,10 +214,10 @@ int get_undo_again(void)
 
     if (key_return != NULL) {
         if (key_return->k_func == undo_command) {
-            return TRUE;
+            return true;
         } else {
             (key_return->k_func)();
-            return FALSE;
+            return false;
         }
     } else {
         /*
@@ -281,7 +229,7 @@ int get_undo_again(void)
         else
             msg(str_not_bound);
     }
-    return FALSE;
+    return false;
 }
 
 /* append a string to the undo structure member u_string */
@@ -326,11 +274,6 @@ int get_buf_utf8_size(char_t *buf, int pos)
     return 1;
 }
 
-void discard_undo_history(void)
-{
-    discard_buffer_undo_history(curbp);
-}
-
 void discard_buffer_undo_history(buffer_t *bp)
 {
     assert(bp != NULL);
@@ -338,6 +281,12 @@ void discard_buffer_undo_history(buffer_t *bp)
     free_undos(bp->b_utail);
     bp->b_utail = NULL;
 }
+
+void discard_undo_history(void)
+{
+    discard_buffer_undo_history(curbp);
+}
+
 
 /* free all the undos linked to this undo */
 void free_undos(undo_tt *up)
@@ -439,11 +388,6 @@ char *get_undo_type_name(undo_tt *up)
     return STR_T_NONE;
 }
 
-void list_undos(void)
-{
-    dump_undos(curbp);
-}
-
 /* replace control chars with spaces in string s */
 void remove_control_chars(char_t *s)
 {
@@ -467,7 +411,7 @@ void dump_undos(buffer_t *bp)
     char_t buf2[21];
     char report_line[120];
     undo_tt *prev;
-    buffer_t *list_bp = find_buffer("*undos*", TRUE);
+    buffer_t *list_bp = find_buffer("*undos*", true);
 
     disassociate_b(curwp); /* we are leaving the old buffer for a new one */
     curbp = list_bp;
@@ -515,7 +459,7 @@ void list_undo_stats(void)
     int count;
     int size;
 
-    list_bp = find_buffer("*undos*", TRUE);
+    list_bp = find_buffer("*undos*", true);
 
     disassociate_b(curwp); /* we are leaving the old buffer for a new one */
     curbp = list_bp;
@@ -538,6 +482,69 @@ void list_undo_stats(void)
             insert_string(report_line);
         }
         bp = bp->b_next;
+    }
+}
+
+
+/*
+ * called by specific functions to register details so that they can be reversed
+ * later by calling the equal and opposite function.
+ */
+void add_undo(buffer_t *bp, char type, point_t p, char_t *str, char_t *rep)
+{
+    int len = 1;
+    assert(bp != NULL);
+
+    /* do nothing if undo mode is not active for this buffer */
+    if (!(bp->b_flags & B_UNDO))
+        return;
+
+    assert(bp->b_gap <= bp->b_egap);
+    assert(bp->b_buf <= bp->b_gap);
+    assert(bp->b_egap <= bp->b_ebuf);
+    assert(str != NULL);
+    len = strlen((char *)str);
+
+    /* handle insert, accumulate inserts as long as they are next to the last insert */
+    if (bp->b_utail != NULL && bp->b_utail->u_type == type && type == UNDO_T_INSERT && (bp->b_utail->u_point + 1) == p) {
+
+        bp->b_utail->u_point = p; /* update it */
+        append_undo_string(bp->b_utail, str);
+        //debug_undo("ADD-i", bp->b_utail, bp);
+
+        /* handle backspace, accumulate backspaces as long as they are next to the last backspace */
+    } else if (bp->b_utail != NULL && bp->b_utail->u_type == type && type == UNDO_T_BACKSPACE && (bp->b_utail->u_point - len) == p) {
+
+        bp->b_utail->u_point = p; /* update it */
+        append_undo_string(bp->b_utail, str);
+        //debug_undo("ADD-bs", bp->b_utail, bp);
+
+        /* handle delete-char, accumulate deletes as long as they are at the point of the last delete */
+    } else if (bp->b_utail != NULL && bp->b_utail->u_type == type && type == UNDO_T_DELETE && (bp->b_utail->u_point) == p) {
+
+        bp->b_utail->u_point = p; /* update it */
+        append_undo_string(bp->b_utail, str);
+        //debug_undo("ADD-del", bp->b_utail, bp);
+
+        /* handle insert_at(), accumulate insert_at()s as long as they are next to the last insert_at() */
+    } else if (bp->b_utail != NULL && bp->b_utail->u_type == type && type == UNDO_T_INSAT && (bp->b_utail->u_point) == p) {
+
+        bp->b_utail->u_point = p; /* update it */
+        append_undo_string(bp->b_utail, str);
+        //debug_undo("ADD-at", bp->b_utail, bp);
+
+    } else {
+        undo_tt *up = new_undo();
+
+        assert(up != NULL);
+        up->u_prev = bp->b_utail;
+        bp->b_utail = up;
+        up->u_type = type;
+        up->u_point = p;
+        up->u_string = (char_t *)strdup((char *)str);
+        if (type == UNDO_T_REPLACE)
+            up->u_replace = (char_t *)strdup((char *)rep);
+        //debug_undo("ADD-new", up, bp);
     }
 }
 

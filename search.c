@@ -3,9 +3,16 @@
  * Simple forward and reverse search.
  */
 
+#include <string.h>
+
+#include <curses.h>
+
+#include "femto.h"
+#include "window.h"
+#include "undo.h"
 #include "buffer.h"
 #include "gap.h"
-#include "header.h"
+#include "display.h"
 
 void search(void)
 {

@@ -3,15 +3,17 @@
  * Derived from: Anthony's Editor January 93, (Public Domain 1991, 1993 by Anthony Howe)
  */
 
+#include "femto.h"
+#include "window.h"
+#include "undo.h"
 #include "buffer.h"
-#include "header.h"
+#include "key.h"
 
 int batch_mode = 0;
 int debug_mode = 0;
 int done;
 int result;
 int global_undo_mode = 1;
-point_t nscrap;
 char_t *scrap;
 char_t *input;
 int msgflag;
@@ -19,16 +21,6 @@ char msgline[TEMPBUF];
 char response_buf[TEMPBUF];
 char searchtext[STRBUF_M];
 char replace[STRBUF_M];
-
-keymap_t *key_return;
-keymap_t *khead = NULL;
-keymap_t *ktail = NULL;
-
-buffer_t *curbp;                /* current buffer */
-buffer_t *bheadp;               /* head of list of buffers */
-window_t *curwp;
-window_t *wheadp;
-command_t *cheadp = NULL;
 
 char *f_initscr = "%s: Failed to initialize the screen.\n";
 char *f_alloc = "%s: Failed to allocate required memory.\n";

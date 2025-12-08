@@ -22,7 +22,7 @@ extern char *get_input_key(void);
 extern char *get_key_funcname(void);
 extern char *get_key_name(void);
 extern void execute_key(void);
-extern int getinput(char *, char *, int, int);
+extern bool getinput(char *, char *, int);
 
 #endif
 

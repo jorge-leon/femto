@@ -195,7 +195,8 @@ void apropos(void)
     char bindlist[40];
     char apropos[STRBUF_L];
 
-    if (0 == getinput(str_apropos, response_buf, STRBUF_M, F_CLEAR))
+    response_buf[0] = '\0';
+    if (!getinput(str_apropos, response_buf, STRBUF_M))
         return;
 
     bp = find_buffer(str_help_buf, true);

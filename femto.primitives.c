@@ -173,7 +173,12 @@ Object *e_buffer_fwrite(Interpreter *interp, Object **args, Object **env)
 Object *e_getfilename(Interpreter *interp, Object **args, Object **env)
 {
 
-    if (FALSE == getfilename(FLISP_ARG_ONE->string, (char*) response_buf, NAME_MAX))
+    if (FLISP_HAS_ARG_TWO)
+        strcpy(response_buf, FLISP_ARG_TWO->string);
+    else
+        response_buf[0] = '\0';
+
+    if (!getfilename(FLISP_ARG_ONE->string, (char*) response_buf, NAME_MAX))
         return nil;
 
     return newString(interp, response_buf);
@@ -220,7 +225,7 @@ Object *e_switch_to_buffer(Interpreter *interp, Object **args, Object **env)
     buffer_t *bp = find_buffer(FLISP_ARG_ONE->string, FALSE);
     if (!bp) {
         bp = new_buffer(FLISP_ARG_ONE->string);
-	if (!bp)
+        if (!bp)
             exceptionWithObject(interp, FLISP_ARG_ONE, out_of_memory, "(generate-new-buffer name) failed, out of memory");
     }
     switch_to_buffer(bp);
@@ -323,12 +328,18 @@ Object *e_show_prompt(Interpreter *interp, Object **args, Object **env)
 
 Object *e_prompt(Interpreter *interp, Object **args, Object **env)
 {
-    char response[81];
-    strncpy(response, FLISP_ARG_TWO->string, 80);
-    response[80] = '\0';
+    char response[81] = "";
 
-    (void) ! getinput(FLISP_ARG_ONE->string, response, 80, F_NONE);
-    return newStringWithLength(interp, response, strlen(response));
+    if (FLISP_HAS_ARG_TWO) {
+        size_t len = strlen(FLISP_ARG_TWO->string);
+        if (len > 80)
+            len = 80;
+        strncpy(response, FLISP_ARG_TWO->string, len);
+        response[len] = '\0';
+    }
+    if (getinput(FLISP_ARG_ONE->string, response, 80))
+        return newStringWithLength(interp, response, strlen(response));
+    return nil;
 }
 
 Object *e_get_version_string(Interpreter *interp, Object **args, Object **env)

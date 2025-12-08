@@ -286,7 +286,8 @@ void i_gotoline(void)
 {
     int line;
 
-    if (getinput(m_goto, (char*)response_buf, STRBUF_S, F_CLEAR)) {
+    response_buf[0] = '\0';
+    if (getinput(m_goto, (char*)response_buf, STRBUF_S)) {
         line = atoi(response_buf);
         goto_line(line);
     }
@@ -674,7 +675,8 @@ void repl(void)
     buffer_t *bp;
     char *output;
 
-    if (!getinput("> ", response_buf, TEMPBUF, F_CLEAR))
+    response_buf[0] = '\0';
+    if (!getinput("> ", response_buf, TEMPBUF))
         return;
 
     if ((output = eval_string(false, response_buf)) == NULL)

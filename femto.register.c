@@ -17,7 +17,7 @@ available to be called as lisp functions
     {"get-point",                 0, 0, 0,            e_get_point},
     {"get-point-max",             0, 0, 0,            e_get_point_max},
     {"set-key",                   2, 2, TYPE_STRING,  e_set_key},
-    {"prompt",                    2, 2, TYPE_STRING,  e_prompt},
+    {"prompt",                    1, 2, TYPE_STRING,  e_prompt},
     {"show-prompt",               2, 2, TYPE_STRING,  e_show_prompt},
     {"eval-block",                0, 0, 0,            e_eval_block},
     {"get-char",                  0, 0, 0,            e_get_char},
@@ -51,7 +51,7 @@ available to be called as lisp functions
     {"buffer-flag-modified",      0, 2, 0,            e_buffer_flag_modified},
 
     {"update-display",            0, 0, 0,            e_update_display},
-    {"prompt-filename",           1, 1, TYPE_STRING,  e_getfilename},
+    {"prompt-filename",           1, 2, TYPE_STRING,  e_getfilename},
     {"clear-message-line",        0, 0, 0,            e_clear_message_line},
     {"refresh",                   0, 0, 0,            e_refresh},
 

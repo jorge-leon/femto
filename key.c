@@ -328,7 +328,16 @@ void execute_key(void)
         (key_return->k_func)();
 }
 
-int getinput(char *prompt, char *buf, int nbuf, int flag)
+/* Prompt for input
+ *
+ * @param prompt .. Prompt to display.
+ * @param buf    .. Default value if not empty.
+ *
+ * @returns:
+ * - true  .. non-empty response or default
+ * - false .. empty response or cancel (C-g)
+ */
+bool getinput(char *prompt, char *buf, int nbuf)
 {
     int cpos = 0;
     int c;
@@ -336,8 +345,6 @@ int getinput(char *prompt, char *buf, int nbuf, int flag)
 
     mvaddstr(MSGLINE, 0, prompt);
     clrtoeol();
-
-    if (flag == F_CLEAR) buf[0] = '\0';
 
     /* if we have a default value print it and go to end of it */
     if (buf[0] != '\0') {
@@ -356,11 +363,11 @@ int getinput(char *prompt, char *buf, int nbuf, int flag)
         case 0x0a: /* cr, lf */
         case 0x0d:
             buf[cpos] = '\0';
-            return (cpos > 0 ? TRUE : FALSE);
+            return (cpos > 0 ? true : false);
 
         case 0x07: /* ctrl-g */
             buf[0] = '\0';
-            return FALSE;
+            return false;
 
         case 0x7f: /* del, erase */
         case 0x08: /* backspace */

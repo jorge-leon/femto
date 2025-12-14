@@ -97,7 +97,7 @@
 (set-key "c-]" "find_and_eval_sexp")
 (set-key "c-x c-o" "oxo")
 (set-key "c-x c-b" "buffer-menu")
-(set-key "c-x c-d" "dired")
+(set-key "c-x d" "dired-interactive")
 (set-key "c-x c" "edit-config")
 (set-key "c-x h" "show-info")
 (set-key "c-x g" "grep-command")

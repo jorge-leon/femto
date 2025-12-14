@@ -269,29 +269,29 @@
 
 
 ;;; Interactive
-(defun kill-buffer ()
+(defun kill-buffer-interactive ()
   (let ((response (prompt "Kill buffer: " (buffer-name))))
     (if (string-equal "" response) (message "Canceled")
-	(kill-buffer-noselect response) )))
+	(kill-buffer response) )))
 
-;;; (kill-buffer-noselect name)
+;;; (kill-buffer[ name])
 ;;; Offers saving modified buffers, switches to other buffer if the buffer to kill is current.
-(defun kill-buffer-noselect (name)
+(defun kill-buffer args
   (let* ((current (current-buffer))
-	 (result (catch (set-buffer name))) )
-    (when (car result) (apply throw result))
-    (if (not (buffer-modified-p)) (kill-buffer_and_switch name current)
+	 (buffer  (if (null args) current
+		      (set-buffer (car args)) )))
+    (if (not (buffer-modified-p)) (kill-buffer_and_switch buffer current)
 	(let ((response
-	       (prompt (concat "Buffer "name" modified; kill anyway? (yes/no/save and then kill) ") "")))
-	  (cond ((string-equal response "yes")  (kill-buffer_and_switch name current))
+	       (prompt (concat "Buffer "buffer" modified; kill anyway? (yes/no/save and then kill) "))))
+	  (cond ((string-equal response "yes")  (kill-buffer_and_switch buffer current))
 		((string-equal response "save")
 		 (save-buffer)
-		 (kill-buffer_and_switch name current) )) ))))
+		 (kill-buffer_and_switch buffer current) )) ))))
 
-(defun kill-buffer_and_switch (name current)
-  (if (eq name current)  (switch-to-buffer (other-buffer))
+(defun kill-buffer_and_switch (buffer current)
+  (if (eq buffer current)  (switch-to-buffer (other-buffer))
       (set-buffer current) )
-  (delete-buffer name) )
+  (delete-buffer buffer) )
 
 ;;; find-file
 

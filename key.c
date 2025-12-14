@@ -5,6 +5,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include <curses.h>
 
 #include <assert.h>
@@ -234,7 +235,7 @@ void setup_keys(void)
     set_key_internal("c-x ?",     "user-func"             , "\x18\x3F", user_func);
     /* Note: is set to interactive switch-to-buffer in Emacs */
     set_key_internal("c-x b",     "list-buffers"          , "\x18\x62", list_buffers);
-    set_key_internal("c-x k",     "kill-buffer"           , "\x18\x6B", user_func);
+    set_key_internal("c-x k",     "kill-buffer-interactive", "\x18\x6B", user_func);
     set_key_internal("c-x n",     "next-buffer"           , "\x18\x6E", user_func);
     set_key_internal("c-x o",     "other-window"          , "\x18\x6F", other_window);
     set_key_internal("c-x s",     "save-some-buffers"     , "\x18\x73", user_func);

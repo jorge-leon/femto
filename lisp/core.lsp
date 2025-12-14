@@ -13,9 +13,12 @@
 ;;; conditionals
 
 (defmacro if (pred then . else)
-  (cond (else
-	 (list 'cond (list pred then)  (cons 't else)) )
-	(t (list 'cond (list pred then))) ))
+  (cond (else  (list 'cond (list pred then)  (cons 't else)))
+	(t     (list 'cond (list pred then))) ))
+
+(defmacro if-not (pred else . then)
+  (cond (then  (list 'cond (cons pred then) (list 't else)))
+	(t     (list 'cond (list pred 'nil) (list 't else))) ))
 
 (defmacro when (pred . body)
   (cond (body  (list 'cond (cons pred body)))) )

@@ -125,30 +125,45 @@ Object *e_get_mode(Interpreter *interp, Object **args, Object **env)
     return (1 == get_mode_current_buffer(FLISP_ARG_ONE->string) ? t : nil);
 }
 
-/** (buffer-fread size stream) - read size bytes from stream into current buffer at point, return bytes read
+/** (buffer-fread stream[ size]) - read size bytes from stream into current buffer at point, return bytes read
  *  If buffer cannot hold size more bytes, -1 is returned.
+ *  If size is omitted or nil, read until eof.
  */
 Object *e_buffer_fread(Interpreter *interp, Object **args, Object **env)
 {
-    size_t len;
+    size_t len, size = 0;
 
-    CHECK_TYPE(FLISP_ARG_ONE, type_integer, "(buffer-fread size stream) - size");
-    CHECK_TYPE(FLISP_ARG_TWO, type_stream, "(buffer-fread size stream) - stream");
+    CHECK_TYPE(FLISP_ARG_ONE, type_stream, "(buffer-fread size stream) - stream");
 
-    if (FLISP_ARG_ONE->integer == 0)
-        return newInteger(interp, 0);
+    if (FLISP_HAS_ARG_TWO && FLISP_ARG_TWO != nil) {
+        CHECK_TYPE(FLISP_ARG_TWO, type_integer, "(buffer-fread size stream) - size");
+        if (FLISP_ARG_TWO->integer == 0)
+            return newInteger(interp, 0);
 
-    if (FLISP_ARG_ONE->integer < 0)
-        exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(buffer-read size stream) - size is negative");
+        if (FLISP_ARG_TWO->integer < 0)
+            exceptionWithObject(interp, FLISP_ARG_TWO, invalid_value, "(buffer-read size stream) - size is negative");
+        len = buffer_fread(curbp, FLISP_ARG_ONE->fd, FLISP_ARG_TWO->integer);
+        if (ferror(FLISP_ARG_ONE->fd))
+            exceptionWithObject(interp, FLISP_ARG_ONE, io_error, "buffer_fread() failed: %s", strerror(errno));
 
-    len = buffer_fread(curbp, FLISP_ARG_ONE->integer, FLISP_ARG_TWO->fd);
-    if (ferror(FLISP_ARG_TWO->fd))
-        exceptionWithObject(interp, FLISP_ARG_TWO, io_error, "buffer_fread() failed: %s", strerror(errno));
+        if (len == -1)
+            exception(interp, out_of_memory, "buffer_fread() failed, could not grow current buffer");
 
-    if (len == -1)
-        exception(interp, out_of_memory, "buffer_fread() failed, could not grow current buffer");
+        return newInteger(interp, len);
+    }
+    for (;;) {
+        len = buffer_fread(curbp, FLISP_ARG_ONE->fd, BUFSIZ);
 
-    return newInteger(interp, len);
+        if (ferror(FLISP_ARG_ONE->fd))
+            exceptionWithObject(interp, FLISP_ARG_ONE, io_error, "buffer_fread() failed: %s", strerror(errno));
+
+        if (len == -1)
+            exception(interp, out_of_memory, "buffer_fread() failed, could not grow current buffer");
+        size += len;
+
+        if (feof(FLISP_ARG_ONE->fd))
+            return newInteger(interp, size);
+    }
 }
 
 /** (buffer-fwrite size stream) - write size bytes from current buffer at point to stream, return bytes written */

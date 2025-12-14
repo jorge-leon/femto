@@ -8,7 +8,7 @@
 
 extern char_t * ptr(buffer_t *, register point_t);
 extern bool growgap(buffer_t *, point_t);
-extern size_t buffer_fread(buffer_t *, size_t, FILE *);
+extern size_t buffer_fread(buffer_t *, FILE *, size_t);
 extern size_t buffer_fwrite(buffer_t *, size_t, FILE *);
 extern point_t line_to_point(int);
 extern point_t movegap(buffer_t *, point_t);

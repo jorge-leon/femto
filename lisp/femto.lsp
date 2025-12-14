@@ -22,7 +22,7 @@
 	 (type  (prop-get result :type))
 	 (check (unless (eq type "f")  (throw invalid-value "not a regular file" filename)))
 	 (fd    (open path))
-	 (len   (buffer-fread size fd)) )
+	 (len   (buffer-fread fd size)) )
     (close fd)
     (when (not (= size len))
       (throw io-error (concat "short read: expected "size" bytes, got "len) path) )))

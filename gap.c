@@ -161,10 +161,10 @@ int buffer_is_empty(buffer_t *bp)
 
 
 /** Read size bytes from stream into buffer starting at point
-    
+
     @returns: number of bytes read or zero if the buffer cannot be grown by size
 */
-size_t buffer_fread(buffer_t *buffer, size_t size, FILE *stream)
+size_t buffer_fread(buffer_t *buffer, FILE *stream, size_t size)
 {
     size_t len;
 
@@ -175,8 +175,8 @@ size_t buffer_fread(buffer_t *buffer, size_t size, FILE *stream)
         return -1;
     buffer->b_point = movegap(buffer, buffer->b_point);
     len = fread(buffer->b_gap, sizeof (char), size, stream);
-    if (len == size)
-        buffer->b_gap += len;
+    buffer->b_gap += len;
+
     return len;
 }
 

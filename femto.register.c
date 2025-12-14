@@ -41,7 +41,7 @@ available to be called as lisp functions
     {"get-buffer-filename",       0, 0, 0,            e_get_buffer_filename},
     {"generate-new-buffer",       1, 1, TYPE_STRING,  e_new_buffer},
     {"set-visited-filename",      1, 1, 0,            e_set_buffer_filename},
-    {"buffer-fread",              2, 2, 0,            e_buffer_fread},
+    {"buffer-fread",              1, 2, 0,            e_buffer_fread},
     {"buffer-fwrite",             2, 2, 0,            e_buffer_fwrite},
     {"switch-to-buffer",          1, 1, TYPE_STRING,  e_switch_to_buffer},
     {"set-buffer",                1, 1, TYPE_STRING,  e_set_buffer},

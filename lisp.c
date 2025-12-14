@@ -1904,6 +1904,11 @@ Object *primitiveConsP(Interpreter *interp, Object **args, Object **env)
     return (FLISP_ARG_ONE->type == type_cons) ? t : nil;
 }
 
+Object *primitiveIntern(Interpreter *interp, Object **args, Object **env)
+{
+    return newSymbol(interp, FLISP_ARG_ONE->string);
+}
+
 Object *primitiveSymbolName(Interpreter *interp, Object **args, Object **env)
 {
     size_t len = strlen(FLISP_ARG_ONE->string);
@@ -2411,28 +2416,29 @@ Primitive primitives[] = {
     {"macro",         1, -1, 0, (LispEval) PRIMITIVE_MACRO  /* special form */ },
     {"macroexpand-1", 1,  2, 0, (LispEval) PRIMITIVE_MACROEXPAND /* special form */ },
     {"catch",         1,  1, 0, (LispEval) PRIMITIVE_CATCH  /*special form */ },
-    {"null",          1,  1, 0,         primitiveNullP},
-    {"type-of",       1,  1, 0,         primitiveTypeOf},
-    {"consp",         1,  1, 0,         primitiveConsP},
-    {"symbol-name",   1,  1, TYPE_SYMBOL, primitiveSymbolName},
-    {"same",          2,  2, 0,         primitiveSame},
-    {"car",           1,  1, 0,         primitiveCar}, /* Note: nil|cons */
-    {"cdr",           1,  1, 0,         primitiveCdr}, /* Note: nil|cons */
-    {"cons",          2,  2, 0,         primitiveCons},
-    {"open",          1,  2, TYPE_STRING, primitiveFopen},
-    {"close",         1,  1, TYPE_STREAM, primitiveFclose},
-    {"file-info",     1,  1, TYPE_STREAM, primitiveFinfo},
-    {"read",          0,  2, 0,         primitiveRead},
-    {"eval",          1,  1, 0,         primitiveEval},
-    {"write",         1,  3, 0,         primitiveWrite},
+    {"null",          1,  1, 0,            primitiveNullP},
+    {"type-of",       1,  1, 0,            primitiveTypeOf},
+    {"consp",         1,  1, 0,            primitiveConsP},
+    {"intern",        1,  1, TYPE_STRING,  primitiveIntern},
+    {"symbol-name",   1,  1, TYPE_SYMBOL,  primitiveSymbolName},
+    {"same",          2,  2, 0,            primitiveSame},
+    {"car",           1,  1, 0,            primitiveCar}, /* Note: nil|cons */
+    {"cdr",           1,  1, 0,            primitiveCdr}, /* Note: nil|cons */
+    {"cons",          2,  2, 0,            primitiveCons},
+    {"open",          1,  2, TYPE_STRING,  primitiveFopen},
+    {"close",         1,  1, TYPE_STREAM,  primitiveFclose},
+    {"file-info",     1,  1, TYPE_STREAM,  primitiveFinfo},
+    {"read",          0,  2, 0,            primitiveRead},
+    {"eval",          1,  1, 0,            primitiveEval},
+    {"write",         1,  3, 0,            primitiveWrite},
 #if DEBUG_GC
-    {"gc",            0,  0, 0,         primitiveGc},
-    {"gctrace",       0,  0, 0,         primitiveGcTrace},
-    {"symbols",       0,  0, 0,         primitiveSymbols},
-    {"global",        0,  0, 0,         primitiveGlobal},
-    {"env",           0,  0, 0,         primitiveEnv},
+    {"gc",            0,  0, 0,            primitiveGc},
+    {"gctrace",       0,  0, 0,            primitiveGcTrace},
+    {"symbols",       0,  0, 0,            primitiveSymbols},
+    {"global",        0,  0, 0,            primitiveGlobal},
+    {"env",           0,  0, 0,            primitiveEnv},
 #endif
-    {"throw",         2,  3, 0,         primitiveThrow},
+    {"throw",         2,  3, 0,            primitiveThrow},
     {"i+",            2,  2, TYPE_INTEGER, integerAdd},
     {"i-",            2,  2, TYPE_INTEGER, integerSubtract},
     {"i*",            2,  2, TYPE_INTEGER, integerMultiply},
@@ -2456,7 +2462,7 @@ Primitive primitives[] = {
     {"string-search", 2,  2, TYPE_STRING,  stringSearch},
     {"ascii",         1,  1, TYPE_INTEGER, asciiToString},
     {"ascii->number", 1,  1, TYPE_STRING,  asciiToInteger},
-    {"interp",         1, -1, 0,            primitiveInterp},
+    {"interp",         1, -1, 0,           primitiveInterp},
 //    FLISP_REGISTER_FILE_EXTENSION
 #ifdef FLISP_FEMTO_EXTENSION
 #include "femto.register.c"

@@ -127,7 +127,7 @@
 
 ;; prompt for a keystroke then show its name
 (defun describe-key()
-  (show-prompt "Describe Key: " "")
+  (show-prompt "Describe Key: ")
   (setq key (get-key))
   (cond
     ((not (eq key "")) (message key))
@@ -371,7 +371,7 @@
 	;; Note: we should run the special hook write-file-functions here.
 	(when (and directory (memq directory '("" "./" "../")))
 	  (when (car (catch (fstat directory)))
-	    (if (not (string-equal "y" (prompt (concat "Directory ‘"directory"’ does not exist; create? (y or n) ") "")))
+	    (if (not (string-equal "y" (prompt (concat "Directory ‘"directory"’ does not exist; create? (y or n) "))))
 		(message "Cancelled")
 		;; else
 		(mkdir directory t) )))
@@ -443,7 +443,7 @@
   (let ((filename  (get-buffer-filename)))
     (if (not filename) mode ; skip buffers w/o file association
 	(if (eq mode :force) (save-buffer) :force
-	    (let ((response  (prompt (concat "Safe file "filename"? (y, n, !, ., q,) ") "")))
+	    (let ((response  (prompt (concat "Safe file "filename"? (y, n, !, ., q,) "))))
 	      (cond ((eq mode :force) (save-buffer) :force)
 		    ((eq response "y")  (save-buffer) :ask)
 		    ((eq response "n") :ask)
@@ -455,7 +455,7 @@
 (defun save-buffers-kill-terminal ()
   (unless  (eq :abort (save-some-buffers))
     (if (not (filter buffer_file_modified-p (buffer-list))) (exit)
-	(when (string-equal "yes" (prompt "Modified buffers exist; exit anyway? (yes or no) " ""))
+	(when (string-equal "yes" (prompt "Modified buffers exist; exit anyway? (yes or no) "))
 	  (exit) ))))
 
 (provide 'femto)

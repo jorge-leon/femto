@@ -51,5 +51,5 @@ nil
    (setq bufm-line (max bufm-start-line (min (+ bufm-line n) bufm-last-line))))
 
 
-(cmd_prompt ": " "")
+(cmd_prompt ": ")
 

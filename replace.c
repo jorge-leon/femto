@@ -30,10 +30,10 @@ void query_replace(void)
     searchtext[0] = '\0';
     replace[0] = '\0';
 
-    if (!getinput(m_replace, (char*)searchtext, STRBUF_M, F_CLEAR))
+    if (!getinput(m_replace, (char*)searchtext, STRBUF_M))
         return;
 
-    if (!getinput(m_with, (char*)replace, STRBUF_M, F_CLEAR))
+    if (!getinput(m_with, (char*)replace, STRBUF_M))
         return;
 
     slen = strlen(searchtext);

@@ -1,6 +1,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <limits.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -449,7 +450,7 @@ Object *fl_system(Interpreter *interp, Object **args, Object **env)
     return newInteger(interp, system(FLISP_ARG_ONE->string));
 }
 
-/** (getenv name) ⇒ value: get value of environment variable 
+/** (getenv name) ⇒ value: get value of environment variable
  *
  * @param name .. Name of environment variable
  *
@@ -461,6 +462,22 @@ Object *fl_getenv(Interpreter *interp, Object **args, Object **env)
     char *e = getenv(FLISP_ARG_ONE->string);
     if (e == NULL) return nil;
     return newStringWithLength(interp, e, strlen(e));
+}
+
+/** (getcwd) ⇒ value: get current working directory
+ *
+ * @returns string
+ *
+ * @throws different io errors
+ *
+ */
+Object *fl_getcwd(Interpreter *interp, Object **args, Object **env)
+{
+    char buf[PATH_MAX] = "";
+
+    if (NULL == getcwd(buf, PATH_MAX))
+        exception(interp, io_error, "getcwd() failed: %s", strerror(errno));
+    return newString(interp, buf);
 }
 
 
@@ -479,6 +496,7 @@ Primitive flisp_file_primitives[] = {
     {"pclose",    1, 1, TYPE_STREAM, primitivePclose},
     {"system",    1, 1, TYPE_STRING, fl_system},
     {"getenv",    1, 1, TYPE_STRING, fl_getenv},
+    {"getcwd",    0, 0, 0,           fl_getcwd},
 };
 
 

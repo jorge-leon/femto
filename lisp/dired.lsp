@@ -1,7 +1,7 @@
 ;;
 ;; Dired extension for Femto
 ;;
-;; 
+;;
 ;; use the arrow keys to move up or down the list
 ;; then select one of the following letters
 ;;
@@ -25,182 +25,145 @@
 ;;
 (setq dired-dir "")
 (setq dired-ls-cmd "ls -la ")
-(setq dired-buffer "*dired*")
-(setq de-obuf "*scratch*")
-(setq de-name-start-col 47)
-(setq de-dir-start-col 2)
-(setq de-line 1)
-(setq de-name "")
-(setq de-start-line 1)
-(setq de-last-line 1)
-(setq de-is-dir nil)
-(setq de-is-link nil)
-(setq de-ops 0)
-(setq de-max-ops 300)
-(setq de-debug nil)
+(setq dired-name-start-col 47)
+(setq dired-dir-start-col 2)
+(setq dired-line 1)
+(setq dired-start-line 1)
+(setq dired-last-line 1)
+(setq dired-max-ops 300)
+(setq dired-debug nil)
 
-(defun dired ()
-  (cond 
-     ((eq dired-dir "") (setq dired-dir (get-cwd))))
+(defun dired-interactive ()
+  (let* ((filename (get-buffer-filename))
+	 (default (if (null filename) (getcwd)
+		      (file-name-directory filename) ))
+	 (response (prompt-filename (concat "Dired (directory): " default))) )
+    (dired (if response  response default)) ))
+
+
+(defun dired (directory)
   (delete-other-windows)
-  (setq de-obuf (buffer-name))
-  (kill-buffer dired-buffer)
-  (shell-command (concat dired-ls-cmd dired-dir))
-  (rename-buffer dired-buffer)
-  (beginning-of-buffer)
-  (set-mark)
-  (goto-line 3)
-  (kill-region)
-  (de-init)
-  (de-get-last-line)
-  (beginning-of-buffer)
-  (de-get-info)
-  (de-loop))
+  (let ((buffer (find-buffer-visiting directory)))
+    (if buffer (switch-to-buffer buffer)
+	(let ((buffer  (generate-new-buffer (generate-new-buffer-name "*dired*"))))
+	  (switch-to-buffer buffer)
+	  (set-visited-filename directory)
+	  (dired-reload buffer) )))
+  (dired-loop dired-max-ops) )
 
+(defun dired-reload (buffer)
+  (let* ((current (current-buffer))
+	 (dummy   (unless (eq buffer current)  (set-buffer buffer)))
+	 (stream (popen (concat dired-ls-cmd (get-buffer-filename)))) )
+    (erase-buffer)
+    (buffer-fread stream)
+    (pclose stream)
+    (beginning-of-buffer)
+    (set-mark)
+    (goto-line 3)
+    (kill-region)
+    (dired-init)
+    (dired-get-last-line)
+    (beginning-of-buffer)
+    (dired-get-info)
+    (buffer-flag-modified buffer nil)
+    (unless (eq buffer current) (set-buffer current)) ))
 
-(defun de-init()
-  (setq de-start-line 1)
-  (setq de-last-line 1)
-  (setq de-line 1)
-  (setq de-ops 0)
-  (setq de-name "")
-  (switch-to-buffer dired-buffer)
+(defun dired-init ()
+  (setq dired-start-line 1)
+  (setq dired-last-line 1)
+  (setq dired-line 1)
   (end-of-buffer)
   (previous-line)
   (beginning-of-line)
-  (de-insert-space))
+  (dired-insert-space) )
 
-
-
-(defun de-insert-space()
+(defun dired-insert-space ()
   (insert-string "  ")
   (previous-line)
   (beginning-of-line)
-  (cond ((eq " " (get-char)))
-	(t (de-insert-space))))
+  (unless (eq " " (get-char))  (dired-insert-space)) )
 
-(defun de-get-last-line()
+(defun dired-get-last-line ()
   (setq de-last-line 1)
   (end-of-buffer)
   (previous-line)
   (beginning-of-line)
-  (de-count-line))
+  (dired-count-line) )
 
-(defun de-count-line()
+(defun dired-count-line ()
+  (when (> (get-point) 0)
+    (setq dired-last-line (+ 1 dired-last-line))
+    (previous-line)
+    (beginning-of-line)
+    (dired-count-line) ))
+
+(defun dired-loop (ops)
+  (unless (i= 0 ops)
+    (message "dired menu: f,x")
+    (update-display)
+    (unless (eq (dired_process-key) :quit)  (dired-loop (- ops 1))) ))
+
+(defun dired_process-key ()
+  (let ((key (get-key)))
+    (if (eq key "") (dired_handle-arrow-key (get-key-funcname))
+	(dired_handle-command-key key) )))
+
+(defun dired_handle-arrow-key (func)
+  (when (memq (intern func)
+	      ;; Note: backward_page is registered with different names on
+	      ;;   different key combinations in key.c. Emacs has scroll-up
+	      ;;   and scroll-down
+	      '(previous-line next-line  forward-page page-down page-up
+		forward-word forward-char  backward-word backward-char
+		beginning-of-line end-of-line  beginning-of-buffer end-of-buffer))
+    (let* ((input   (open func "<"))
+	   (result  (catch (eval (read input)))) )
+      (close input)
+      (unless (car result)  (apply (caddr result))) ))
+  (when (memq (intern func) '(previous-line next-line))
+    (beginning-of-line)
+    (repeat 9 forward-word) ))
+
+(defun dired_handle-command-key (key)
   (cond
-    ((> (get-point) 0)
-     (setq de-last-line (+ 1 de-last-line))
-     (previous-line)
-     (beginning-of-line)
-     (de-count-line))))
+    ((memq key '("x" "q"))
+     (switch-to-buffer (other-buffer))
+     (message "")
+     :quit )
+    ((memq key '("f" "\n"))
+     (let* ((info      (dired-get-info))
+	    (type      (car info))
+	    (name      (cdr info))
+	    (path      (if (string-equal name "..")  (file-name-directory (get-buffer-filename))
+			   (concat (get-buffer-filename) "/" name) )))
+       (log 'DEBUG "dired: " info)
+       (cond ((string-equal type "d") (dired path))
+	     ((string-equal type "f") (find-file path))
+	     (t (message (concat "Error: cannot open file of type: " type))) )))
+    ((eq key "?") (log-debug (concat "dired: info '"(car (dired-get-info))"' '"(cdr (dired-get-info))"'\n")))
+    (t (log 'DEBUG "dired: unhandled command key="k)) ))
 
-(defun de-loop()
-  (setq de-ops (+ de-ops 1))
-  (cond
-    ((< de-ops de-max-ops)
-     (message "dired menu: f,x")
-     (update-display)
-     (setq de-key (get-key))
-     (cond
-       ((eq de-key "") (de-handle-arrow-key (get-key-funcname)))
-       (t (de-handle-command-key de-key)))
-     (de-loop))))
-
-(defun de-handle-arrow-key(de-key)
-  (cond
-    ((eq de-key "previous-line") (de-move-line -1))
-    ((eq de-key "next-line") (de-move-line 1)))
-  (de-get-info))
-
-(defun de-handle-command-key(k)
-  (cond
-    ((memq k '("x" "q"))
-     (switch-to-buffer de-obuf)
-     (kill-buffer dired-buffer)
-     (setq de-ops (+ de-max-ops 1)))
-    ((memq k '("f" "\n"))
-     (cond
-       (de-is-dir (de-open-dir))
-       (t (de-open-file)))
-     (kill-buffer dired-buffer)
-     (setq de-ops (+ de-max-ops 1)))
-    (t (log-debug (concat "command key=" k "\n")))))
-
-
-(defun de-open-file()
-  (find-file (concat dired-dir "/" de-name)))
-
-(defun de-open-dir()
-  (dired-debug de-name)
-  (cond
-    ((eq ".." de-name) (setq dired-dir (de-up-dir dired-dir)))
-    (t (setq dired-dir (concat dired-dir "/" de-name))))
-  (dired))
-
-(defun de-move-line(n)
-  (setq de-line (max de-start-line (min (+ de-line n) de-last-line))))
-
-(defun de-get-info()
-  (goto-line de-line)
+(defun dired-get-info ()
   (beginning-of-line)
-  (repeat de-dir-start-col forward-char)
-  (setq ch (get-char))
-  (setq de-is-dir (eq "d" ch))
-  (setq de-is-link (eq "l" ch))
-  (cond
-    (de-is-link
-     (end-of-line)
-     (search-backward " ")
-     (search-backward " ")
-     (search-backward " "))
-    (t
-     (end-of-line)
-     (search-backward " ")))
-  (forward-char)
-  (forward-char)
-  (set-mark)
-  (setq p (get-point))
-  (cond (de-is-link (search-forward " ")) (t (end-of-line)))
-  (copy-region)
-  (set-point p)
-  (setq de-name (string-trim (get-clipboard))))
-
-;;
-;; reduces a directory path by one sub-directory
-;;
-(defun de-up-dir(d)
-  (cond
-    ;; d is 1 char then we must be at root, return "/"
-    ((eq 1 (length d)) "/")
-    ;; if last char is / then we have reached the next sub-directory up, remove last char and return
-    ((eq "/" (string-last-char d)) (string-shrink-left d))
-    ;; otherwise call again but with last char removed
-    (t (de-up-dir (string-shrink-left d))) ))
-
-
-;;
-;; get current working directory, using let for lobal variables
-;;
-(defun get-cwd() 
-   (let ((obuf (buffer-name))
-        (current_working_directory ""))
-   (shell-command "pwd")   
-   (switch-to-buffer "*output*")
-   (beginning-of-buffer)
-   (set-mark)
-   (end-of-line)
-   (copy-region)
-   (setq current_working_directory (string-trim (get-clipboard)))    
-   (switch-to-buffer obuf)
-   (kill-buffer "*output*")
-   current_working_directory))
+  (forward-word)
+  (let* ((type (get-char))
+	 (is-link (string-equal type "l")) )
+    (repeat 8 forward-word)
+    ;; Note: in case the filename starts with a space
+    (backward-word) (forward-char) (forward-char)
+    (set-mark)
+    (if-not is-link (end-of-line)
+	    (search-forward " ->")
+	    (repeat 3 backward-char) )
+    (copy-region)
+    (cons type (get-clipboard)) ))
 
 ;;
 ;; keep this so we can debug dired if needed
 ;;
 (defun dired-debug(m)
-  (cond
-    ((eq dired-debug t) (log-message (concat m "\n")))))
+  (when dired-debug (log 'DEBUG "dired:" (concat m "\n"))) )
 
 
 

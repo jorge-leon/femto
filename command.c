@@ -32,30 +32,6 @@ void end_of_buffer(void)
     if (curbp->b_epage < pos(curbp, curbp->b_ebuf)) curbp->b_reframe = 1;
 }
 
-void quit_ask(void)
-{
-    if (modified_buffers() > 0) {
-        mvaddstr(MSGLINE, 0, str_modified_buffers);
-        clrtoeol();
-        if (!yesno(FALSE))
-            return;
-    }
-    quit();
-}
-
-/* flag = default answer, FALSE=n, TRUE=y */
-int yesno(int flag)
-{
-    int ch;
-
-    addstr(flag ? str_yes : str_no);
-    refresh();
-    ch = getch();
-    if (ch == '\r' || ch == '\n')
-        return (flag);
-    return (tolower(ch) == str_yes[1]);
-}
-
 void quit(void)
 {
     done = 1;

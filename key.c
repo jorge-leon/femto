@@ -224,7 +224,7 @@ void setup_keys(void)
     set_key_internal("pgdn",      "page-down",            "\x1B\x5B\x36\x7E", forward_page);
     set_key_internal("backspace", "backspace",            "\x7f", backspace);
 
-    set_key_internal("c-x c-b",   "list-buffers"          , "\x18\x0b", list_buffers);
+    set_key_internal("c-x c-b",   "list-buffers"          , "\x18\x0b", user_func);
     set_key_internal("c-x c-c",   "save-buffers-kill-terminal", "\x18\x03", user_func);
     set_key_internal("c-x c-n",   "next-buffer"           , "\x18\x0E", user_func);
     set_key_internal("c-x c-s",   "save-buffer"           , "\x18\x13", user_func);
@@ -234,7 +234,7 @@ void setup_keys(void)
     set_key_internal("c-x =",     "cursor-position"       , "\x18\x3D", cursor_position);
     set_key_internal("c-x ?",     "user-func"             , "\x18\x3F", user_func);
     /* Note: is set to interactive switch-to-buffer in Emacs */
-    set_key_internal("c-x b",     "list-buffers"          , "\x18\x62", list_buffers);
+    set_key_internal("c-x b",     "list-buffers"          , "\x18\x62", user_func);
     set_key_internal("c-x k",     "kill-buffer-interactive", "\x18\x6B", user_func);
     set_key_internal("c-x n",     "next-buffer"           , "\x18\x6E", user_func);
     set_key_internal("c-x o",     "other-window"          , "\x18\x6F", other_window);

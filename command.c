@@ -456,7 +456,7 @@ void append_string(buffer_t *bp, char *str)
 
 void log_message(char *str)
 {
-    buffer_t *bp = find_buffer("*messages*", TRUE);
+    buffer_t *bp = find_buffer("*messages*", true);
     assert(bp != NULL);
     append_string(bp, str);
 }
@@ -667,7 +667,7 @@ void repl(void)
     if (strlen(output) < 60) {
         msg(output);
     } else {
-        bp = find_buffer("*lisp_output*", TRUE);
+        bp = find_buffer("*lisp_output*", true);
         append_string(bp, output);
         (void)popup_window(bp->name);
     }

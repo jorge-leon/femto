@@ -43,7 +43,7 @@ available to be called as lisp functions
     {"set-visited-filename",      1, 1, 0,            e_set_buffer_filename},
     {"buffer-fread",              1, 2, 0,            e_buffer_fread},
     {"buffer-fwrite",             2, 2, 0,            e_buffer_fwrite},
-    {"switch-to-buffer",          1, 1, TYPE_STRING,  e_switch_to_buffer},
+    {"buffer-show",               1, 1, TYPE_STRING,  e_buffer_show},
     {"set-buffer",                1, 1, TYPE_STRING,  e_set_buffer},
     {"set-buffer-name",           1, 1, TYPE_STRING,  e_set_buffer_name},
     {"delete-buffer",             1, 1, TYPE_STRING,  e_delete_buffer},

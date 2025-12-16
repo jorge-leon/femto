@@ -69,11 +69,10 @@ extern buffer_t *bheadp;        /* head of list of buffers */
 extern buffer_t *search_buffer(char *);
 extern buffer_t *new_buffer(char *);
 extern buffer_t *find_buffer_by_fname(char *);
-extern buffer_t *find_buffer(char *, int);
+extern buffer_t *find_buffer(char *, bool);
 extern char* get_buffer_modeline_name(buffer_t *);
 extern char* get_buffer_name(buffer_t *);
 extern bool set_buffer_name(buffer_t *, char *);
-extern char *get_current_bufname(void);
 extern char *get_current_filename(void);
 
 extern int count_buffers(void);
@@ -83,7 +82,6 @@ extern int modified_buffers(void);
 extern void switch_to_buffer(buffer_t *);
 extern void add_mode(buffer_t *, buffer_flags_t);
 extern void delete_mode(buffer_t *, buffer_flags_t);
-extern void list_buffers(void);
 
 #endif
 /*

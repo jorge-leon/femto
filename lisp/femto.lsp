@@ -223,6 +223,10 @@
 ;; Note: currently buffers are not Lisp objects, their handle is their name string.
 (defun current-buffer ()  (buffer-name))
 
+(defun switch-to-buffer (name)
+  (buffer-show name)
+  (run-hook after-switch-to-buffer-hook) )
+
 (defun buffer-modified-p args  (buffer-flag-modified (when args (car args))) )
 (defun restore-buffer-modified-p (bool)  (buffer-flag-modified nil bool))
 (defun set-buffer-modified-p (bool)  (restore-buffer-modified-p bool) (refresh))

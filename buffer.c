@@ -9,7 +9,6 @@
 #include <assert.h>
 
 #include "femto.h"
-#include "window.h"
 #include "undo.h"
 #include "buffer.h"
 #include "gap.h"
@@ -50,7 +49,7 @@ void buffer_init(buffer_t *bp)
  * structure associated with it. If the buffer is not found and the
  * "cflag" is TRUE, create it.
  */
-buffer_t *find_buffer(char *name, int cflag)
+buffer_t *find_buffer(char *name, bool cflag)
 {
     buffer_t *bp = NULL;
 
@@ -208,9 +207,8 @@ void delete_mode(buffer_t *bp, buffer_flags_t mode)
  * @returns TRUE on success, FALSE if we try to delete the *scratch*
  * buffer
  *
- * Assure that the head and the
- * current buffer point to a live buffer and the *scratch* buffer is
- * never deleted.
+ * Assure that the head points to a live buffer and neither the
+ * *scratch* nore the current buffer is deleted.
  *
  * Unlink from the list of buffers and free the memory associated with
  * the buffer.
@@ -221,7 +219,7 @@ bool delete_buffer(buffer_t *bp)
 {
     buffer_t *sb;
 
-    if (strcmp(bp->name, str_scratch) == 0)
+    if (bp == curbp || strcmp(bp->name, str_scratch) == 0)
         return false;
 
     /* find place where the bp buffer is next */
@@ -241,10 +239,6 @@ bool delete_buffer(buffer_t *bp)
     } else {
         sb->b_next = bp->b_next;
     }
-    /* If buffer is the current buffer, switch the current buffer */
-    /* Note: we might want a different "other-buffer" algorithm here */
-    if (bp == curbp)
-        switch_to_buffer((bp->b_next == NULL) ? bheadp : bp->b_next);
 
     /* now we can delete */
     free_undos(bp->b_utail);
@@ -290,54 +284,6 @@ int modified_buffers(void)
             return true;
 
     return false;
-}
-
-void switch_to_buffer(buffer_t *bp)
-{
-    disassociate_b(curwp);
-    curbp = bp;
-    associate_b2w(curbp,curwp);
-}
-
-char *get_current_bufname(void)
-{
-    return get_buffer_name(curbp);
-}
-
-void list_buffers(void)
-{
-    buffer_t *bp;
-    buffer_t *list_bp;
-    char mod_ch, over_ch;
-    char blank[] = " ";
-    static char report_line[NAME_MAX + 40];
-    char *bn;
-    char *fn;
-
-    list_bp = find_buffer(str_buffers, true);
-
-    /* Notes: should'n we use popup-buffer here? */
-    disassociate_b(curwp); /* we are leaving the old buffer for a new one */
-    curbp = list_bp;
-    associate_b2w(curbp, curwp);
-    zero_buffer(curbp); /* throw away previous content */
-
-    /*             12 1234567 12345678901234567 */
-    insert_string("CO    Size Buffer           File\n");
-    insert_string("-- ------- ------           ----\n");
-
-    bp = bheadp;
-    while (bp != NULL) {
-        if (bp != list_bp) {
-            mod_ch  = ((bp->modified) ? '*' : ' ');
-            over_ch = ((bp->b_flags & B_OVERWRITE) ? 'O' : ' ');
-            bn = (bp->name[0] != '\0' ? bp->name : blank);
-            fn = (bp->fname != NULL ? bp->fname : blank);
-            snprintf(report_line, sizeof(report_line),  "%c%c %7d %-16s %s\n",  mod_ch, over_ch, bp->b_size, bn, fn);
-            insert_string(report_line);
-        }
-        bp = bp->b_next;
-    }
 }
 
 /*

@@ -21,17 +21,8 @@
 ;;
 (require 'femto)
 
-
-;;
-(setq dired-dir "")
 (setq dired-ls-cmd "ls -la ")
-(setq dired-name-start-col 47)
-(setq dired-dir-start-col 2)
-(setq dired-line 1)
-(setq dired-start-line 1)
-(setq dired-last-line 1)
 (setq dired-max-ops 300)
-(setq dired-debug nil)
 
 (defun dired-interactive ()
   (let* ((filename (get-buffer-filename))
@@ -62,41 +53,9 @@
     (set-mark)
     (goto-line 3)
     (kill-region)
-    (dired-init)
-    (dired-get-last-line)
     (beginning-of-buffer)
-    (dired-get-info)
     (buffer-flag-modified buffer nil)
     (unless (eq buffer current) (set-buffer current)) ))
-
-(defun dired-init ()
-  (setq dired-start-line 1)
-  (setq dired-last-line 1)
-  (setq dired-line 1)
-  (end-of-buffer)
-  (previous-line)
-  (beginning-of-line)
-  (dired-insert-space) )
-
-(defun dired-insert-space ()
-  (insert-string "  ")
-  (previous-line)
-  (beginning-of-line)
-  (unless (eq " " (get-char))  (dired-insert-space)) )
-
-(defun dired-get-last-line ()
-  (setq de-last-line 1)
-  (end-of-buffer)
-  (previous-line)
-  (beginning-of-line)
-  (dired-count-line) )
-
-(defun dired-count-line ()
-  (when (> (get-point) 0)
-    (setq dired-last-line (+ 1 dired-last-line))
-    (previous-line)
-    (beginning-of-line)
-    (dired-count-line) ))
 
 (defun dired-loop (ops)
   (unless (i= 0 ops)
@@ -110,6 +69,7 @@
 	(dired_handle-command-key key) )))
 
 (defun dired_handle-arrow-key (func)
+  (log 'DEBUG nil "dired: arrow key: "func)
   (when (memq (intern func)
 	      ;; Note: backward_page is registered with different names on
 	      ;;   different key combinations in key.c. Emacs has scroll-up
@@ -120,10 +80,11 @@
     (let* ((input   (open func "<"))
 	   (result  (catch (eval (read input)))) )
       (close input)
-      (unless (car result)  (apply (caddr result))) ))
+      (if-not (car result)  (apply (caddr result))
+	      (log 'DEBUG result "dired: arrow-key") )))
   (when (memq (intern func) '(previous-line next-line))
     (beginning-of-line)
-    (repeat 9 forward-word) ))
+    (repeat 8 forward-word) ))
 
 (defun dired_handle-command-key (key)
   (cond
@@ -137,34 +98,27 @@
 	    (name      (cdr info))
 	    (path      (if (string-equal name "..")  (file-name-directory (get-buffer-filename))
 			   (concat (get-buffer-filename) "/" name) )))
-       (log 'DEBUG "dired: " info)
-       (cond ((string-equal type "d") (dired path))
-	     ((string-equal type "f") (find-file path))
+       (log 'DEBUG nil "dired: " info)
+       (cond ((string-equal type "d") (dired path) :quit)
+	     ((string-equal type "-") (switch-to-buffer (find-file-noselect path)) :quit)
 	     (t (message (concat "Error: cannot open file of type: " type))) )))
-    ((eq key "?") (log-debug (concat "dired: info '"(car (dired-get-info))"' '"(cdr (dired-get-info))"'\n")))
-    (t (log 'DEBUG "dired: unhandled command key="k)) ))
+    ((eq key "?") (log 'DEBUG nil "dired: info '"(car (dired-get-info))"' '"(cdr (dired-get-info))"'\n"))
+    (t (log 'DEBUG nil "dired: unhandled command key="key)) ))
 
 (defun dired-get-info ()
   (beginning-of-line)
-  (forward-word)
   (let* ((type (get-char))
 	 (is-link (string-equal type "l")) )
     (repeat 8 forward-word)
     ;; Note: in case the filename starts with a space
     (backward-word) (forward-char) (forward-char)
-    (set-mark)
-    (if-not is-link (end-of-line)
-	    (search-forward " ->")
-	    (repeat 3 backward-char) )
-    (copy-region)
-    (cons type (get-clipboard)) ))
-
-;;
-;; keep this so we can debug dired if needed
-;;
-(defun dired-debug(m)
-  (when dired-debug (log 'DEBUG "dired:" (concat m "\n"))) )
-
-
+    (let ((point (get-point)))
+      (set-mark)
+      (if-not is-link (end-of-line)
+	      (search-forward " ->")
+	      (repeat 3 backward-char) )
+      (copy-region)
+      (set-point point)
+      (cons type (get-clipboard)) )))
 
 (provide 'dired)

@@ -1,5 +1,7 @@
 /* hlite.c, generic syntax hilighting, Atto Emacs, Hugh Barney, Public Domain, 2016 */
 
+#include <curses.h>
+
 #include "femto.h"
 #include "undo.h"
 #include "buffer.h"
@@ -216,6 +218,25 @@ int parse_text(buffer_t *bp, point_t pt)
     }
 
     return (next_state = state);
+}
+void hilite_init()
+{
+    init_pair(ID_DEFAULT, COLOR_CYAN, COLOR_BLACK);          /* alpha */
+    init_pair(ID_SYMBOL, COLOR_WHITE, COLOR_BLACK);          /* non alpha, non digit */
+    init_pair(ID_MODELINE, COLOR_BLACK, COLOR_WHITE);        /* modeline */
+    init_pair(ID_DIGITS, COLOR_YELLOW, COLOR_BLACK);         /* digits */
+    init_pair(ID_BLOCK_COMMENT, COLOR_GREEN, COLOR_BLACK);   /* block comments */
+    init_pair(ID_LINE_COMMENT, COLOR_GREEN, COLOR_BLACK);    /* line comments */
+    init_pair(ID_SINGLE_STRING, COLOR_YELLOW, COLOR_BLACK);  /* single quoted strings */
+    init_pair(ID_DOUBLE_STRING, COLOR_YELLOW, COLOR_BLACK);  /* double quoted strings */
+    init_pair(ID_BRACE, COLOR_BLACK, COLOR_CYAN);            /* brace highlight */
+
+    // python pain
+    init_pair(ID_TRIPLE_DOUBLE_QUOTE, COLOR_GREEN, COLOR_BLACK);  /* tripple quoted strings, doc strings */
+    init_pair(ID_TRIPLE_SINGLE_QUOTE, COLOR_GREEN, COLOR_BLACK);  /* tripple quoted strings, doc strings */
+    init_pair(ID_TRIPLE_DOUBLE_QUOTE_S, COLOR_YELLOW, COLOR_BLACK);  /* tripple quoted strings, string assignment */
+    init_pair(ID_TRIPLE_SINGLE_QUOTE_S, COLOR_YELLOW, COLOR_BLACK);  /* tripple quoted strings, string assignment */
+    init_pair(ID_ASSIGNMENT, COLOR_WHITE, COLOR_BLACK);          /* = operator in python  */
 }
 
 /*

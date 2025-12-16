@@ -221,6 +221,7 @@ int parse_text(buffer_t *bp, point_t pt)
 }
 void hilite_init()
 {
+    start_color();
     init_pair(ID_DEFAULT, COLOR_CYAN, COLOR_BLACK);          /* alpha */
     init_pair(ID_SYMBOL, COLOR_WHITE, COLOR_BLACK);          /* non alpha, non digit */
     init_pair(ID_MODELINE, COLOR_BLACK, COLOR_WHITE);        /* modeline */

@@ -24,8 +24,6 @@ int getfilename(char *prompt, char *buf, int nbuf)
     char sys_command[255];
     FILE *fp = NULL;
 
-//    buf[0] ='\0';
-
     for (;;) {
         didtry = (k == 0x09);    /* Was last command tab-completion? */
         display_prompt_and_response(prompt, buf);

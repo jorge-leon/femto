@@ -30,35 +30,10 @@
 #define MAX_KNAME       12
 #define MAX_KBYTES      12
 #define MAX_KFUNC       30
-#define LISP_IN_OUT     2048
 #define MIN_GAP_EXPAND  512
 #define FWD_SEARCH      1
 #define REV_SEARCH      2
 #define TEMPFILE        "/tmp/feXXXXXX"
-
-/* undo types, in matched pairs */
-#define UNDO_T_NONE        0
-#define UNDO_T_INSERT      1
-#define UNDO_T_BACKSPACE   2
-#define UNDO_T_KILL        3
-#define UNDO_T_YANK        4
-#define UNDO_T_DELETE      5
-#define UNDO_T_INSAT       6
-#define UNDO_T_REPLACE     7
-
-#define STR_T_INSERT       "INSERT"
-#define STR_T_BACKSP       "BACKSP"
-#define STR_T_KILL         "KILL  "
-#define STR_T_YANK         "YANK  "
-#define STR_T_DELETE       "DELETE"
-#define STR_T_INSAT        "INSAT "
-#define STR_T_REPLACE      "REPLC "
-#define STR_T_NONE         "NONE  "
-
-/* edit field attributes */
-#define F_NONE          0
-#define F_CLEAR         1
-#define ZERO_STRING(X) X[0]='\0';
 
 typedef void (*void_func)(void);
 

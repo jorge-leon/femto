@@ -255,7 +255,7 @@ void modeline(window_t *wp)
 
 void clear_message_line(void)
 {
-    ZERO_STRING(msgline);
+    msgline[0] = '\0';
     msgflag = FALSE;
     move(MSGLINE, 0);
     clrtoeol();

@@ -13,6 +13,25 @@ typedef struct undo_tt {
     struct undo_tt *u_prev;
 } undo_tt;
 
+/* undo types, in matched pairs */
+#define UNDO_T_NONE        0
+#define UNDO_T_INSERT      1
+#define UNDO_T_BACKSPACE   2
+#define UNDO_T_KILL        3
+#define UNDO_T_YANK        4
+#define UNDO_T_DELETE      5
+#define UNDO_T_INSAT       6
+#define UNDO_T_REPLACE     7
+
+#define STR_T_INSERT       "INSERT"
+#define STR_T_BACKSP       "BACKSP"
+#define STR_T_KILL         "KILL  "
+#define STR_T_YANK         "YANK  "
+#define STR_T_DELETE       "DELETE"
+#define STR_T_INSAT        "INSAT "
+#define STR_T_REPLACE      "REPLC "
+#define STR_T_NONE         "NONE  "
+
 
 extern undo_tt *execute_undo(undo_tt *);
 extern void free_undos(undo_tt *);

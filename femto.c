@@ -193,8 +193,7 @@ void gui(void)
     noecho();
     idlok(stdscr, TRUE);
 
-    start_color();
-    init_hilite();
+    hilite_init();
 
     /* windows */
     one_window(curwp);

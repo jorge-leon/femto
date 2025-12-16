@@ -9,9 +9,6 @@
 /************************* Editor Extensions **************************************/
 
 
-#define F_NONE          0
-#define F_CLEAR         1
-
 #define DEFINE_EDITOR_FUNC(name)					\
     extern void name(void);                                             \
     Object *e_##name(Interpreter *interp, Object ** args, Object **env)	\

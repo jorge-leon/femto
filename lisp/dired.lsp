@@ -21,31 +21,42 @@
 ;;
 (require 'femto)
 
-(setq dired-ls-cmd "ls -la ")
+(setq dired-ls-cmd "ls -la -- ")
 (setq dired-max-ops 300)
 
 (defun dired-interactive ()
-  (let* ((filename (get-buffer-filename))
+  (let* ((filename (buffer-filename))
 	 (default (if (null filename) (getcwd)
 		      (file-name-directory filename) ))
 	 (response (prompt-filename (concat "Dired (directory): " default))) )
-    (dired (if response  response default)) ))
+    (dired (if response  response  default)) ))
 
 
 (defun dired (directory)
   (delete-other-windows)
   (let ((buffer (find-buffer-visiting directory)))
-    (if buffer (switch-to-buffer buffer)
-	(let ((buffer  (generate-new-buffer (generate-new-buffer-name "*dired*"))))
-	  (switch-to-buffer buffer)
-	  (set-visited-filename directory)
-	  (dired-reload buffer) )))
-  (dired-loop dired-max-ops) )
+    (unless buffer
+      (setq buffer (generate-new-buffer (generate-new-buffer-name "*dired*")))
+      (set-buffer buffer)
+      (set-visited-filename directory) )
+    (switch-to-buffer buffer) ))
+
+;;; Hook function
+(defun dired-after-switch-to-buffer-function ()
+  ;; Note: to be replaced by (eq (buffer-mode) 'dired) or similar function
+  (when (string-startswith (buffer-name) "*dired*")
+    (dired-reload (current-buffer))
+    (dired-loop dired-max-ops) ))
+
+;;Note: until this works
+;;   (add-hook 'after-switch-to-buffer-hook 'dired-after-switch-to-buffer-function)
+;; We do the deed manually. Or better, we implement per mode or buffer keymaps
+(setq after-switch-to-buffer-hook (cons 'dired-after-switch-to-buffer-function after-switch-to-buffer-hook))
 
 (defun dired-reload (buffer)
   (let* ((current (current-buffer))
 	 (dummy   (unless (eq buffer current)  (set-buffer buffer)))
-	 (stream (popen (concat dired-ls-cmd (get-buffer-filename)))) )
+	 (stream (popen (concat dired-ls-cmd (buffer-filename buffer)))) )
     (erase-buffer)
     (buffer-fread stream)
     (pclose stream)
@@ -93,11 +104,11 @@
      (message "")
      :quit )
     ((memq key '("f" "\n"))
-     (let* ((info      (dired-get-info))
-	    (type      (car info))
-	    (name      (cdr info))
-	    (path      (if (string-equal name "..")  (file-name-directory (get-buffer-filename))
-			   (concat (get-buffer-filename) "/" name) )))
+     (let* ((info  (dired-get-info))
+	    (type  (car info))
+	    (name  (cdr info))
+	    (path  (if (string-equal name "..")  (file-name-directory (buffer-filename))
+			   (concat (buffer-filename) "/" name) )))
        (log 'DEBUG nil "dired: " info)
        (cond ((string-equal type "d") (dired path) :quit)
 	     ((string-equal type "-") (switch-to-buffer (find-file-noselect path)) :quit)

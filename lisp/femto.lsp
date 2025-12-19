@@ -351,7 +351,7 @@
       find-file-hook nil)
 
 (defun after-find-file ()
-  (let ((mode (prop-get find-file-extension-highlight-mode (file-name-extension (get-buffer-filename)))))
+  (let ((mode (prop-get find-file-extension-highlight-mode (file-name-extension (buffer-filename)))))
     (when mode  (add-mode mode)) )
   (run-hooks 'find-file-hook) )
 
@@ -367,7 +367,7 @@
 
 (defun save-buffer ()
   (if (not (buffer-modified-p)) (message "(No changes need to be saved)")
-      (let* ((filename (get-buffer-filename))
+      (let* ((filename (buffer-filename))
 	    (directory (file-name-directory filename)) )
 	;; Note: we should handle unassociated files with write-contents-functions hooks.
 	(when (null filename)
@@ -415,8 +415,7 @@
 ;;; Saving buffers
 
 (defun buffer_file_modified-p (buffer)
-  (set-buffer buffer)
-  (and (buffer-modified-p) (not (eq "" (get-buffer-filename)))) )
+  (and (buffer-modified-p buffer) (not (eq "" (buffer-filename buffer)))) )
 
 ;;; (save-some-buffers) - interactively save modified file buffers
 ;;; returns t if user 'quits', nil otherwise
@@ -444,7 +443,7 @@
 ;;; Sets the current buffer and does not restore it
 (defun save-buffer_query (buffer mode)
   (set-buffer buffer)
-  (let ((filename  (get-buffer-filename)))
+  (let ((filename  (buffer-filename buffer)))
     (if (not filename) mode ; skip buffers w/o file association
 	(if (eq mode :force) (save-buffer) :force
 	    (let ((response  (prompt (concat "Safe file "filename"? (y, n, !, ., q,) "))))

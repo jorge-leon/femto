@@ -307,9 +307,17 @@ Object *e_get_buffer_name(Interpreter *interp, Object **args, Object **env)
     return newStringWithLength(interp, buf, strlen(buf));
 }
 
+/* (buffer-filename[ buffer]) */
 Object *e_get_buffer_filename(Interpreter *interp, Object **args, Object **env)
 {
-    if (curbp->fname == NULL)
+    buffer_t *buffer = curbp;
+
+    if (FLISP_HAS_ARGS) {
+        buffer = find_buffer(FLISP_ARG_ONE->string, false);
+        if (!buffer)
+            exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(buffer-filename[ buffer]) - buffer does not exist");
+    }
+    if (buffer->fname == NULL)
         return nil;
 
     return newString(interp, curbp->fname);

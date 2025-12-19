@@ -248,7 +248,7 @@
 (defun buffer-list_filtered (name)
   (filter (lambda (b)  (string-equal (buffer-basename b) name)) (buffer-list)) )
 
-(defun buffer-basename (name)  (car (string-split "#" name)))
+(defun buffer-basename (name)  (car (string-split "/" name)))
 
 (defun buffer-name_split (name)
   (let ((parts (string-split "/" name)))

@@ -111,7 +111,7 @@ extern char *str_clip_too_big;
 
 
 /* functions in complete.c */
-extern int getfilename(char *, char *, int);
+extern bool getfilename(char *, char *, int);
 
 
 

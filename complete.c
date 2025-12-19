@@ -14,28 +14,43 @@
 #include "key.h"
 #include "display.h"
 
-/* basic filename completion, based on code in uemacs/PK */
-int getfilename(char *prompt, char *buf, int nbuf)
+/** getfilename() -  basic filename completion, based on code in uemacs/PK
+ *
+ * @param prompt .. Prompt to display in the message line.
+ * @param buf    .. Pointer to char buffer where returned filename is left.
+ * @param nbuf   .. Size of buf.
+ *
+ * @returns: false if aborted by user, true otherwise.
+ *
+ * If buf is not zero it must be a / terminated directoryname to
+ * be used as base directory.
+ *
+ */
+bool getfilename(char *prompt, char *buf, int nbuf)
 {
     static char temp_file[] = TEMPFILE;
-    int cpos = 0;    /* current character position in string */
-    int k = 0, c, fd, didtry, iswild = 0;
+    char sys_command[NAME_MAX];
 
-    char sys_command[255];
+    int cpos = strlen(buf);    /* current character position in string */
+    int wpos, dpos = cpos;
+    int key = 0, c, fd;
+    bool didtry, iswild = false;
+
     FILE *fp = NULL;
 
     for (;;) {
-        didtry = (k == 0x09);    /* Was last command tab-completion? */
+        didtry = (key == 0x09);    /* Was last command tab-completion? */
         display_prompt_and_response(prompt, buf);
-        k = getch(); /* get a character from the user */
+        key = getch(); /* get a character from the user */
 
-        switch(k) {
+        switch(key) {
         case 0x07: /* ctrl-g, abort */
         case 0x0a: /* cr, lf */
         case 0x0d:
             if (fp != NULL) fclose(fp);
-            return (k != 0x07 && cpos > 0);
+            return (key != 0x07);
 
+            /* Note: move dpos if we delete past a / */
         case 0x7f: /* del, erase */
         case 0x08: /* backspace */
             if (cpos == 0) continue;
@@ -48,44 +63,57 @@ int getfilename(char *prompt, char *buf, int nbuf)
             break;
 
         case 0x09: /* TAB, complete file name */
-            /* scan backwards for a wild card and set */
-            iswild=0;
-            while (cpos > 0) {
-                cpos--;
-                if (buf[cpos] == '*' || buf[cpos] == '?')
-                    iswild = 1;
-            }
+            /* scan backwards for a wild card and set iswild */
+            iswild=false;
+            for (wpos = strlen(buf); wpos; wpos--)
+                if ((iswild = (buf[wpos] == '*' || buf[wpos] == '?')))
+                    break;
 
             /* first time retrieval */
-            if (! didtry) {
+            if (didtry == false) {
+                /* scan backwards for a directory separator */
+                for(dpos = strlen(buf); dpos && buf[dpos] != '/'; dpos--);
+
                 if (fp != NULL) fclose(fp);
                 strcpy(temp_file, TEMPFILE);
                 if (-1 == (fd = mkstemp(temp_file)))
-                    fatal("%s: Failed to create temp file\n");
-                strcpy(sys_command, "echo ");
-                strcat(sys_command, buf);
+                    fatal("Failed to create temp file in getfilename()\n");
+                sys_command[0] = '\0';
+                if (dpos) {
+                    dpos++;
+                    strcpy(sys_command, "cd ");
+                    strncat(sys_command, buf, dpos);
+                    strcat(sys_command, " ; echo ");
+                    strcat(sys_command, buf+dpos);
+                } else {
+                    strcpy(sys_command, "echo ");
+                    strcat(sys_command, buf);
+                    dpos = cpos;
+                }
                 if (!iswild) strcat(sys_command, "*");
                 strcat(sys_command, " >");
                 strcat(sys_command, temp_file);
-                strcat(sys_command, " 2>&1");
-                (void) ! system(sys_command); /* stop compiler unused result warning */
+                strcat(sys_command, " 2>/dev/null");
+                (void) system(sys_command);
                 fp = fdopen(fd, "r");
                 unlink(temp_file);
             }
+            cpos = dpos;
 
             /* copy next filename into buf */
+            /* Note: breaks on filenames with spaces */
             while ((c = getc(fp)) != EOF && c != '\n' && c != ' ')
                 if (cpos < nbuf - 1 && c != '*')
                     buf[cpos++] = c;
 
             buf[cpos] = '\0';
             if (c != ' ') rewind(fp);
-            didtry = 1;
+            didtry = true;
             break;
 
         default:
             if (cpos < nbuf - 1) {
-                buf[cpos++] = k;
+                buf[cpos++] = key;
                 buf[cpos] = '\0';
             }
             break;

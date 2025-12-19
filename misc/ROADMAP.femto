@@ -6,6 +6,8 @@
 - Rethink buffer list, simplify with ring?
   - Insert new buffers at head, instead of alphabetical.
   - Consider implementing bury-buffer and moving buffers to head.
+- Make buffer mode a Lisp Object, register default symbols for it as self
+  evaluating constants.
 - Improve readability, stability and reduce code size of Femto libraries:
   - Use if/if-not, when/unless instead of cond.
   - Use intern.
@@ -28,28 +30,33 @@
 	+ oxo stopped working
   + kill-buffer now fails if named buffer does not exist
   + show-prompt removed, use (message "prompt")(update-display) instead
+  + prompt-filename improved to use default and recurse directories
   + Buffer name handling: alloc/free string instead of fixed (too small) buffer.
   + undo does not reset modified flag
   + Implement save-some-buffers.
   + Move posix file name check to Lisp: can't start with -, all chars must be isalnum() or in "._-/".
   + Fix dired on find-file
   - dired:
-	- Not using default when selecting subdirectory, setting wrong filename in
+	+ Not using default when selecting subdirectory, setting wrong filename in
 	  new buffer
 	- Add file and directory creation
 	- Add mode setting
 	- Add reload
+	- Add delete file
+	- Add delete directory/recursively
   - Check all Femto modules
 	+ git
 	+ grep
 	+ oxo
 	? defmacro
 	+ info
-	- prompt
   - Update all documentation.
-- Make fLisp read from /dev/null to avoid:
++ Refactor include system
+  + rename main.c to femto.c
+  + rename header.h to femto.h
++ Make fLisp read from /dev/null to avoid:
   https://github.com/hughbarney/femto/issues/10
-- Documentation
++ Documentation
   - https://github.com/hughbarney/femto/issues/40
   - https://github.com/hughbarney/femto/issues/39
   - https://github.com/hughbarney/femto/issues/37
@@ -58,11 +65,10 @@
   - https://github.com/hughbarney/femto/issues/1
 
 # Future
+- Implement add-hook and remove-hook, maybe look into subr.el, maybe need
+  (set var val).
 - Pipe a buffer through a shell command and read the output back into a
   different buffer.
-- Refactor include system
-  - rename main.c to femto.c
-  - rename header.h to femto.h
 - Change eval_block to eval_region.
 - Find out how to build on NetBSD: problem is ncurses libraries
 - Improve/support batch mode: output = stdout.

@@ -20,43 +20,24 @@
 	   ;; add the key bindings
 	
 	   (insert-string "\n;; KEY BINDINGS \n\n")
-	   (kill-buffer "*help*")
 	   (describe-bindings)
-	   (setq bd (get-buffer-string "*help*"))
-	   (switch-to-buffer "*info*")
+	   (insert-buffer-substring-no-properties "*help*")
 	   (end-of-buffer)
-	   (insert-string bd)
 	   
 	   ;; add function list
 	   
 	   (insert-string "\n\n;; FUNCTIONS \n\n")
-	   (kill-buffer "*help*")
 	   (describe-functions)
-	   (setq bd (get-buffer-string "*help*"))
-	   (switch-to-buffer "*info*")
+	   (insert-buffer-substring-no-properties "*help*")
+
            (add-mode "lispmode")
-	   (end-of-buffer)
-	   (insert-string bd)
-           (delete-mode "modified")
-	   (kill-buffer "*help*")
+           (restore-buffer-modified-p nil)
 
 	   ;; goto to top of buffer and update screen
            
-	   (delete-other-windows)
 	   (beginning-of-buffer)
+	   (delete-other-windows)
 	   (update-display))))
-
-
-;;
-;; return the contents of a buffer
-;;
-(defun get-buffer-string(tbuf)
-   (switch-to-buffer tbuf)
-   (set-point 0)
-   (set-mark)
-   (end-of-buffer)
-   (copy-region)
-   (get-clipboard))
 
 
 (provide 'info)

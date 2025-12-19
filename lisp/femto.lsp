@@ -218,10 +218,19 @@
 	  (list 'catch (list 'run-hook (car hooks)))
 	  (cons 'run-hooks (cdr hooks)) )))
 
+;;; Note: pending a working implementation
+;; (defun add-hook (hook-sym function-sym)
+;;   (unless (memq function-sym (eval hook-sym))
+;;       (bind hook-sym (cons function-sym (eval hook-sym)) t) ))
+
+
 ;;; Buffers
 
 ;; Note: currently buffers are not Lisp objects, their handle is their name string.
 (defun current-buffer ()  (buffer-name))
+
+;;; This hook is run after switching to a buffer
+(setq after-switch-to-buffer-hook ())
 
 (defun switch-to-buffer (name)
   (buffer-show name)
@@ -271,6 +280,19 @@
 (defun next-buffer ()  (switch-to-buffer (next-buffer_rr)))
 (setq other-buffer next-buffer_rr)
 
+;;; args: start end, default beginning, end
+(defun insert-buffer-substring-no-properties (from-buffer-or-name . args)
+  (let* ((start    (if args  (car args)  0))
+	 (end      (and args (cdr args) (cadr args)))
+	 (current  (current-buffer)) )
+    (set-buffer from-buffer-or-name)
+    (set-point start)
+    (set-mark)
+    (if end (set-point end)
+	(end-of-buffer) )
+    (copy-region)
+    (set-buffer current)
+    (insert-string (get-clipboard)) ))
 
 ;;; Interactive
 (defun kill-buffer-interactive ()

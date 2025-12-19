@@ -52,9 +52,8 @@
   (nth n board))
 
 (defun set-nth (list n val)
-  (cond
-    ((> n 0) (cons (car list) (set-nth (cdr list) (- n 1) val)))
-    (t (cons val (cdr list))) ))
+  (if (> n 0) (cons (car list) (set-nth (cdr list) (- n 1) val))
+      (cons val (cdr list)) ))
 
 (defun newline_and_space()
   (oxo-debug "newline_and_space\n")
@@ -208,8 +207,8 @@
     ((play_again) (oxo))
     (t
      (msg "Thank you for playing" t)
-     (kill-buffer "*oxo*")
-     (clearline 8)
+     (restore-buffer-modified-p nil)
+     (kill-buffer)
      (message "")) ))
 
 (provide 'oxo)

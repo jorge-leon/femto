@@ -13,16 +13,15 @@
 (setq grep-search-files "*.c *.h")
 
 (defun grep-command()
-  (kill-buffer grep-buf)
+  (switch-to-buffer grep-buf)
+  (erase-buffer)
   (setq grep-line 0)
   (setq grep-search (prompt "grep search for: " grep-search))
-  (cond
-    ((> (string-length grep-search) 0)
+  (when (> (string-length grep-search) 0)
      (setq grep-search-files (prompt "grep search files: " grep-search-files))
      (setq grep-query (concat grep-cmd " " grep-search " " grep-search-files))
      (shell-command grep-query)
-     (set-key "c-x `" "grep-next")
-     (rename-buffer grep-buf))))
+     (set-key "c-x `" "grep-next") ))
 
 (defun grep-next()
   (switch-to-buffer grep-buf)

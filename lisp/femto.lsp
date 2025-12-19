@@ -127,11 +127,11 @@
 
 ;; prompt for a keystroke then show its name
 (defun describe-key()
-  (show-prompt "Describe Key: ")
-  (setq key (get-key))
-  (cond
-    ((not (eq key "")) (message key))
-    (t (message (concat (get-key-name) " runs command " (get-key-funcname))))))
+  (message "Describe key: ")
+  (update-display)
+  (let ((key (get-key)))
+    (if-not (eq key "") (message key)
+	    (message (concat (get-key-name) " runs command " (get-key-funcname))) )))
 
 ;;
 ;; GNU Emacs style lisp interaction.

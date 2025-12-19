@@ -55,7 +55,6 @@ extern int add_mode_current_buffer(char *);
 extern int delete_mode_current_buffer(char *);
 extern int get_mode_current_buffer(char *);
 extern int count_buffers(void);
-extern void display_prompt_and_response(char *, char *);
 extern void msg(char *,...);
 extern void clear_message_line(void);
 extern void log_message(char *);
@@ -335,12 +334,6 @@ Object *e_buffer_flag_modified(Interpreter *interp, Object **args, Object **env)
 }
 
 /* Interaction */
-Object *e_show_prompt(Interpreter *interp, Object **args, Object **env)
-{
-    display_prompt_and_response(FLISP_ARG_ONE->string, FLISP_ARG_TWO->string);
-    return t;
-}
-
 Object *e_prompt(Interpreter *interp, Object **args, Object **env)
 {
     char response[81] = "";

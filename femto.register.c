@@ -18,7 +18,6 @@ available to be called as lisp functions
     {"get-point-max",             0, 0, 0,            e_get_point_max},
     {"set-key",                   2, 2, TYPE_STRING,  e_set_key},
     {"prompt",                    1, 2, TYPE_STRING,  e_prompt},
-    {"show-prompt",               2, 2, TYPE_STRING,  e_show_prompt},
     {"eval-block",                0, 0, 0,            e_eval_block},
     {"get-char",                  0, 0, 0,            e_get_char},
     {"get-key",                   0, 0, 0,            e_get_key},

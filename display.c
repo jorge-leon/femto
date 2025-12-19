@@ -261,6 +261,9 @@ void clear_message_line(void)
     clrtoeol();
 }
 
+/* Note: maybe replace with a slightly modified prompt() or with message()
+     This function does not allow editing.
+ */
 void display_prompt_and_response(char *prompt, char *response)
 {
     mvaddstr(MSGLINE, 0, prompt);

@@ -26,11 +26,18 @@
 
 (defun dired-interactive ()
   (let* ((filename (buffer-filename))
-	 (default (if (null filename) (getcwd)
+	 ;; Emacs convention: directory names are given with a trailing /
+	 (default (if (null filename) (string-append (getcwd) "/")
 		      (file-name-directory filename) ))
-	 (response (prompt-filename (concat "Dired (directory): " default))) )
-    (dired (if response  response  default)) ))
-
+	 (directory (prompt-filename "Dired (directory): " default)) )
+    (if-not directory  (message "Canceled")
+	    (when (string-equal "" directory)  (setq directory default))
+	    (unless (string-equal "/" (substring directory 0 1))
+	      (setq directory (concat (getcwd) "/" directory)) )
+	    (unless (string-equal "/" (substring directory -1))
+	      (setq directory (string-append directory "/")) )
+	    (fstat directory) ; throws error if path with trailing slash is not a directory
+	    (dired directory) )))
 
 (defun dired (directory)
   (delete-other-windows)
@@ -38,6 +45,8 @@
     (unless buffer
       (setq buffer (generate-new-buffer (generate-new-buffer-name "*dired*")))
       (set-buffer buffer)
+      ;; Note: we suppose to get called with a directory.
+      ;;   Should we check?
       (set-visited-filename directory) )
     (switch-to-buffer buffer) ))
 
@@ -107,9 +116,12 @@
      (let* ((info  (dired-get-info))
 	    (type  (car info))
 	    (name  (cdr info))
-	    (path  (if (string-equal name "..")  (file-name-directory (buffer-filename))
-			   (concat (buffer-filename) "/" name) )))
-       (log 'DEBUG nil "dired: " info)
+	    (path  (cond
+		     ((string-equal name "..")
+		      (file-name-directory (substring (buffer-filename) 0 -1)) )
+		     ((string-equal type "d")  (concat (buffer-filename) name "/"))
+		     (t (string-append (buffer-filename) name)) )))
+       (log 'DEBUG nil "dired: info "info", path "path)
        (cond ((string-equal type "d") (dired path) :quit)
 	     ((string-equal type "-") (switch-to-buffer (find-file-noselect path)) :quit)
 	     (t (message (concat "Error: cannot open file of type: " type))) )))

@@ -132,4 +132,5 @@
       (set-point point)
       (cons type (get-clipboard)) )))
 
+
 (provide 'dired)

@@ -1,24 +1,51 @@
 -*- mode: markdown; fill-column: 80 -*-
 
 # Next
+- Implement (buffer-flags-special)
+  - Don't consider special flags for saving or as other buffer
+- Rethink buffer list, simplify with ring?
+  - Insert new buffers at head, instead of alphabetical.
+  - Consider implementing bury-buffer and moving buffers to head.
+- Improve readability, stability and reduce code size of Femto libraries:
+  - Use if/if-not, when/unless instead of cond.
+  - Use intern.
+  - Use after-mode-switch-hook
+- Consider replacing display_prompt_and_response() with message()
+
+
+# Femto 2.25.0
 
 - Fix file save bug by using fmkdir.
   https://github.com/hughbarney/femto/issues/14
   + Buffer file name handling: alloc/free string instead of fixed buffer.
-    + then move safe_strncpy from util.c to undo and delete util.c
+	+ then move safe_strncpy from util.c to undo and delete util.c
   + remove remaining file reading C-code
 	  + insert_file() in gap.c
-      + make_buffer_name_uniq(), make_buffer_name() in utils.c
-      + rename_current_buffer() in command.c -> set_buffer_name(),
+	  + make_buffer_name_uniq(), make_buffer_name() in utils.c
+	  + rename_current_buffer() in command.c -> set_buffer_name(),
 	  + remove all unneeded message strings
   + Implement (rename-buffer) in Lisp.
-    + oxo stopped working
+	+ oxo stopped working
+  + kill-buffer now fails if named buffer does not exist
+  + show-prompt removed, use (message "prompt")(update-display) instead
   + Buffer name handling: alloc/free string instead of fixed (too small) buffer.
-  + undo does not reset modified flag 
-  - Rethink buffer list, simplify with ring?
+  + undo does not reset modified flag
   + Implement save-some-buffers.
   + Move posix file name check to Lisp: can't start with -, all chars must be isalnum() or in "._-/".
-  - Fix dired on find-file
+  + Fix dired on find-file
+  - dired:
+	- Not using default when selecting subdirectory, setting wrong filename in
+	  new buffer
+	- Add file and directory creation
+	- Add mode setting
+	- Add reload
+  - Check all Femto modules
+	+ git
+	+ grep
+	+ oxo
+	? defmacro
+	+ info
+	- prompt
   - Update all documentation.
 - Make fLisp read from /dev/null to avoid:
   https://github.com/hughbarney/femto/issues/10

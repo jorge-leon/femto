@@ -229,7 +229,7 @@ void apropos(void)
     (void)popup_window(str_help_buf);
 }
 
-/* show all the key bindings in a buffer */
+/* show all the key bindings in a buffer names str_help_buf: "*help*" */
 void describe_bindings(void)
 {
     buffer_t *bp;

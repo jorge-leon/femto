@@ -41,8 +41,8 @@
 	  new buffer
 	- Add file and directory creation
 	- Add mode setting
-	- Add reload
-	- Add delete file
+	+ Add reload
+	+ Add delete file
 	- Add delete directory/recursively
   - Check all Femto modules
 	+ git

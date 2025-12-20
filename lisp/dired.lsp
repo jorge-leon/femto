@@ -79,14 +79,14 @@
 
 (defun dired-loop (ops)
   (unless (i= 0 ops)
-    (message "dired menu: f,x")
+    (message "dired menu: q-uit, g reload, + mkdir, C-opy, D-elete, f/RET find-file or dired")
     (update-display)
     (unless (eq (dired_process-key) :quit)  (dired-loop (- ops 1))) ))
 
 (defun dired_process-key ()
   (let ((key (get-key)))
     (if (eq key "") (dired_handle-arrow-key (get-key-funcname))
-	(dired_handle-command-key key) )))
+	(dired_handle-command-key (intern key)) )))
 
 (defun dired_handle-arrow-key (func)
   (log 'DEBUG nil "dired: arrow key: "func)
@@ -96,7 +96,8 @@
 	      ;;   and scroll-down
 	      '(previous-line next-line  forward-page page-down page-up
 		forward-word forward-char  backward-word backward-char
-		beginning-of-line end-of-line  beginning-of-buffer end-of-buffer))
+		beginning-of-line end-of-line  beginning-of-buffer end-of-buffer
+		find-file))
     (let* ((input   (open func "<"))
 	   (result  (catch (eval (read input)))) )
       (close input)
@@ -107,12 +108,31 @@
     (repeat 8 forward-word) ))
 
 (defun dired_handle-command-key (key)
+    ;; Note: all are "interactive"
+    ;; + .. dired-create-directory
+    ;; C .. dired-do-copy
+    ;; D .. dired-do-delete
+    ;; G .. dired-do-chgrp         *
+    ;; M .. dired-do-chmod         *
+    ;; O .. dired-do-chown         *
+    ;; R .. dired-do-rename        *
+    ;; S .. dired-do-symlink       *
+    ;; T .. dired-do-touch         *
+    ;; Y .. dired-do-relsymlink    *
+    ;; Z .. dired-do-compress      *
+    ;; f, RET .. dired-find-file
+    ;; g .. "revert-buffer" - dired-reload
+    ;; q .. "quit-window"
   (cond
-    ((memq key '("x" "q"))
+    ((eq key 'q)
      (switch-to-buffer (other-buffer))
      (message "")
      :quit )
-    ((memq key '("f" "\n"))
+    ((eq key 'g)  (dired-reload (current-buffer)))
+    ((eq key '+)  (dired-create-directory-interactive))
+    ((eq key 'C)  (dired-do-copy-interactive))
+    ((eq key 'D)  (dired-do-delete))
+    ((or (eq key 'f) (eq key (intern "\n")))
      (let* ((info  (dired-get-info))
 	    (type  (car info))
 	    (name  (cdr info))
@@ -125,8 +145,7 @@
        (cond ((string-equal type "d") (dired path) :quit)
 	     ((string-equal type "-") (switch-to-buffer (find-file-noselect path)) :quit)
 	     (t (message (concat "Error: cannot open file of type: " type))) )))
-    ((eq key "?") (log 'DEBUG nil "dired: info '"(car (dired-get-info))"' '"(cdr (dired-get-info))"'\n"))
-    (t (log 'DEBUG nil "dired: unhandled command key="key)) ))
+    (t (message (concat "dired: unhandled key="key))) ))
 
 (defun dired-get-info ()
   (beginning-of-line)
@@ -144,5 +163,40 @@
       (set-point point)
       (cons type (get-clipboard)) )))
 
+(defun dired-create-directory-interactive ()
+  (let ((directory  (prompt-filename "Create directory " (buffer-filename))))
+    (if-not directory  (message "Canceled")
+	    (mkdir directory t)
+	    (dired-reload (current-buffer)) )))
+
+(defun dired-do-copy-interactive ()
+  (let* ((info    (dired-get-info))
+	 (isdir   (string-equal "d" (car info)))
+	 (name    (cdr info))
+	 (source  (string-append (buffer-filename) name))
+	 (prompt  (if isdir "Copy "  "Copy file "))
+	 (cmd     (if isdir "cp -a "  "cp "))
+	 (dest  (prompt-filename (concat prompt name" to ") (buffer-filename))))
+    (if-not dest (message "Canceled")
+	    (system (concat cmd source " " dest))
+	    (dired-reload (current-buffer)) )))
+
+;; Note: If args is set is must be the number of following lines to
+;;   delete
+(defun dired-do-delete args
+  (let* ((info     (dired-get-info))
+	 (isdir    (string-equal "d" (car info)))
+	 (name     (cdr info))
+	 (path     (concat (buffer-filename) name))
+	 (cmd      (if isdir "rmdir "  "rm "))
+	 (response (prompt (concat "Delete "name" yes or no "))) )
+    ;; Note: if the directory is not empty we fail here.
+    ;;   Instead we should ask and if really yes we should rm -rf
+    (cond ((null response)  (message "Canceled"))
+	  ((string-equal response "yes")
+	   (let ((result  (catch (system (concat cmd path)))))
+	     (if (car result)  (message (concat "Error: "(cadr result)))
+		 (dired-reload (current-buffer)) )))
+	  (t  (message "No deletions performed")) ))))
 
 (provide 'dired)

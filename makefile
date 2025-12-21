@@ -161,7 +161,7 @@ doxygen: FORCE
 
 # Development
 fl: flisp FORCE
-	FLISPRC=flisp.rc FLISPLIB=lisp FLISP_DEBUG=f.log  ./flisp
+	FLISPRC=flisp.rc FLISPLIB=lisp FLISP_DEBUG=f.log $$(which rlwrap) ./flisp
 fld: flisp FORCE
 	FLISPRC=flisp.rc FLISPLIB=lisp FLISP_DEBUG=f.log gdb ./flisp
 flv: flisp FORCE

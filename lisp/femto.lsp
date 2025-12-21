@@ -219,15 +219,18 @@
 
 ;;; Hooks
 (defun run-hook (hookvar)
+  (log 'DEBUG nil "(run-hook "hookvar)
   (let process-hook-function ((hook (eval hookvar)))
-    (cond
-      ((null hook)  nil)
-      ((consp hook)
-       (let ((result (catch ((car hook)))))
-	 (when (car result)
-	   (log-debug (concat "(run-hook hook) failed on function: "(car hook)": "result"\n")) )
-	 (process-hook-function (cdr hook)) ))
-      (t  (throw invalid-value "(run-hook hook) - hook is not a list\n")) )))
+       (log 'DEBUG nil "hook: "(eval hookvar)", elements: "(length hook))
+       (cond
+	 ((null hook)  nil)
+	 ((consp hook)
+	  (let ((result (catch ((car hook)))))
+	    (log 'DEBUG result)
+	    (when (car result)
+	      (log-debug (concat "(run-hook hook) failed on function: "(car hook)": "result"\n")) )
+	    (process-hook-function (cdr hook)) ))
+	 (t  (throw invalid-value "(run-hook hook) - hook is not a list" hook)) )))
 
 (defmacro run-hooks hooks
   (when hooks
@@ -251,7 +254,7 @@
 
 (defun switch-to-buffer (name)
   (buffer-show name)
-  (run-hook after-switch-to-buffer-hook) )
+  (run-hooks 'after-switch-to-buffer-hook) )
 
 (defun buffer-modified-p args  (buffer-flag-modified (when args (car args))) )
 (defun restore-buffer-modified-p (bool)  (buffer-flag-modified nil bool))

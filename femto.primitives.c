@@ -158,6 +158,8 @@ Object *e_buffer_fread(Interpreter *interp, Object **args, Object **env)
             exception(interp, out_of_memory, "buffer_fread() failed, could not grow current buffer");
         size += len;
 
+        end_of_buffer();
+
         if (feof(FLISP_ARG_ONE->fd))
             return newInteger(interp, size);
     }

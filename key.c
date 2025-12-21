@@ -164,7 +164,7 @@ void setup_keys(void)
     set_key_internal("c-r",     "search-backward"       , "\x12", search);
     set_key_internal("c-s",     "search-forward"        , "\x13", search);
     set_key_internal("c-u",     "undo"                  , "\x15", undo_command);
-    set_key_internal("c-v",     "forward-page"          , "\x16", forward_page);
+    set_key_internal("c-v",     "scroll-up"             , "\x16", scroll_up);
     set_key_internal("c-w",     "kill-region"           , "\x17", kill_region);
     set_key_internal("c-y",     "yank"                  , "\x19", yank);
     set_key_internal("c-z",     "suspend"               , "\x1A", suspend);
@@ -185,7 +185,7 @@ void setup_keys(void)
     /* Note: in Emacs M-q is (c-fill-paragraph) */
     set_key_internal("esc-q",   "kill-buffer"           , "\x1B\x71", user_func);
     set_key_internal("esc-r",   "query-replace"         , "\x1B\x72", query_replace);
-    set_key_internal("esc-v",   "page-up"               , "\x1B\x76", backward_page);
+    set_key_internal("esc-v",   "scroll-down"           , "\x1B\x76", scroll_down);
     set_key_internal("esc-w",   "copy-region"           , "\x1B\x77", copy_region);
     set_key_internal("esc-x",   "execute-command"       , "\x1B\x78", execute_command);
 
@@ -220,8 +220,8 @@ void setup_keys(void)
     // end keypad modes
     set_key_internal("del",       "delete",               "\x1B\x5B\x33\x7E", delete);
     set_key_internal("ins",       "toggle-overwrite-mode" , "\x1B\x5B\x32\x7E", toggle_overwrite_mode);
-    set_key_internal("pgup",      "page-up",              "\x1B\x5B\x35\x7E", backward_page);
-    set_key_internal("pgdn",      "page-down",            "\x1B\x5B\x36\x7E", forward_page);
+    set_key_internal("pgup",      "scroll-down",          "\x1B\x5B\x35\x7E", scroll_down);
+    set_key_internal("pgdn",      "scroll-up",            "\x1B\x5B\x36\x7E", scroll_up);
     set_key_internal("backspace", "backspace",            "\x7f", backspace);
 
     set_key_internal("c-x c-b",   "list-buffers"          , "\x18\x0b", user_func);

@@ -125,7 +125,7 @@ void backward_word(void)
         --curbp->b_point;
 }
 
-void forward_page(void)
+void scroll_up(void)
 {
     curbp->b_page = curbp->b_point = upup(curbp, curbp->b_epage);
     while (0 < curbp->b_row--)
@@ -134,7 +134,7 @@ void forward_page(void)
     curbp->b_epage = pos(curbp, curbp->b_ebuf);
 }
 
-void backward_page(void)
+void scroll_down(void)
 {
     int i = curwp->w_rows;
     while (0 < --i) {

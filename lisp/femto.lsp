@@ -36,7 +36,7 @@
 ;; Note: this emulates the original femto shell-command.
 ;;   The move from C to Lisp allows implementation of more
 ;;   powerful system interaction in the future
-;; Note: we have (fpopen) now, which should be used instead of shell-exec.
+;; Note: we have (popen) now, which should be used instead of shell-exec.
 (defun shell-command arg
   (let ((command nil))
     (cond
@@ -61,6 +61,23 @@
      (system (concat "rm -f " temp))
      (clear-message-line) )))
 
+(defun shell-command-lines (command . args)
+  (let* ((cmd (join " " (cons command args)))
+	 (stream  (popen cmd)) )
+    (let loop ((lines nil))
+	 (let ((line (fgets stream)))
+	   (if (eq line end-of-file) (shell_pclose stream (reverse lines))
+	       (loop (cons (shell_strip_eol line) lines))) ))))
+
+(defun shell_pclose (stream output . allowed)
+  (let ((rc (pclose stream)))
+    (if (memq rc (or allowed '(0))) output
+	(throw io-error (concat "exit status:"rc) output) )))
+
+(defun shell_strip_eol (line)
+  (if (memq (substring line -1) '("\n" "\r"))
+      (shell_strip_eol (substring line 0 -1))
+      line ))
 
 (defun repeat (n func)
   (cond ((> n 0) (func) (repeat (- n 1) func))))

@@ -5,7 +5,7 @@
 
 export FLISPRC=
 
-tap 175
+tap 176
 
 [ -x ../femto ]
 ok femto-1 femto exists and is executable;
@@ -165,6 +165,9 @@ flisp_err; ok cond-16 fail if clause is cons with car nil - captured by reader
 
 IN='(cond (t . t))' ERR='(cond (pred action) ..) action is not a list' OBJ='(t . t)'
 flisp_err; ok cond-17 fail if t and clause action is not a list
+
+IN="(cond ('(0)))" OUT="(0)"
+flisp_expr; ok cond-18 cond with only pred returns pred
 
 # lambda
 IN='(lambda nil)' OUT="#<Lambda nil>"

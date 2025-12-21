@@ -11,7 +11,7 @@
 ;;;   So, when a is unbound we throw an error
 (defmacro or args
   (cond (args
-	 (list 'cond (list (car args) (car args))
+	 (list 'cond (list (car args))
 	       (list 't (cons 'or (cdr args)))))))
 
 (defun nthcdr (i l)

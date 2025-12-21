@@ -1468,9 +1468,9 @@ Object *evalCond(Interpreter *interp, Object **args, Object **env)
     GC_TRACE(gcAction, action);
     GC_TRACE(gcEnv, *env);
     GC_TRACE(gcNext, next_clause);
-    *gcPred = evalExpr(interp, gcPred, gcEnv);
+    pred = evalExpr(interp, gcPred, gcEnv);
     GC_RELEASE;
-    if (*gcPred == nil) {
+    if (pred == nil) {
         *env = *gcEnv;
         next_clause = *gcNext;
         goto next_clause;

@@ -11,7 +11,7 @@
 ;; recursively. Make sure to only operate on files/directories which
 ;; are not visited.
 ;;
-;; Supported operations, * means - in progress:
+;; Supported operations, * whishlist
 ;; + .. dired-create-directory
 ;; C .. dired-do-copy
 ;; D .. dired-do-delete
@@ -19,12 +19,15 @@
 ;; M .. dired-do-chmod
 ;; O .. dired-do-chown
 ;; R .. dired-do-rename
-;; S .. dired-do-symlink       *
-;; T .. dired-do-touch         *
-;; Y .. dired-do-relsymlink    *
+;; S .. dired-do-symlink
+;; T .. dired-do-touch
+;; Y .. dired-do-relsymlink    * 
 ;; Z .. dired-do-compress      *
 ;; f, RET .. dired-find-file
+;; o .. dired-fine-file in other window *
 ;; g .. "revert-buffer" - dired-reload
+;; ^ .. dired-up-directory
+;; j .. dired-goto-file        *
 ;; q .. "quit-window"
 
 (require 'femto)
@@ -44,7 +47,9 @@
 	      (setq directory (concat (getcwd) "/" directory)) )
 	    (dired directory) )))
 
-(defun dired (directory)
+(defun dired (directory)  (switch-to-buffer (dired_init directory)))
+
+(defun dired_init (directory)
   (unless (string-equal "/" (substring directory -1))
     (setq directory (string-append directory "/")) )
   (fstat directory) ; throws error if path with trailing slash is not a directory
@@ -55,7 +60,7 @@
       (setq buffer (generate-new-buffer (generate-new-buffer-name "*dired*")))
       (set-buffer buffer)
       (set-visited-filename directory) )
-    (switch-to-buffer buffer) ))
+    buffer ))
 
 ;;; Hook function
 (defun dired-after-switch-to-buffer-function ()
@@ -81,65 +86,84 @@
       (repeat 2 kill-to-eol) ; remote "Total" line
       (set-point point)
       (restore-buffer-modified-p nil)
-      (message "dired: q, g, + C, D, G, M O, R, f/Ret") ))
+      (message "dired: q, g, ^, + C, D, G, M O, R, S, T, f/Ret") ))
 
 
 (defun dired-loop (ops)
+  ;;;
+  ;;; dired_process-key returns either
+  ;;; - a symbol to indicate an action:
+  ;;;   - :quit .. quit and switch to an"other" bufer
+  ;;;   - :exit .. exit Femto
+  ;;;   - :continue .. the command loop
+  ;;;   - :update   .. reload the buffer, then :continue
+  ;;;   - :cancel   .. show cancel command message, then :continue
+  ;;;   - :no-deletions .. show no deletions message, then :continue
+  ;;; - a cons (:switch buffer) to quit and switch to buffer
   (update-display)
-  (let* ((result (catch (dired_process-key)))
+  (let* ((other (other-buffer))
+	 (result (catch (dired_process-key)))
 	 (code  (caddr result)) )
     (log 'DEBUG nil "dired:"ops": process-key: '"result"'")
     (log 'DEBUG result)
     (if (cond
 	  ((i= ops 0) nil)
-	  ((eq code :quit) nil)
+	  ((memq code '(quit exit)) nil)
+	  ((and (consp code) (eq (car code) :switch))
+	   (setq other (cdr code))
+	   nil )
 	  ((car result) (message (join "\n" code)) :continue)
 	  ((eq code :cancel) (message "Canceled") :continue)
 	  ((eq code :update) (dired-reload) :continue)
 	  ((eq code :no-deletions) (message "No deletions performed") :continue)
 	  (:continue) )
 	(dired-loop (- ops 1))
-	;; quit
-	(restore-buffer-modified-p nil)
-	(switch-to-buffer (other-buffer))
-	(clear-message-line) )))
+	;; quit or exit
+	(cond
+	  ((eq code :exit) save-buffers-kill-terminal)
+	  (t
+	   (restore-buffer-modified-p nil)
+	   (switch-to-buffer other)
+	   (clear-message-line) )))))
 
 (defun dired_process-key ()
   (let ((key (get-key)))
     (if-not (eq key "")  (dired_handle-command-key (intern key))
-	    (dired_handle-arrow-key (get-key-funcname))
-	    :continue )))
+	    (dired_handle-arrow-key (intern (get-key-funcname))) )))
 
 (defun dired_handle-arrow-key (func)
   (log 'DEBUG nil "dired: arrow key: "func)
-  (when (memq (intern func)
-	      ;; Note: backward_page is registered with different names on
-	      ;;   different key combinations in key.c. Emacs has scroll-up
-	      ;;   and scroll-down
-	      '(previous-line next-line  forward-page page-down page-up
+  (when (memq func ; list of allowed "arrow" keys
+	      '(previous-line next-line  scroll-up scroll-down
 		forward-word forward-char  backward-word backward-char
 		beginning-of-line end-of-line  beginning-of-buffer end-of-buffer
-		find-file))
-    (let* ((input   (open func "<"))
+		next-buffer save-buffers-kill-terminal))
+    (let* ((input   (open (symbol-name func) "<"))
 	   (result  (catch (eval (read input)))) )
       (close input)
       (if-not (car result)  (apply (caddr result))
 	      (log 'DEBUG result "dired: arrow-key") )))
-  (when (memq (intern func) '(previous-line next-line))
-    (beginning-of-line)
-    (repeat 8 forward-word) ))
+  (cond
+    ((eq func 'save-buffers-kill-terminal) :exit)
+    ((memq func '(previous-line next-line))
+     (beginning-of-line)
+     (repeat 8 forward-word)
+     :continue )))
 
 (defun dired_handle-command-key (key)
   (cond
     ((eq key 'q)  :quit)
     ((eq key 'g)  :update)
-    ((eq key '+)  (dired-create-directory-interactive) :update)
-    ((eq key 'C)  (dired-do-copy-interactive) :update)
-    ((eq key 'D)  (dired-do-delete) :update)
-    ((eq key 'G)  (dired-do-chgrp) :update)
-    ((eq key 'M)  (dired-do-chmod) :update)
-    ((eq key 'O)  (dired-do-chown) :update)
-    ((eq key 'R)  (dired-do-rename) :update)
+    ((eq key '^)  (cons :switch (dired_init-up-directory)))
+    ((eq key '+)  (dired-create-directory-interactive))
+    ((eq key 'C)  (dired-do-copy-interactive))
+    ((eq key 'D)  (dired-do-delete))
+    ((eq key 'G)  (dired-do-chgrp))
+    ((eq key 'M)  (dired-do-chmod))
+    ((eq key 'O)  (dired-do-chown))
+    ((eq key 'R)  (dired-do-rename))
+    ((eq key 'T)  (dired-do-touch))
+    ((eq key 'S)  (dired-do-symlink))
     ((or (eq key 'f) (eq key (intern "\n")))
      (let* ((info  (dired-get-info))
 	    (type  (car info))
@@ -147,10 +171,11 @@
 	    (path  (if (string-equal type "d")  (concat (buffer-filename) name "/")
 		       (string-append (buffer-filename) name)) ))
        (log 'DEBUG nil "dired: info "info", path "path)
-       (cond ((string-equal type "d") (dired path) :quit)
-	     ((string-equal type "-") (switch-to-buffer (find-file-noselect path)) :quit)
-	     (t (message (concat "Error: cannot open file of type: " type))) )))
-    (t (message (concat "dired: unhandled key="key))) ))
+       (cond ((string-equal type "d") (cons :switch (dired_init path)))
+	     ;; Note: 
+	     ((memq type '("-" "l")) (cons :switch (find-file-noselect path)))
+	     (t (message (concat "Error: cannot open file of type: " type)) :continue) )))
+    (t (message (concat "dired: unhandled key="key)) :continue) ))
 
 (defun dired-get-info ()
   (beginning-of-line)
@@ -167,6 +192,9 @@
       (copy-region)
       (set-point point)
       (cons type (get-clipboard)) )))
+
+(defun dired_init-up-directory ()
+  (dired_init (file-name-directory (substring (buffer-filename) 0 -1))) )
 
 (defun dired-create-directory-interactive ()
   (let ((directory  (prompt-filename "Create directory " (buffer-filename))))
@@ -187,7 +215,7 @@
 
 ;;; Note: We also must delete associated buffers! or prevent deletion
 ;;; when a buffer is associated
-(defun dired-do-delete args
+(defun dired-do-delete ()
   (let* ((info     (dired-get-info))
 	 (isdir    (string-equal "d" (car info)))
 	 (name     (cdr info))
@@ -217,29 +245,53 @@
 	 (path  (concat (buffer-filename) name))
 	 (response (prompt (concat "Change Group of "name" to: "))) )
     (if-not response :cancel
-	    (shell-command-lines "chgrp" response path "2>&1") )))
+	    (shell-command-lines "chgrp" response path "2>&1")
+	    :update )))
 
 (defun dired-do-chmod ()
   (let* ((name  (cdr (dired-get-info)))
 	 (path  (concat (buffer-filename) name))
 	 (response (prompt (concat "Change Mode of "name" to: "))) )
     (if-not response :cancel
-	    (shell-command-lines "chmod" response path "2>&1") )))
+	    (shell-command-lines "chmod" response path "2>&1")
+	    :update )))
 
 (defun dired-do-chown ()
   (let* ((name  (cdr (dired-get-info)))
 	 (path  (concat (buffer-filename) name))
 	 (response (prompt (concat "Change Owner of "name" to: "))) )
     (if-not response :cancel
-	    (shell-command-lines "chown" response path "2>&1") )))
+	    (shell-command-lines "chown" response path "2>&1")
+	    :update )))
 
+;;; Note: should rename a visiting buffer, or disallow renaming
 (defun dired-do-rename ()
   (let* ((name  (cdr (dired-get-info)))
 	 (path  (concat (buffer-filename) name))
 	 (response (prompt-filename (concat "Rename "name" to: ") path)) )
     (if-not response :cancel
-	    (shell-command-lines "mv" path response "2>&1") )))
+	    (shell-command-lines "mv" path response "2>&1")
+	    :update )))
 
+(defun dired-do-symlink ()
+  (let* ((name  (cdr (dired-get-info)))
+	 (directory (buffer-filename))
+	 (path      (string-append directory name))
+	 (response (prompt-filename (concat "Symlink "name" from: ") (buffer-filename))) )
+    (if-not response :cancel
+	    (shell-command-lines "ln -s" path response "2>&1")
+	    :update )))
 
+(defun dired-do-touch ()
+  (let* ((name  (cdr (dired-get-info)))
+	 (path  (concat (buffer-filename) name))
+	 (response (prompt (concat "Change Timestamp of "name" to (default now): "))) )
+    (cond ((null response) :cancel)
+	  ((string-equal response "")
+	   (shell-command-lines "touch" path "2>&1")
+	   :update )
+	  (t
+	   (shell-command-lines "touch -t" response path "2>&1")
+	   :update ))))
 
 (provide 'dired)

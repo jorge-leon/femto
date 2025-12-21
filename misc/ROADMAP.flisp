@@ -4,6 +4,8 @@
 
 ## Next
 
+- Bug: (cond ('(0))) should return (0), but tries to evaluate (0).
+    This has implications for (or), at least.
 - Bug: femto segfaults w/o femtorc, batch-mode
 -  Fix Femto file save bug.
 - Make logging mask, and suppress catch messages by default

@@ -4,7 +4,7 @@
 
 export FLISPRC=../flisp.rc
 
-tap 169
+tap 170
 
 # list
 IN='(list)' OUT=nil
@@ -23,6 +23,8 @@ flisp_expr 1; ok defmacro-1  simple macroexpansion
 # conditionals
 # if
 true; ok if \# TODO
+# if-not
+true; ok if-not \# TODO
 # when
 true; ok when \# TODO
 # unless
@@ -234,6 +236,17 @@ flisp_expr;  ok remove-1 remove integers
 IN="(remove integerp '())" OUT=nil
 flisp_expr;  ok remove-2 remove empty list is nil
 
+IN="(fold-left + 1 nil)" OUT=1
+flisp_expr 1;  ok fold-left-1 fold-left with empty list is init
+IN="(fold-left + 1 '(2 3))" OUT=6
+flisp_expr 1;  ok fold-left-2 fold-left with list folds
+
+IN="((flip -) 2 3)" OUT="1"
+flisp_expr 1; ok flip-1 flip - on '2-3' is 1
+
+IN="(reverse '(1 2 3))" OUT="(3 2 1)"
+flisp_expr 1; ok reverse-1 reverse 1 2 3 is 3 2 1
+
 # append
 IN='(append)' OUT="nil"
 flisp_expr 1; ok append-1 append nothing is nil
@@ -252,17 +265,6 @@ flisp_expr 1; ok append-5 append list list is list
 
 IN="(append 1 1)" ERR="(append lists) - list expected type-list, got type-integer" OBJ=
 flisp_err 1; ok append-6 append atom any errs
-
-IN="(fold-left + 1 nil)" OUT=1
-flisp_expr 1;  ok fold-left-1 fold-left with empty list is init
-IN="(fold-left + 1 '(2 3))" OUT=6
-flisp_expr 1;  ok fold-left-2 fold-left with list folds
-
-IN="((flip -) 2 3)" OUT="1"
-flisp_expr 1; ok flip-1 flip - on '2-3' is 1
-
-IN="(reverse '(1 2 3))" OUT="(3 2 1)"
-flisp_expr 1; ok reverse-1 reverse 1 2 3 is 3 2 1
 
 IN="(apply +)" OUT="0"
 flisp_expr 1; ok apply-1 apply n-ary + to nothing is 0
@@ -336,26 +338,6 @@ flisp_expr 1; ok length-3 length of empty string is zero
 IN='(length "answer")' OUT="6"
 flisp_expr 1; ok length-1 length of answer is six
 
-
-IN='(join ":" nil)' OUT='""'
-flisp_expr 1; ok join-1 join nil is empty string
-
-IN='(join ":" (list "a"))' OUT='"a"'
-flisp_expr 1; ok join-2 join single list is string
-
-IN='(join ":" (list "a" "b"))' OUT='"a:b"'
-flisp_expr 1; ok join-3 join two elements contains separator
-
-IN='(join ":" (list "a" "b" "c"))' OUT='"a:b:c"'
-flisp_expr 1; ok join-4 join several contains several separators
-
-IN='(join "" (list "a" "b" "c"))' OUT='"abc"'
-flisp_expr 1; ok join-5 join with empty separator concats
-
-IN='(join "nswe" (list "a" "r"))' OUT='"answer"'
-flisp_expr 1; ok join-6 with long separator inserts long separator
-
-
 # memq
 IN="(memq 'a (list 0 'a 3))" OUT="(a 3)"
 flisp_expr 1; ok memq-1 find object in list
@@ -401,28 +383,6 @@ IN='(% 11 6 3)' OUT='2' flisp_expr 1; ok mod-3 mod 11 6 3 is 2
 # IN='(>= 7 7 7)' OUT='t' flisp_expr 1; ok greater-equal-3 greater-equal 7 7 7 is t
 # IN='(>= 7 7 6)' OUT='t' flisp_expr 1; ok greater-equal-4 greater-equal 7 7 6 is t
 
-IN='(max)'
-ERR="(env) expects at least 1 arguments"
-OBJ='#<Lambda (n . args)>'
-flisp_err 1; ok max-1 with nil fails
-
-IN='(max "a")'
-ERR="(max n[ arg ..]) n: expected number, got type-string"
-OBJ='"a"'
-flisp_err 1; ok max-2 with not number fails
-
-IN='(max 0)' OUT=0
-flisp_expr 1; ok max-3 with single number yields number
-
-IN='(max 2 1)' OUT=2
-flisp_expr 1; ok max-4 with 'a>b' yields a
-
-IN='(max 1 2)' OUT=2
-flisp_expr 1; ok max-5 with 'a<b' yields b
-
-IN='(max 1 2 3)' OUT=3
-flisp_expr 1; ok max-6 with more then two args
-
 IN='(min)'
 ERR="(env) expects at least 1 arguments"
 OBJ='#<Lambda (n . args)>'
@@ -444,6 +404,28 @@ flisp_expr 1; ok min-5 with 'a>b' yields b
 
 IN='(min 1 2 3)' OUT=1
 flisp_expr 1; ok min-6 with more then two args
+
+IN='(max)'
+ERR="(env) expects at least 1 arguments"
+OBJ='#<Lambda (n . args)>'
+flisp_err 1; ok max-1 with nil fails
+
+IN='(max "a")'
+ERR="(max n[ arg ..]) n: expected number, got type-string"
+OBJ='"a"'
+flisp_err 1; ok max-2 with not number fails
+
+IN='(max 0)' OUT=0
+flisp_expr 1; ok max-3 with single number yields number
+
+IN='(max 2 1)' OUT=2
+flisp_expr 1; ok max-4 with 'a>b' yields a
+
+IN='(max 1 2)' OUT=2
+flisp_expr 1; ok max-5 with 'a<b' yields b
+
+IN='(max 1 2 3)' OUT=3
+flisp_expr 1; ok max-6 with more then two args
 
 # and
 IN='(and)' OUT=t
@@ -479,6 +461,23 @@ flisp_expr 1; ok and-10 triple t is true
 IN='(defun aa (p) (and p p)) (aa nil)' OUT=nil
 flisp_expr 1; ok and-11 macro env not working
 
+IN='(join ":" nil)' OUT='""'
+flisp_expr 1; ok join-1 join nil is empty string
+
+IN='(join ":" (list "a"))' OUT='"a"'
+flisp_expr 1; ok join-2 join single list is string
+
+IN='(join ":" (list "a" "b"))' OUT='"a:b"'
+flisp_expr 1; ok join-3 join two elements contains separator
+
+IN='(join ":" (list "a" "b" "c"))' OUT='"a:b:c"'
+flisp_expr 1; ok join-4 join several contains several separators
+
+IN='(join "" (list "a" "b" "c"))' OUT='"abc"'
+flisp_expr 1; ok join-5 join with empty separator concats
+
+IN='(join "nswe" (list "a" "r"))' OUT='"answer"'
+flisp_expr 1; ok join-6 with long separator inserts long separator
 
 
 # fload

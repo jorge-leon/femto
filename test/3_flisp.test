@@ -2,43 +2,10 @@
 # test the fLisp library
 # leg20231129: Femto
 
-tap 44
+tap 39
 
 export FLISPRC=../flisp.rc
 export PREPARE="(require 'flisp)"
-
-# null
-IN='(null nil)' OUT=t
-flisp_expr; ok null-1 nil is null
-
-IN="(null t)" OUT=nil
-flisp_expr; ok null-2 t is not null
-
-IN="(null 'symbol)" OUT=nil
-flisp_expr; ok null-3 symbol is not null
-
-IN="(null (cons nil nil))" OUT=nil
-flisp_expr; ok null-3 cons is not null
-
-# not
-IN="(not t)" OUT=nil
-flisp_expr; ok not-1 not t is nil
-
-IN="(not nil)" OUT=t
-flisp_expr; ok not-2 not nil is t
-
-IN="(not 1)" OUT=nil
-flisp_expr; ok not-3 not 1 is nil
-
-IN='(not "a")' OUT=nil
-flisp_expr; ok not-4 not string is nil
-
-IN="(not 'a)" OUT=nil
-flisp_expr; ok not-5 not symbol is nil
-
-IN="(not '(1))" OUT=nil
-flisp_expr; ok not-6 not list is nil
-
 
 # listp
 IN='(listp nil)' OUT=t
@@ -112,7 +79,7 @@ flisp_err; ok nthcdr-8 wrong list type fails
 IN="(nth 1 '(a b c))" OUT=b
 flisp_expr; ok nth-1 yields element
 
-true; ok foldr-1 \# TODO
+true; ok fold-right-1 \# TODO
 
 true; ok unfold-1 \# TODO unfold is tested by its application in iota
 
@@ -124,6 +91,22 @@ flisp_expr; ok iota-1 iota count start gives count from start
 
 IN="(iota 5 10 2)" OUT="(10 12 14 16 18)"
 flisp_expr; ok iota-1 iota count step gives count from start by step
+
+# property lists
+
+IN="(prop-get '(a 1 b 2 c) 'a)" OUT="1"
+flisp_expr; ok prop-get-1 prop-get first is first
+
+IN="(prop-get '(a 1 b 2 c) 'b)" OUT="2"
+flisp_expr; ok prop-get-2 prop-get second is second
+
+IN="(prop-get '(a 1 b 2 c) 'c)" OUT="nil"
+flisp_expr; ok prop-get-3 prop-get last w/o value is nil
+
+IN="(prop-get '(a 1 b 2 c 3) 'c)" OUT="3"
+flisp_expr; ok prop-get-4 prop-get last with value is last
+
+true; ok prop-get-5 \# TODO prop-get with predicate
 
 # atom
 IN='(atom 0)' OUT=t

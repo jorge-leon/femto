@@ -55,7 +55,7 @@
 ;;; property lists
 
 (defun prop-get (l k . p)
-  (cond ((not (consp l)) (throw :invalid-value "(prop-get l p[ e]) - l is not a list" l)))
+  (cond ((not (consp l)) (throw :invalid-value "(prop-get l k[ p]) - l is not a list" l)))
   (setq p (cond (p (car p)) (t eq)))
   (cond
      ((p (car l) k)

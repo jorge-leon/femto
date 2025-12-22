@@ -5,7 +5,7 @@
 
 export FLISPRC=
 
-tap 176
+tap 184
 
 [ -x ../femto ]
 ok femto-1 femto exists and is executable;
@@ -256,6 +256,27 @@ flisp_expr; ok null-6 null lambda is  nil
 IN="(null macro)" OUT="nil"
 flisp_expr; ok null-7 null macro is  nil
 
+# type-of
+IN='(type-of 1)' OUT='type-integer'
+flisp_expr; ok type-of-1 type-of 1 is integer
+
+IN='(type-of "a")' OUT='type-string'
+flisp_expr; ok type-of-2 type-of \"a\" is string
+
+IN='(type-of nil)' OUT='type-symbol'
+flisp_expr; ok type-of-3 type-of nil is symbol
+
+IN="(type-of '(a . b))" OUT='type-cons'
+flisp_expr; ok type-of-4 type-of cons is cons
+
+IN='(type-of type-of)' OUT='type-primitive'
+flisp_expr; ok type-of-5 type-of type-of is primitive
+
+IN='(type-of (macro ()))' OUT='type-macro'
+flisp_expr; ok type-of-6 type-of macro is macro
+
+IN='(type-of *OUTPUT*)' OUT='type-stream'
+flisp_expr; ok type-of-7 type-of output stream is stream
 
 # consp
 IN='(consp nil)' OUT='nil'
@@ -275,6 +296,10 @@ flisp_expr; ok consp-5  consp list is t
 
 IN="(consp consp)" OUT='nil'
 flisp_expr; ok consp-5  consp lambda is nil
+
+# intern
+IN='(type-of (intern "SYMBOL"))' OUT='type-symbol'
+flisp_expr; ok intern-1  intern of string is symbol
 
 IN="(symbol-name 'a)" OUT='"a"'
 flisp_expr; ok symbol-name-1  symbolname is symbol as string
@@ -468,15 +493,14 @@ flisp_expr; ok string-search-4 not start string is contained in string at 1
 IN='(string-search "x" "abcde")' OUT='nil'
 flisp_expr; ok string-search-5 not contained string is nil
 
+IN='(ascii 64)' OUT='"@"'
+flisp_expr; ok ascii-1 ascii 64 is @
 
-false; ok  ascii \# TODO
-
-false; ok  'ascii->number' \# TODO
-
-# OS
-false; ok os.getenv \# TODO
+IN='(ascii->number "@")' OUT='64'
+flisp_expr 5; ok ascii-to-number-1 of @ is 64
 
 # File extension
+
 false; ok fflush \# TODO
 false; ok fseek \# TODO
 false; ok ftell \# TODO
@@ -512,3 +536,6 @@ flisp_expr; ok file-getenv-1 known variable returns value string
 
 IN='(getenv "?")' OUT=nil
 flisp_expr; ok file-getenv-2 unknown variable returns nil
+
+IN='(getcwd)' OUT="\"$(pwd)\""
+flisp_expr; ok file-getcwd-1 getcwd returns working directory

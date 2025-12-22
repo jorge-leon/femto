@@ -38,7 +38,7 @@ RC_FILES = femto.rc flisp.rc
 LISPFILES = femto.rc lisp/startup.lsp lisp/defmacro.lsp			\
 	lisp/bufmenu.lsp lisp/dired.lsp lisp/grep.lsp lisp/git.lsp	\
 	lisp/oxo.lsp lisp/flisp.lsp lisp/femto.lsp lisp/info.lsp        \
-	lisp/string.lsp
+	lisp/string.lsp lisp/file.lsp
 
 FLISPFILES = flisp.rc lisp/flisp.lsp
 FLISPSOURCES = lisp.c lisp.h double.c double.h file.c file.h

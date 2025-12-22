@@ -115,16 +115,17 @@ see the [Femto](./misc/ROADMAP.femto.md) and
 
 ## Comparisons with Other Emacs Implementations
 
-Femto has almost the same level of functionality as MicroEmacs 3.10
-for a codebase less then half of the size.
+Femto has almost the same level of editor functionality as
+MicroEmacs 3.10 plus a fully featured Lisp extension language for a
+codebase less then half of the size.
 
 	Editor         Binary   BinSize     KLOC  Files
 
 	atto           atto       33002     1.9k      10
 	pEmacs         pe         59465     5.7K      16
 	Esatz-Emacs    ee         59050     5.7K      14
-	femto          femto     169608    11.5k/7.9k 35/47 **
 	GNOME          GNOME      55922     9.8k      13
+	femto          femto     169608    11.5k/7.9k 35/48 **
 	Zile           zile      257360    11.7k      48
 	Mg             mg        585313    16.5K      50
 	uEmacs/Pk      em        147546    17.5K      34

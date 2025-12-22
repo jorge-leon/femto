@@ -33,6 +33,8 @@ Size by version:
 
 	Version	Binary	C-Lines/sloc/Files	Lisp-Lines/sloc/Files
 	0.13	85584	3.6k/2.4k/6			373/272/3
+	0.14    85744   3.6k/2.4k/6			428/300/2
+
 
 ## History
 
@@ -95,6 +97,20 @@ In 2025 another set of changes were introduced:
 - Lisp object space adjusts dynamically when needed.
 - setq was replaced by bind
 - Enough framework was built to implement the repl completely in Lisp.
+
+Changes in 2026:
+
+lisp.c/lisp.h
+- Introduce primitive bind, implement setq as macro with bind.
+- Fix cond returning (eval pred) instead of pred when no action is given.
+- Unify error messages and user strerror(errno) in all cases.
+- Simplify (write), use optional parameters instead of proplist.
+- Replace printf with puts where possible.
+- Add (intern string) primitive.
+- Add (interp ..) introspection primitive.
+- Move (getenv) and (system) to file extension.
+- interp->input is a (stream) object, not a stream.
+file.c/file.h
 
 
 ## Building

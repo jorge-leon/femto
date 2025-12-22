@@ -11,7 +11,7 @@
 #include <inttypes.h>
 
 #define FL_NAME     "fLisp"
-#define FL_VERSION  "0.13"
+#define FL_VERSION  "0.14"
 
 #define FL_RCFILE "flisp.rc"
 #define FL_LIBDIR "/usr/local/share/flisp"

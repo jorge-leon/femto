@@ -36,14 +36,14 @@
   + Implement save-some-buffers.
   + Move posix file name check to Lisp: can't start with -, all chars must be isalnum() or in "._-/".
   + Fix dired on find-file
-  - dired:
+  + dired:
 	+ Not using default when selecting subdirectory, setting wrong filename in
 	  new buffer
-	- Add file and directory creation
-	- Add mode setting
+	+ Add file and directory creation
+	+ Add mode setting
 	+ Add reload
 	+ Add delete file
-	- Add delete directory/recursively
+	+ Add delete directory/recursively
   - Check all Femto modules
 	+ git
 	+ grep
@@ -70,6 +70,7 @@
 - Pipe a buffer through a shell command and read the output back into a
   different buffer.
 - Change eval_block to eval_region.
+- dired: delete/rename buffers of deleted/renamed files/directories
 - Find out how to build on NetBSD: problem is ncurses libraries
 - Improve/support batch mode: output = stdout.
 - Implement per buffer keymaps.

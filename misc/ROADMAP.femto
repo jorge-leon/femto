@@ -27,6 +27,9 @@
 - Find out how to build on NetBSD: problem is ncurses libraries.
 - Improve/support batch mode: output = stdout.
 - Implement per buffer/mode keymaps.
+- Make buffer name and filename Lisp string objects.
+- Move b_flags to individual bits - let the compiler work, not us.
+- Make buffer (major) mode a Lisp (symbol) object.
 - Write a test file for all lisp functions.
 
 

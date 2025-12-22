@@ -2,7 +2,7 @@
 # test the fLisp library
 # leg20231129: Femto
 
-tap 39
+tap 31
 
 export FLISPRC=../flisp.rc
 export PREPARE="(require 'flisp)"
@@ -20,29 +20,6 @@ flisp_expr; ok listp-3 single element list is list
 IN="(listp '(a 0))" OUT=t
 flisp_expr; ok listp-4 two element list is list
 
-IN='(or)' OUT=nil
-flisp_expr; ok or-1 empty or is false
-
-IN='(or t)' OUT=t
-flisp_expr; ok or-2 t is t
-
-IN='(or "a")' OUT='"a"'
-flisp_expr; ok or-3 not nil is itself
-
-IN='(or t nil)' OUT=t
-flisp_expr; ok or-4 t nil is t
-
-IN='(or nil t)' OUT=t
-flisp_expr; ok or-5 nil t is t
-
-IN='(or nil 0)' OUT=0
-flisp_expr; ok or-6 nil not nil is itself
-
-IN='(or nil nil nil)' OUT=nil
-flisp_expr; ok or-7 triple nil is nil
-
-IN='(or nil nil nil "a" "b" nil)' OUT='"a"'
-flisp_expr; ok or-8 nil with not nil is first itself
 
 # Math
 

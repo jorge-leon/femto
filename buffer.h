@@ -52,10 +52,10 @@ typedef struct buffer_t
     buffer_flags_t b_flags;
     /* buffer flags */
     bool modified: 1;
-    bool overwrite: 1;
-    bool special: 1;
-    bool readonly: 1;
-    bool undo: 1;
+////    bool overwrite: 1;
+////    bool special: 1;
+////    bool readonly: 1;
+////    bool undo: 1;
     undo_tt *b_utail;           /* recent end of undo list */
     int b_ucnt;                 /* count of how many chars to undo on current undo */
 } buffer_t;

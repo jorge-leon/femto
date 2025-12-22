@@ -38,6 +38,9 @@ typedef struct Object Object;
 typedef struct Interpreter Interpreter;
 typedef Object *(*LispEval) (Interpreter *, Object **, Object **);
 
+/* Note: Only used, because we do not know how to statically
+ *       initialize the require Lisp type objects
+ */
 typedef enum ObjectType {
     TYPE_MOVED,
     TYPE_INTEGER,
@@ -152,8 +155,8 @@ extern Object *file_exists;
 extern Object *read_only;
 extern Object *is_directory;
 /* utility */
-extern Object *one;
-extern Object *empty;
+extern Object *one;    /* Note: never used */
+extern Object *empty;  /* Note: only used internally */
 
 /* "Object" type for initializing constants with long names.
  * Note: currently wrong-number-of-arguments is the longest, if you

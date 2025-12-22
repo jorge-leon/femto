@@ -16,6 +16,7 @@
 ## Future
 
 - Implement fnmatch() primitive. https://pubs.opengroup.org/onlinepubs/9799919799/functions/fnmatch.html
+- Implement "ext"ension Lisp objects - use them for femto buffers, etc.
 - Implement backquote and friends.
   - The reader already implements '`', ',' and ',@' as `quasiquote`, `unquote`
     and `splice-unquote`.

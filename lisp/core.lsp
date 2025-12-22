@@ -257,6 +257,14 @@
   (assert-number n "(max n[ arg ..]) n")
   (fold-left (lambda (a b) (cond ((< a b) b) (t a))) n args) )
 
+;;; Note: in CL and Scheme (or 'a) => a when a is unbound, and the value of a otherwise.
+;;;   We don't know how to produce this (easily?) in fLisp
+;;;   So, when a is unbound we throw an error
+(defmacro or args
+  (cond (args
+	 (list 'cond (list (car args))
+	       (list 't (cons 'or (cdr args)))))))
+
 (defmacro and args
   (cond
     ((null args))

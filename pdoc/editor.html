@@ -97,10 +97,10 @@
       <dt><var>flags</var></dt>
       <dd>
 	Different flags determine the behavior of the buffer. Editor specific
-	flags: <code>special</code>, <code>modified</code>.
+	flags: <code>special</code>, <code>modified</code> and <code>overwrite</code>.
       </dd>
-      <dd>Mode flags determine the syntax highlighter mode: <code>cmode</code> and <code>lispmode</code> are
-	available. If none is set <code>text</code> mode is used for syntax hightlighting.</dd>
+      <dd>Mode flags determine the syntax highlighter mode: <code>cmode</code> <code>python</code> and <code>lisp</code>
+	are available. If none is set <code>text</code> mode is used for syntax hightlighting.</dd>
     </dl>
 
     <p>In the following, any mention to one of them refers to the respective current buffers property.</p>
@@ -110,18 +110,6 @@
     <dl>
       <dt><code>(insert-string <var>string</var>)</code></dt>
       <dd>Inserts <var>string</var> before <var>point</var>. <u>S: insert</u>.</dd>
-      <dt><code>(insert-file-contents-literally <var>string</var> </code>[<code><var>flag</var></code>]<code>)</code></dt>
-      <dd>
-	Inserts the file <var>string</var> after <var>point</var>. If <var>flag</var> is not nil the buffer is marked as not
-	modified. <u>B</u>
-      </dd>
-      <dd>
-	<p>
-	  Note: Currently the flag is forced to nil. The function should
-	  return <code>(<var>filename</var> <var>count</var>)</code> but it returns a flag indicating if the operation
-	  succeeded.
-	</p>
-      </dd>
       <dt><code>(erase-buffer)</code></dt>
       <dd>Erases all text in the current buffer. <u>C</u></dd>
       <dt><code>(delete)</code></dt>
@@ -215,15 +203,15 @@
 	Moves the point in the current buffer one character backward, but not before the end of the
 	buffer. <u>C</u>
       </dd> 
-      <dt><code>(forward-page)</code></dt>
+      <dt><code>(scroll-up)</code></dt>
       <dd>
 	Moves the point of the current buffer to the beginning of the last visible line of the associated screen and
-	scrolls the screen up to show it as the first line. <u>S: scroll-up</u>
+	scrolls the screen up to show it as the first line. <u>C</u>
       </dd>
-      <dt><code>(backward-page)</code></dt>
+      <dt><code>(scroll-down)</code></dt>
       <dd>
 	Moves the point of the current buffer to the beginning of the first visible line of the associated screen and
-	scrolls the screen down to show it as the last line. <u>S: scroll-down</u>
+	scrolls the screen down to show it as the last line. <u>C</u>
       </dd>
       <dt><code>(next-line)</code></dt>
       <dd>
@@ -246,16 +234,17 @@
       <dd>Lists all the buffers in a buffer called <samp>*buffers*</samp>.</dd>
       <dt><code>(get-buffer-count)</code></dt>
       <dd>Returns the number of buffers, includes all special buffers and <samp>*buffers*</samp>.</dd>
-      <dt><code>(switch-to-buffer <var>string</var>)</code></dt>
-      <dd>Makes the buffer named <var>string</var> the current buffer. Note: <u>C</u> to <code>set-buffer</code> in Elisp.</dd>
-      <dt><code>(rename-buffer <var>string</var>)</code></dt>
-      <dd>Rename the current buffer to <var>string</var>. <u>C</u></dd>
+      <dt><code>(set-buffer <var>string</var>)</code></dt>
+      <dd>Makes the buffer named <var>string</var> the current buffer. <u>C</u></dd>
+      <dt><code>(set-buffer-name <var>string</var>)</code></dt>
+      <dd>Set the name of the current buffer to <var>string</var>. <u>S: rename-buffer</u></dd>
       <dt><code>(kill-buffer <var>string</var>)</code></dt>
-      <dd>Kill the buffer names <var>string</var>. Unsaved changes are discarded. <u>C</u></dd>
+      <dd>Kill the buffer named <var>string</var>. Unsaved changes are discarded. Throws and exception if the buffer
+      does not exist. <u>C</u></dd>
       <dt><code>(buffer-name)</code></dt>
       <dd>Return the name of the current buffer. <u>C</u></dd>
-      <dt><code>(get-buffer-filename)</code> <u>S:buffer-file-name</u></dt>
-      <dd>Return the file name associated with the current buffer.</dd>
+      <dt><code>(buffer-filename[ <var>string</var>)</code> <u>C</u></dt>
+      <dd>Return the file name associated with buffer <var>string</var> or the current buffer if not given.</dd>
       <dt><code>(add-mode-global <var>string</var>)</code></dt>
       <dd>Sets global mode <var>string</var> for all buffers. Currently the only global mode is <kbd>undo</kbd>.</dd>
       <dt><code>(add-mode <var>string</var>)</code></dt>

@@ -245,7 +245,7 @@ void modeline(window_t *wp)
     mch = ((wp->w_bufp->modified) ? '*' : lch);
     och = ((wp->w_bufp->b_flags & B_OVERWRITE) ? 'O' : lch);
 
-    sprintf(modeline, "%c%c%c Femto: %c%c %s",  lch,och,mch,lch,lch, get_buffer_name(wp->w_bufp));
+    sprintf(modeline, "%c%c%c Femto: %c%c %s ",  lch,och,mch,lch,lch, get_buffer_name(wp->w_bufp));
     addstr(modeline);
 
     for (i = strlen(modeline) + 1; i <= COLS; i++)

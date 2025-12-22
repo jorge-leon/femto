@@ -1,3 +1,22 @@
+femto (2.25.0-1) trixie; urgency=medium
+
+  Femto:
+  * Move file loading, saving, buffer name management to Lisp.
+  * Add Lisp hooks and implement a hook `after-switch-to-buffer` for use
+    by "major mode" libraries.
+  * Reimplement dired and add basic "direct" operations: create/delete
+    files and directories, chmod, chgrp, chown, touch.
+  * Most github bug reports are fixed.
+  * Refactor includes, rename main to femto.
+ 
+  Flisp
+  * Refine and complement the fLisp and file extensions primitives and
+    the core, flisp and string library, add file library; stdlib.lsp is
+    removed.
+  * The read-eval-print loop is now completely written in Lisp.
+
+ -- Georg Lehner <jorge@magma-soft.at>  Mon, 22 Sep 2025 13:37:47 +0200
+
 femto (2.24.1-1) bookworm; urgency=medium
 
   * Dynamic memory allocation for Lisp object space.

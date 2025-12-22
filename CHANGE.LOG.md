@@ -7,6 +7,7 @@ Femto:
   by "major mode" libraries.
 * Reimplement dired and add basic "direct" operations: create/delete
   files and directories, chmod, chgrp, chown, touch.
+* Refactor includes, rename main to femto.
 * Most github bug reports are fixed.
 
 Lisp:
@@ -26,9 +27,11 @@ The read-eval-print loop is now completely written in Lisp.
 
 ## Femto 2.23/fLisp 0.6 Aug 2025
 
-* Setup default mode for basic syntax highlighting text, symbols and numbers
+* Setup default mode for basic syntax highlighting text, symbols and
+  numbers
 
-* Buffer mode flags added that control the syntax hilighting for different languages.
+* Buffer mode flags added that control the syntax hilighting for
+  different languages.
 
 * startup.lsp now calls (read-hook filename) where filename is the
   filename of the file that just loaded.  This enables cmode and LISP

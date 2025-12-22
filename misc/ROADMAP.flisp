@@ -4,21 +4,14 @@
 
 ## Next
 
-- Bug: (cond ('(0))) should return (0), but tries to evaluate (0).
-    This has implications for (or), at least.
-- Bug: femto segfaults w/o femtorc, batch-mode
--  Fix Femto file save bug.
 - Make logging mask, and suppress catch messages by default
-- Size reduction:
-  - Reduce binary operators to 'and' and 'xor' and write needed rest in Lisp.
-- Implement `(flisp subcommand[arg..])` introspection and configuration command.
+- Implement more `(interp subcommand[arg..])` introspection and configuration commands.
   - (flisp output[ fd])
   - (flisp error[ fd])
   - (flisp debug[ fd])
   - (flisp types[ type..]) => list of types
   - (flisp gc) => memory info
 - Add read and eval tracing.
-- Implement pipe shell output to buffer "*Shell Command Output*"
 
 ## Future
 
@@ -26,7 +19,8 @@
 - Implement backquote and friends.
   - The reader already implements '`', ',' and ',@' as `quasiquote`, `unquote`
     and `splice-unquote`.
-- Rewrite if as (defmacro if (pred then . else) ...)
+- Size reduction:
+  - Reduce binary operators to 'and' and 'xor' and write needed rest in Lisp.
 - Fix implement map, consider simplifying core functions and make them
   n-ary in Lisp.
 - Make extensions plugable.
@@ -55,15 +49,23 @@
 
 
 ## flisp 0.14
-- Fixed Femto null input problem
-- Aliased global argv to command-line-args, argv0 to invocation-name in femto.lsp.
-- Use (catch load ..) again in femto.rc, to reduce dependency on file extension.
+- Fixed: (cond ('(0))) tries to evaluate (0) but should return (0)
+- Add (intern string) primitive.
+- Add (interp ..) intospection primitive.
+- Add/Fix: if, if-not, when, unless
+- Add accessors: cadr, cddr, caddr, caar, cdar, caaar, cdaar.
+- Add let*, prog1, min, max, join
 - Remove string-contains Lisp implementation, it is covered by string-search.
 - Remove (reduce), was incompatible and unused, replacement fold-left and family.
 - Add string-empty-p string-split and string-join to the string
   library. Documentation for the complete library.
-- Add new "file" library: mkdir, file-name-directory, file-name-nondirectory.
-
+- Add new "file" library: mkdir, file-name-directory, file-name-nondirectory,
+  file-name-extension.
+- Consolidate more features in core.lsp, remove stdlib.lsp
+- Add property list accesors.
+- Unify error messages.
+- Implement getcwd and fttyp.
+- Implement repl in Lisp.
 
 
 ## fLisp 0.13

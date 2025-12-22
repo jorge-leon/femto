@@ -100,18 +100,11 @@ In 2025 another set of changes were introduced:
 
 Changes in 2026:
 
-lisp.c/lisp.h
-- Introduce primitive bind, implement setq as macro with bind.
-- Fix cond returning (eval pred) instead of pred when no action is given.
-- Unify error messages and user strerror(errno) in all cases.
-- Simplify (write), use optional parameters instead of proplist.
-- Replace printf with puts where possible.
-- Add (intern string) primitive.
-- Add (interp ..) introspection primitive.
-- Move (getenv) and (system) to file extension.
-- interp->input is a (stream) object, not a stream.
-file.c/file.h
+Refine and complement the fLisp and file extensions primitives and the
+core, flisp and string library, add file library; stdlib.lsp is
+removed.
 
+The read-eval-print loop is now completely written in Lisp.
 
 ## Building
 

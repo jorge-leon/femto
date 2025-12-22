@@ -1,6 +1,7 @@
 -*- mode: markdown; fill-column: 80 -*-
 
 # Next
+- Bug: femto segfaults w/o femtorc, batch-mode
 - Implement (buffer-flags-special)
   - Don't consider special flags for saving or as other buffer
 - Rethink buffer list, simplify with ring?
@@ -15,45 +16,53 @@
 - Consider replacing display_prompt_and_response() with message()
 
 
+# Future
+- Implement add-hook and remove-hook, maybe look into subr.el, maybe need
+  (set var val).
+- Pipe a buffer through a shell command and read the output back into a
+  "*Shell Command Output*" special buffer.
+- Change eval_block to eval_region.
+- dired: delete/rename buffers of deleted/renamed files/directories.
+- Use (posix-file-name) check when saving files.
+- Find out how to build on NetBSD: problem is ncurses libraries.
+- Improve/support batch mode: output = stdout.
+- Implement per buffer/mode keymaps.
+- Write a test file for all lisp functions.
+
+
 # Femto 2.25.0
 
-- Fix file save bug by using fmkdir.
+The main goal of this release was to fix file saving into non-existing
+directories. This lead to a plenty of innovations:
+
+- Less C-code, less redundant C-code, each C file has it's own header file.
+- main.c/header.h renamed to femto.c/femto.h
+- Review of the buffer list implementation.
+- Start general adoption of stdbool.h types.
+- More Lisp code for higher level functionality - less unflexible C-code.
+- More buffer handling primitives for use in Lisp.
+- Buffer names and filenames are allocated dynamically.
+- Reading files into buffers is done via Lisp primitives.
+- More conformance to Emacs/Elisp naming conventions.
+
+The femto.lsp library now implements:
+- File loading and saving.
+- Buffer creation, saving and killing.
+- Buffer naming, unique buffer names are created by a /n suffix.
+- "Normal" hooks, switch-to-buffer runs a hook: this simplifies writing special
+  modes like dired.
+
+
+The dired implementation was completely rewritten and supports now:
+- Directory traversal
+- All basic "direct" file/directory operations: create, delete, chown, chgrp,
+  chmod, touch
+
+It can be used as example to improve git, defmacro, grep, oxo.
+
+Bug fixes
+- File save bug by using fmkdir.
   https://github.com/hughbarney/femto/issues/14
-  + Buffer file name handling: alloc/free string instead of fixed buffer.
-	+ then move safe_strncpy from util.c to undo and delete util.c
-  + remove remaining file reading C-code
-	  + insert_file() in gap.c
-	  + make_buffer_name_uniq(), make_buffer_name() in utils.c
-	  + rename_current_buffer() in command.c -> set_buffer_name(),
-	  + remove all unneeded message strings
-  + Implement (rename-buffer) in Lisp.
-	+ oxo stopped working
-  + kill-buffer now fails if named buffer does not exist
-  + show-prompt removed, use (message "prompt")(update-display) instead
-  + prompt-filename improved to use default and recurse directories
-  + Buffer name handling: alloc/free string instead of fixed (too small) buffer.
-  + undo does not reset modified flag
-  + Implement save-some-buffers.
-  + Move posix file name check to Lisp: can't start with -, all chars must be isalnum() or in "._-/".
-  + Fix dired on find-file
-  + dired:
-	+ Not using default when selecting subdirectory, setting wrong filename in
-	  new buffer
-	+ Add file and directory creation
-	+ Add mode setting
-	+ Add reload
-	+ Add delete file
-	+ Add delete directory/recursively
-  - Check all Femto modules
-	+ git
-	+ grep
-	+ oxo
-	? defmacro
-	+ info
-  - Update all documentation.
-+ Refactor include system
-  + rename main.c to femto.c
-  + rename header.h to femto.h
 + Make fLisp read from /dev/null to avoid:
   https://github.com/hughbarney/femto/issues/10
 + Documentation
@@ -61,20 +70,39 @@
   - https://github.com/hughbarney/femto/issues/39
   - https://github.com/hughbarney/femto/issues/37
   - https://github.com/hughbarney/femto/issues/36
-- Close:
+- To be closed:
   - https://github.com/hughbarney/femto/issues/1
 
-# Future
-- Implement add-hook and remove-hook, maybe look into subr.el, maybe need
-  (set var val).
-- Pipe a buffer through a shell command and read the output back into a
-  different buffer.
-- Change eval_block to eval_region.
-- dired: delete/rename buffers of deleted/renamed files/directories
-- Find out how to build on NetBSD: problem is ncurses libraries
-- Improve/support batch mode: output = stdout.
-- Implement per buffer keymaps.
-- Write a test file for all lisp functions.
+Some details on changes:
+
+C-code:
+
+- Buffer file name handling: alloc/free string instead of fixed buffer.
+- safe_strncpy() moved to undo.c, util.c removed.
+- Removed file reading and buffer naming C-code
+  + insert_file() in gap.c
+  + make_buffer_name_uniq(), make_buffer_name() in utils.c
+  + rename_current_buffer() in command.c -> set_buffer_name(),
+- Remove all unneeded message strings
+- Buffer name and filename handling: alloc/free string instead of fixed and too
+  small buffer.
+- Fix undo to reset modified flag when no more undo's left.
+- Refactored include system
+  + rename main.c to femto.c
+  + rename header.h to femto.h
+
+Lisp:
+
+- Implement (rename-buffer).
+- (kill-buffer) now fails if named buffer does not exist.
+- (show-prompt) removed, use (message "prompt")(update-display) instead
+- (prompt-filename) improved to be able to use a default input and recurse
+  directories.
+- Implement (save-some-buffers) .
+- Moved posix file name check to Lisp: can't start with -, all chars must be
+  isalnum() or in "._-/".  Not used in current File loading code.
+- Aliased global argv to command-line-args, argv0 to invocation-name in femto.lsp.
+- Use (catch load ..) again in femto.rc, to reduce dependency on file extension.
 
 # femto 2.24.2
 

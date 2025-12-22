@@ -1,3 +1,23 @@
+## Femto 2.25/fLisp 0.14 Dec 2026
+
+Femto:
+
+* Move file loading, saving, buffer name management to Lisp.
+* Add Lisp hooks and implement a hook `after-switch-to-buffer` for use
+  by "major mode" libraries.
+* Reimplement dired and add basic "direct" operations: create/delete
+  files and directories, chmod, chgrp, chown, touch.
+* Most github bug reports are fixed.
+
+Lisp:
+
+Refine and complement the fLisp and file extensions primitives and the
+core, flisp and string library, add file library; stdlib.lsp is
+removed.
+
+The read-eval-print loop is now completely written in Lisp.
+
+
 ## Femto 2.24/fLisp 0.6 Aug 2025
 
 * Added python mode
@@ -10,21 +30,27 @@
 
 * Buffer mode flags added that control the syntax hilighting for different languages.
 
-* startup.lsp now calls (read-hook filename) where filename is the filename of the file that just loaded.
-This enables cmode and LISP mode to be added to the buffer flags for the buffer.
+* startup.lsp now calls (read-hook filename) where filename is the
+  filename of the file that just loaded.  This enables cmode and LISP
+  mode to be added to the buffer flags for the buffer.
 
-* The default syntax highlighting is now suitable for TEXT files that might contain non matching single quotes
+* The default syntax highlighting is now suitable for TEXT files that
+  might contain non matching single quotes
 
-* In 'cmode' block comments, line comments, double and single quotes are matched and strings highlighted
+* In 'cmode' block comments, line comments, double and single quotes
+  are matched and strings highlighted
 
-* In 'lispmode' anything after ; is treated as a line comment.  It is rather pleasing to see the .lsp files comments rendered in green.
+* In 'lispmode' anything after ; is treated as a line comment.  It is
+  rather pleasing to see the .lsp files comments rendered in green.
 
-* add-mode and delete-mode functions added. E.G.  (add-mode "cmode"), (add-mode "lispmode"), (add-mode "modified")
+* add-mode and delete-mode functions added. E.G.  (add-mode "cmode"),
+  (add-mode "lispmode"), (add-mode "modified")
 
-* I plan to add a python mode that will work for python style block comments.
+* I plan to add a python mode that will work for python style block
+  comments.
 
 * Add exception handling via the `catch` special form. `signal` is
-replace by the simpler `throw` primitive.
+  replaced by the simpler `throw` primitive.
 
 
 ## Femto 2.22/fLisp 0.5 Aug 2025

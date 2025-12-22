@@ -322,7 +322,7 @@ Object *e_get_buffer_filename(Interpreter *interp, Object **args, Object **env)
     if (buffer->fname == NULL)
         return nil;
 
-    return newString(interp, curbp->fname);
+    return newString(interp, buffer->fname);
 }
 
 /* (buffer-flag-modified[ buffer[ bool]]) */

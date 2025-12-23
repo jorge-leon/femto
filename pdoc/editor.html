@@ -271,7 +271,7 @@
     <dt><code>(update-display)</code></dt>
     <dd>Updates all modified windows.</dd>
     <dt><code>(refresh)</code></dt>
-    <dd>Updates all windows by marking them modified and calling <code>update-display</code>.</dd>
+    <dd>Calls the curses refresh() function.</dd>
   </dl>
   <h5 id="message_line">Message Line</h5>
   <dl>
@@ -291,23 +291,28 @@
   </dl>
   <h5 id="keyboard">Keyboard Handling</h5>
   <dl>
-    <dt><code>(set-key <var>key-name</var> <var>lisp-func</var>)</code></dt>
-    <dd>Binds key key-name to the lisp function <var>lisp-func</var>.</dd>
-    <dt><code>(get-key-name)</code></dt>
-    <dd>Returns the name of the currently pressed key, eg: <samp>c-k</samp> for control-k.</dd>
-    <dt><code>(get-key-funcname)</code></dt>
-    <dd>Return the name of the function bound to the currently pressed key.</dd>
-    <dt><code>(execute-key)</code></dt>
-    <dd>Executes the function of the last bound key. <mark>Tbd. bound or pressed?</mark></dd>
     <dt><code>(describe-bindings)</code></dt>
     <dd>Creates a listing of all current key bindings, in a buffer named <samp>*help*</samp> and displays it in a new
     window. <u>C</u></dd>
     <dt><code>(describe-functions)</code></dt>
     <dd>Creates a listing of all functions bound to keys in a buffer named <samp>*help*</samp> and displays it in a new
     window.</dd>
+    <dt><code>(execute-key)</code></dt>
+    <dd>Executes the function of the last bound key. <mark>Tbd. bound or pressed?</mark></dd>
     <dt><code>(getch)</code></dt>
-    <dd>Waits for a key to be pressed and returns the key as string. See also <code>get-key-name</code>,
-    <code>get-key-funcname</code> and <code>execute-key</code>.</dd>
+    <dd>Calls the curses getch() function: Waits for a key to be pressed and returns the key as string. If a function
+    key is pressed, the ANSI terminal input sequence is sent;&nbsp;several calls to <code>getch</code> are required to
+    decode this.</dd>
+    <dt><code>(get-key)</code></dt>
+    <dd>Records keystrokes until&nbsp;a registered key-sequence is gathered, then the key information is stored and an
+    empty string is returned. If&nbsp;no match is found, the recorded key(s) is&nbsp;returned&nbsp;as string.</dd>
+    <dt><code>(get-key-funcname)</code></dt>
+    <dd>Return the name of the <var>lisp-func</var>&nbsp;bound to the most recent recorded key-sequence.</dd>
+    <dt><code>(get-key-name)</code></dt>
+    <dd>Returns the <var>key-name</var> of the most recenet recorded key-sequence, eg: <samp>c-k</samp> for
+    control-k.</dd>
+    <dt><code>(set-key <var>key-name</var> <var>lisp-func</var>)</code></dt>
+    <dd>Binds key key-name to the lisp function <var>lisp-func</var>.</dd>
   </dl>
   <h5 id="programming_system">Programming and System Interaction</h5>
   <dl>

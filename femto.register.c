@@ -15,7 +15,7 @@
 {"insert-string",             1, 1, TYPE_STRING,  e_insert_string},
 {"kill-region",               0, 0, 0,            e_kill_region},
 {"yank",                      0, 0, 0,            e_yank},
-      
+
 /* Selection */
 {"copy-region",               0, 0, 0,            e_copy_region},
 {"get-clipboard",             0, 0, 0,            e_get_clipboard},
@@ -37,6 +37,8 @@
 {"goto-line",                 1, 1, TYPE_INTEGER, e_goto_line},
 {"next-line",                 0, 0, 0,            e_down},
 {"previous-line",             0, 0, 0,            e_up},
+{"scroll-up",                 0, 0, 0,            e_scroll_up},
+{"scroll-down",               0, 0, 0,            e_scroll_down},
 {"search-forward",            1, 1, TYPE_STRING,  e_search_forward},
 {"search-backward",           1, 1, TYPE_STRING,  e_search_backward},
 {"set-point",                 1, 1, TYPE_INTEGER, e_set_point},
@@ -61,33 +63,34 @@
 {"set-buffer-name",           1, 1, TYPE_STRING,  e_set_buffer_name},
 {"set-visited-filename",      1, 1, 0,            e_set_buffer_filename},
 
- 
-{"get-temp-file",             0, 0, 0,            e_get_temp_file},
-{"message",                   1, 1, TYPE_STRING,  e_message},
-{"log-message",               1, 1, TYPE_STRING,  e_log_message},
-{"log-debug",                 1, 1, TYPE_STRING,  e_log_debug},
-{"set-key",                   2, 2, TYPE_STRING,  e_set_key},
-{"prompt",                    1, 2, TYPE_STRING,  e_prompt},
-{"eval-block",                0, 0, 0,            e_eval_block},
-{"get-key",                   0, 0, 0,            e_get_key},
-{"get-key-name",              0, 0, 0,            e_get_key_name},
-{"get-key-funcname",          0, 0, 0,            e_get_key_funcname},
-{"getch",                     0, 0, 0,            e_getch},
-{"get-version-string",        0, 0, 0,            e_get_version_string},
-
-
-{"update-display",            0, 0, 0,            e_update_display},
-{"prompt-filename",           1, 2, TYPE_STRING,  e_prompt_filename},
-{"clear-message-line",        0, 0, 0,            e_clear_message_line},
-{"refresh",                   0, 0, 0,            e_refresh},
-
-{"scroll-up",                 0, 0, 0,            e_scroll_up},
-{"scroll-down",               0, 0, 0,            e_scroll_down},
+/* Window Handling */
 {"delete-other-windows",      0, 0, 0,            e_delete_other_windows},
-{"execute-key",               0, 0, 0,            e_execute_key},
-{"describe-bindings",         0, 0, 0,            e_describe_bindings},
-{"describe-functions",        0, 0, 0,            e_describe_functions},
 {"split-window",              0, 0, 0,            e_split_window},
 {"other-window",              0, 0, 0,            e_other_window},
+{"update-display",            0, 0, 0,            e_update_display},
+{"refresh",                   0, 0, 0,            e_refresh},
+
+/* Message Line */
+{"message",                   1, 1, TYPE_STRING,  e_message},
+{"prompt-filename",           1, 2, TYPE_STRING,  e_prompt_filename},
+{"clear-message-line",        0, 0, 0,            e_clear_message_line},
+{"prompt",                    1, 2, TYPE_STRING,  e_prompt},
+
+/* Keyboard Handling */
+{"describe-bindings",         0, 0, 0,            e_describe_bindings},
+{"describe-functions",        0, 0, 0,            e_describe_functions},
+{"execute-key",               0, 0, 0,            e_execute_key},
+{"getch",                     0, 0, 0,            e_getch},
+{"get-key",                   0, 0, 0,            e_get_key},
+{"get-key-funcname",          0, 0, 0,            e_get_key_funcname},
+{"get-key-name",              0, 0, 0,            e_get_key_name},
+{"set-key",                   2, 2, TYPE_STRING,  e_set_key},
+
+/* Programming and System Interaction */
 {"suspend",                   0, 0, 0,            e_suspend},
-{"exit",                      0, 0, 0,            e_quit}
+{"exit",                      0, 0, 0,            e_quit},
+{"get-temp-file",             0, 0, 0,            e_get_temp_file},
+{"log-message",               1, 1, TYPE_STRING,  e_log_message},
+{"log-debug",                 1, 1, TYPE_STRING,  e_log_debug},
+{"eval-block",                0, 0, 0,            e_eval_block},
+{"get-version-string",        0, 0, 0,            e_get_version_string}

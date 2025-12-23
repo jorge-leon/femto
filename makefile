@@ -240,7 +240,7 @@ clean: FORCE
 	-$(RM) -rf debian/femto debian/files \
 		debian/femto.debhelper.log debian/femto.substvars
 	-$(RM) -f test/test.rc  test/debug.out
-	-$(RM) -f TAGS lisp/TAGS
+#	-$(RM) -f TAGS lisp/TAGS
 
 deb: FORCE
 	dpkg-buildpackage -b -us -uc

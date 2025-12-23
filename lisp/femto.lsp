@@ -247,7 +247,7 @@
 ;;; Buffers
 
 ;; Note: currently buffers are not Lisp objects, their handle is their name string.
-(defun current-buffer ()  (buffer-name))
+(defun buffer-name arg  (if arg  (car arg)  (current-buffer)))
 
 ;;; This hook is run after switching to a buffer
 (setq after-switch-to-buffer-hook ())
@@ -256,9 +256,8 @@
   (buffer-show name)
   (run-hooks 'after-switch-to-buffer-hook) )
 
-(defun buffer-modified-p args  (buffer-flag-modified (when args (car args))) )
-(defun restore-buffer-modified-p (bool)  (buffer-flag-modified nil bool))
-(defun set-buffer-modified-p (bool)  (restore-buffer-modified-p bool) (refresh))
+(defun restore-buffer-modified-p (bool)  (buffer-modified-p (current-buffer) bool))
+(defun set-buffer-modified-p (bool)  (buffer-modified-p (current-buffer) bool) (refresh))
 
 (defun buffer-list ()
   (let loop ((buffers nil)  (buf (buffer-next)))
@@ -279,7 +278,7 @@
 
 
 (defun create-file-buffer (filename)
-  (generate-new-buffer (generate-new-buffer-name (file-name-nondirectory filename))) )
+  (get-buffer-create (generate-new-buffer-name (file-name-nondirectory filename))) )
 
 (defun generate-new-buffer-name (name)
   (let ((index (buffer-name_maxindex name)))

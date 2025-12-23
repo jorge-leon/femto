@@ -141,6 +141,27 @@ void display_utf8(buffer_t *bp, int n)
     addstr(sbuf);
 }
 
+void modeline(window_t *wp)
+{
+    int i;
+    char lch, mch, och;
+    static char modeline[256];
+
+    /* n = utf8_size(*(ptr(wp->w_bufp, wp->w_bufp->b_point))); */
+    attron(COLOR_PAIR(ID_MODELINE));
+    move(wp->w_top + wp->w_rows, 0);
+    lch = (wp == curwp ? '=' : '-');
+    mch = ((wp->w_bufp->modified) ? '*' : lch);
+    och = ((wp->w_bufp->b_flags & B_OVERWRITE) ? 'O' : lch);
+
+    sprintf(modeline, "%c%c%c Femto: %c%c %s ",  lch,och,mch,lch,lch, wp->w_bufp->name);
+    addstr(modeline);
+
+    for (i = strlen(modeline) + 1; i <= COLS; i++)
+        addch(lch);
+    attron(COLOR_PAIR(ID_SYMBOL));
+}
+
 void display(window_t *wp, int flag)
 {
     char_t *p;
@@ -230,27 +251,6 @@ void display(window_t *wp, int flag)
         refresh();
     }
     wp->w_update = FALSE;
-}
-
-void modeline(window_t *wp)
-{
-    int i;
-    char lch, mch, och;
-    static char modeline[256];
-
-    /* n = utf8_size(*(ptr(wp->w_bufp, wp->w_bufp->b_point))); */
-    attron(COLOR_PAIR(ID_MODELINE));
-    move(wp->w_top + wp->w_rows, 0);
-    lch = (wp == curwp ? '=' : '-');
-    mch = ((wp->w_bufp->modified) ? '*' : lch);
-    och = ((wp->w_bufp->b_flags & B_OVERWRITE) ? 'O' : lch);
-
-    sprintf(modeline, "%c%c%c Femto: %c%c %s ",  lch,och,mch,lch,lch, get_buffer_name(wp->w_bufp));
-    addstr(modeline);
-
-    for (i = strlen(modeline) + 1; i <= COLS; i++)
-        addch(lch);
-    attron(COLOR_PAIR(ID_SYMBOL));
 }
 
 void clear_message_line(void)

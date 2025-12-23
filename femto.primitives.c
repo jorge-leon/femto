@@ -72,7 +72,6 @@ Object *e_get_key(Interpreter *interp, Object **args, Object **env) { return new
 Object *e_get_key_name(Interpreter *interp, Object **args, Object **env) { return newString(interp, get_key_name()); }
 Object *e_get_key_funcname(Interpreter *interp, Object **args, Object **env) { return newString(interp, get_key_funcname()); }
 Object *e_get_clipboard(Interpreter *interp, Object **args, Object **env) { return newString(interp, get_clipboard()); }
-Object *e_get_buffer_count(Interpreter *interp, Object **args, Object **env) { return newInteger(interp, count_buffers()); }
 
 /* Display */
 Object *e_refresh(Interpreter *interp, Object ** args, Object **env)
@@ -276,12 +275,12 @@ Object *e_zero_buffer(Interpreter *interp, Object **args, Object **env)
     return nil;
 }
 
-/** (generate-new-buffer name) */
-Object *e_new_buffer(Interpreter *interp, Object **args, Object **env)
+/** (get-buffer-create name) */
+Object *e_get_buffer_create(Interpreter *interp, Object **args, Object **env)
 {
-    if (new_buffer(FLISP_ARG_ONE->string))
+    if (find_buffer(FLISP_ARG_ONE->string, true))
         return FLISP_ARG_ONE;
-    exceptionWithObject(interp, FLISP_ARG_ONE, out_of_memory, "(generate-new-buffer name) failed, out of memory");
+    exceptionWithObject(interp, FLISP_ARG_ONE, out_of_memory, "(get-buffer-create name) failed, out of memory");
 }
 /** (set-visited-filename name) */
 Object *e_set_buffer_filename(Interpreter *interp, Object **args, Object **env)
@@ -301,12 +300,9 @@ Object *e_set_buffer_filename(Interpreter *interp, Object **args, Object **env)
     return FLISP_ARG_ONE;
 }
 
-
-Object *e_get_buffer_name(Interpreter *interp, Object **args, Object **env)
+Object *e_current_buffer(Interpreter *interp, Object **args, Object **env)
 {
-    char buf[40];
-    strcpy(buf, get_buffer_name(curbp));
-    return newStringWithLength(interp, buf, strlen(buf));
+    return newString(interp, curbp->name);
 }
 
 /* (buffer-filename[ buffer]) */
@@ -325,17 +321,17 @@ Object *e_get_buffer_filename(Interpreter *interp, Object **args, Object **env)
     return newString(interp, buffer->fname);
 }
 
-/* (buffer-flag-modified[ buffer[ bool]]) */
-Object *e_buffer_flag_modified(Interpreter *interp, Object **args, Object **env)
+/* (buffer-modified-p[ buffer[ bool]]) */
+Object *e_buffer_modified_p(Interpreter *interp, Object **args, Object **env)
 {
     buffer_t *bp = curbp;
 
     if (FLISP_HAS_ARGS) {
         if (FLISP_ARG_ONE != nil) {
-            CHECK_TYPE(FLISP_ARG_ONE, type_string, "(buffer-flag-modified[ buffer[ bool]])");
+            CHECK_TYPE(FLISP_ARG_ONE, type_string, "(buffer-modified-p[ buffer[ bool]])");
             bp = find_buffer(FLISP_ARG_ONE->string, false);
             if (!bp)
-                exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(buffer-flag-modified[ buffer[ bool]]) - buffer does not exist");
+                exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(buffer-modified-p[ buffer[ bool]]) - buffer does not exist");
         }
         if (FLISP_HAS_ARG_TWO)
             bp->modified =  (FLISP_ARG_TWO != nil);

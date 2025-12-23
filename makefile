@@ -196,6 +196,11 @@ run: femto FORCE
 splint: FORCE
 	splint +posixlib -macrovarprefix "M_" *.c *.h
 
+TAGS: FORCE
+	ctags -e *.c *.h
+
+lisp/TAGS: FORCE
+	(cd lisp && ctags -e *.lsp ../*.sht)
 test: flisp femto test/test.rc FORCE
 	@(cd test && ./test -as)
 
@@ -235,6 +240,7 @@ clean: FORCE
 	-$(RM) -rf debian/femto debian/files \
 		debian/femto.debhelper.log debian/femto.substvars
 	-$(RM) -f test/test.rc  test/debug.out
+	-$(RM) -f TAGS lisp/TAGS
 
 deb: FORCE
 	dpkg-buildpackage -b -us -uc

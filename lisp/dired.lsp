@@ -57,7 +57,7 @@
   (delete-other-windows)
   (let ((buffer (find-buffer-visiting directory)))
     (unless buffer
-      (setq buffer (generate-new-buffer (generate-new-buffer-name "*dired*")))
+      (setq buffer (get-buffer-create (generate-new-buffer-name "*dired*")))
       (set-buffer buffer)
       (set-visited-filename directory) )
     buffer ))

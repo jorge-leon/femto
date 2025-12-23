@@ -250,42 +250,6 @@ bool delete_buffer(buffer_t *bp)
     return true;
 }
 
-char* get_buffer_name(buffer_t *bp)
-{
-    return bp->name;
-}
-
-char* get_buffer_modeline_name(buffer_t *bp)
-{
-    /* Note: construct a name string which fits into the
-     * modeline. don't use the filename */
-    if (bp->fname == NULL)
-        return bp->name;
-    return bp->fname;
-}
-
-int count_buffers(void)
-{
-    buffer_t* bp;
-    int i;
-
-    for (i=0, bp=bheadp; bp != NULL; bp = bp->b_next)
-        i++;
-
-    return i;
-}
-
-int modified_buffers(void)
-{
-    buffer_t* bp;
-
-    for (bp=bheadp; bp != NULL; bp = bp->b_next)
-        if (!(bp->b_flags & B_SPECIAL) && bp->modified)
-            return true;
-
-    return false;
-}
-
 /*
  * Local Variables:
  * c-file-style: "k&r"

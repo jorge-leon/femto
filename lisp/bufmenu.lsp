@@ -37,7 +37,6 @@
 ;; (get-clipboard)
 ;; 
 ;; (save-buffer bufm-buf)
-;; (get-buffer-count)
 ;; (buffer-name)
 ;; (search-forward "str")
 ;; (switch-to-buffer "*scratch*"))
@@ -63,7 +62,7 @@
 ;; (buffer-menu)
 ;;
 ;; List buffers, the starts on line 3.
-;; (get-buffer-count) will report 1 additional buffer than listed
+;; (length (buffer-list)) will be one buffer more than listed
 ;; as *buffers* is hidden from the list when created
 ;; loop round (with a limit of 400 operations) until bufm-stop gets set to t
 ;;
@@ -76,7 +75,7 @@
   (setq bufm-oclip (get-clipboard))
   (list-buffers)
   (setq bufm-line bufm-start-line)   
-  (setq bufm-last-line (+ bufm-start-line (get-buffer-count)))
+  (setq bufm-last-line (+ bufm-start-line (length (buffer-list))))
   (setq bufm-last-line (- bufm-last-line 2))
   (setq bufm-stop nil)
   (goto-line bufm-line)
@@ -135,7 +134,7 @@
 
 (defun bufm-handle-single-key(k)
   (bufm-debug "bufm-handle-single-key")
-  (setq bufm_count (get-buffer-count))
+  (setq bufm_count (length (buffer-list)))
   (cond
     ((memq k '("x" "q"))
      (goto-line bufm-start-line)
@@ -161,7 +160,7 @@
     ((and (eq k "k") (> bufm_count 1))
      (kill-buffer bufm-buf)
      (list-buffers)
-     (setq bufm-last-line (+ bufm-start-line (get-buffer-count)))
+     (setq bufm-last-line (+ bufm-start-line (length (buffer-list))))
      (setq bufm-last-line (- bufm-last-line 2))
      (bufm-move-line 0)
      (goto-line bufm-line)

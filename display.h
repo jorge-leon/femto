@@ -12,7 +12,6 @@ extern void clear_message_line(void);
 extern void display_prompt_and_response(char *, char *);
 extern void display(window_t *, int);
 extern void dispmsg(void);
-extern void modeline(window_t *);
 extern void update_display(void);
 extern void w2b(window_t *);
 

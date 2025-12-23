@@ -77,7 +77,7 @@
 
 
 {"update-display",            0, 0, 0,            e_update_display},
-{"prompt-filename",           1, 2, TYPE_STRING,  e_getfilename},
+{"prompt-filename",           1, 2, TYPE_STRING,  e_prompt_filename},
 {"clear-message-line",        0, 0, 0,            e_clear_message_line},
 {"refresh",                   0, 0, 0,            e_refresh},
 

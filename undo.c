@@ -496,7 +496,7 @@ void add_undo(buffer_t *bp, char type, point_t p, char_t *str, char_t *rep)
     assert(bp != NULL);
 
     /* do nothing if undo mode is not active for this buffer */
-    if (!(bp->b_flags & B_UNDO))
+    if (!bp->undo)
         return;
 
     assert(bp->b_gap <= bp->b_egap);

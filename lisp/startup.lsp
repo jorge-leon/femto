@@ -108,8 +108,8 @@
 ;;
 ;; Mark the scratch buffer as unmodified, set to lispmode so that the comment comes up green
 ;;
-(add-mode "lispmode")
-(delete-mode "modified")
+(buffer-mode nil 'Lisp)
+(restore-buffer-modified-p nil)
 
 ;;
 ;; Try to load the user rc file

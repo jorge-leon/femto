@@ -96,6 +96,7 @@
   (and (not (string-equal "-" (substring s 0 1)))
        (consp (file-name_posix_chars s)) ))
 
+
 ;; delete next word
 (defun delete-next-word()
   (backward-word)
@@ -254,7 +255,8 @@
 
 (defun switch-to-buffer (name)
   (buffer-show name)
-  (run-hooks 'after-switch-to-buffer-hook) )
+  (let ((result (catch (run-hooks 'after-switch-to-buffer-hook))))
+    (log 'DEBUG result "after-switch-to-buffer-hook") ))
 
 (defun restore-buffer-modified-p (bool)  (buffer-modified-p (current-buffer) bool))
 (defun set-buffer-modified-p (bool)  (buffer-modified-p (current-buffer) bool) (refresh))
@@ -341,10 +343,11 @@
 ;;; find-file
 
 (defun find-file ()
-  (let* ((filename (string-trim (prompt-filename "Find file: ")))
-	 (buffer (find-buffer-visiting filename)) )
-    (if buffer  (switch-to-buffer buffer) ; file already loaded
-	(switch-to-buffer (find-file-noselect filename))  )))
+  (let ((filename (prompt-filename "Find file: ")))
+    (if-not filename  (message "Canceled")
+	    (let ((buffer (find-buffer-visiting filename)))
+	      (if buffer  (switch-to-buffer buffer) ; file already loaded
+		  (switch-to-buffer (find-file-noselect filename))  )))))
 
 (defun find-file-noselect (filename)
   (let ((result (catch (open filename "r+"))))
@@ -365,7 +368,7 @@
 		(set-visited-filename filename)
 		(restore-buffer-modified-p nil)
 		;; Note: read-only mode pending implementation
-		(when read-only  (add-mode "read-only"))
+		(when read-only  (buffer-modified-p nil "read-only"))
 		(after-find-file) ))))
     (set-buffer current)
     (when (car result) (apply throw result))
@@ -386,14 +389,13 @@
 
 (setq
  find-file-extension-highlight-mode
-      '("c" "cmode"  "h" "cmode"  "cpp" "cmode"
-	"rc"  "lispmode"  "lsp" "lispmode"
-	"py"  "python")
+      '("c" C  "h" C  "cpp" C
+	"rc"  Lisp  "lsp" Lisp
+	"py"  Python)
       find-file-hook nil)
 
 (defun after-find-file ()
-  (let ((mode (prop-get find-file-extension-highlight-mode (file-name-extension (buffer-filename)))))
-    (when mode  (add-mode mode)) )
+  (buffer-mode nil (prop-get find-file-extension-highlight-mode (file-name-extension (buffer-filename))))
   (run-hooks 'find-file-hook) )
 
 (defun find-file_directory (filename)

@@ -43,17 +43,18 @@
 
 /* Buffer Management and information */
 {"find-buffer-visiting",      1, 1, TYPE_STRING,  e_find_buffer_by_fname},
-{"add-mode",                  1, 1, TYPE_STRING,  e_add_mode},
 {"buffer-filename",           0, 1, TYPE_STRING,  e_get_buffer_filename},
 {"buffer-fread",              1, 2, 0,            e_buffer_fread},
 {"buffer-fwrite",             2, 2, 0,            e_buffer_fwrite},
+{"buffer-mode",               0, 2, 0,            e_buffer_mode},
 {"buffer-modified-p",         0, 2, 0,            e_buffer_modified_p},
+{"buffer-overwrite-p",        0, 2, 0,            e_buffer_overwrite_p},
+{"buffer-readonly-p",        0, 2, 0,            e_buffer_readonly_p},
+{"buffer-undo-p",             0, 2, 0,            e_buffer_undo_p},
 {"buffer-next",               0, 1, TYPE_STRING,  e_buffer_next},
 {"buffer-show",               1, 1, TYPE_STRING,  e_buffer_show},
 {"current-buffer",            0, 0, 0,            e_current_buffer},
 {"delete-buffer",             1, 1, TYPE_STRING,  e_delete_buffer},
-{"delete-mode",               1, 1, TYPE_STRING,  e_delete_mode},
-{"get-mode",                  1, 1, TYPE_STRING,  e_get_mode},
 {"get-buffer-create",         1, 1, TYPE_STRING,  e_get_buffer_create},
 {"list-buffers",              0, 0, 0,            e_list_buffers},
 {"set-buffer",                1, 1, TYPE_STRING,  e_set_buffer},
@@ -62,7 +63,6 @@
 
  
 {"get-temp-file",             0, 0, 0,            e_get_temp_file},
-{"add-mode-global",           1, 1, TYPE_STRING,  e_add_mode_global},
 {"message",                   1, 1, TYPE_STRING,  e_message},
 {"log-message",               1, 1, TYPE_STRING,  e_log_message},
 {"log-debug",                 1, 1, TYPE_STRING,  e_log_debug},

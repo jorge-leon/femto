@@ -2472,6 +2472,21 @@ Primitive primitives[] = {
 
 // MAIN ///////////////////////////////////////////////////////////////////////
 
+void fl_register_constant(Interpreter *interp, Object *symbol, Object *value)
+{
+    symbol->type = type_symbol;
+    envSet(interp, &symbol, &value, &interp->global, true);
+    interp->symbols = newCons(interp, &symbol, &interp->symbols);
+}
+void fl_register_primitive(Interpreter * interp, Primitive *primitive)
+{
+    GC_CHECKPOINT;
+    GC_TRACE(gcSymbol, newSymbol(interp, primitive->name));
+    Object *p = newPrimitive(interp, primitive);
+    GC_RELEASE;
+    envSet(interp, gcSymbol, &p, &interp->global, true);
+}
+
 void initRootEnv(Interpreter *interp)
 {
     int i, nConstants;
@@ -2519,6 +2534,15 @@ void initRootEnv(Interpreter *interp)
 
         envSet(interp, &var, &val, &interp->global, true);
     }
+#endif
+#ifdef FLISP_FEMTO_EXTENSION
+    #include "buffer.h"
+    fl_register_constant(interp, mode_c, mode_c);
+    fl_register_constant(interp, mode_lisp, mode_lisp);
+    fl_register_constant(interp, mode_python, mode_python);
+    fl_register_constant(interp, mode_dired, mode_dired);
+    fl_register_constant(interp, mode_git, mode_git);
+    fl_register_constant(interp, mode_oxo, mode_oxo);
 #endif
 }
 

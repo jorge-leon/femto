@@ -219,7 +219,7 @@ void setup_keys(void)
     set_key_internal("kend",       "end-of-line",          "\x1B\x4F\x46", lnend);
     // end keypad modes
     set_key_internal("del",       "delete",               "\x1B\x5B\x33\x7E", delete);
-    set_key_internal("ins",       "toggle-overwrite-mode" , "\x1B\x5B\x32\x7E", toggle_overwrite_mode);
+    set_key_internal("ins",       "overwrite-mode-i",     "\x1B\x5B\x32\x7E", toggle_overwrite_mode);
     set_key_internal("pgup",      "scroll-down",          "\x1B\x5B\x35\x7E", scroll_down);
     set_key_internal("pgdn",      "scroll-up",            "\x1B\x5B\x36\x7E", scroll_up);
     set_key_internal("backspace", "backspace",            "\x7f", backspace);

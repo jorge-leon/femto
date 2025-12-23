@@ -58,14 +58,16 @@
   (let ((buffer (find-buffer-visiting directory)))
     (unless buffer
       (setq buffer (get-buffer-create (generate-new-buffer-name "*dired*")))
+      (buffer-mode buffer 'Dired)
+      (buffer-readonly-p buffer t)
+      (buffer-undo-p buffer nil)
       (set-buffer buffer)
       (set-visited-filename directory) )
     buffer ))
 
 ;;; Hook function
 (defun dired-after-switch-to-buffer-function ()
-  ;; Note: to be replaced by (eq (buffer-mode) 'dired) or similar function
-  (when (string-startswith (buffer-name) "*dired*")
+  (when (eq (buffer-mode) 'Dired)
     (dired-reload)
     (dired-loop dired-max-ops) ))
 

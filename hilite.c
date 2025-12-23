@@ -1,12 +1,14 @@
 /* hlite.c, generic syntax hilighting, Atto Emacs, Hugh Barney, Public Domain, 2016 */
 
 #include <curses.h>
+#include <string.h>
 
 #include "femto.h"
 #include "undo.h"
 #include "buffer.h"
 #include "gap.h"
 #include "hilite.h"
+#include "lisp.h"
 
 int state = ID_DEFAULT;
 int next_state = ID_DEFAULT;
@@ -54,17 +56,23 @@ int parse_text(buffer_t *bp, point_t pt)
     char_t c_next_next = get_at(bp, pt + 2);
 
     state = next_state;
-    int cmode = (bp->b_flags & B_CMODE ? 1 : 0);
-    int lisp_mode = (bp->b_flags & B_LISP ? 1 : 0);
-    int python_mode = (bp->b_flags & B_PYTHON ? 1 : 0);
+    bool c_mode      = false;
+    bool lisp_mode   = false;
+    bool python_mode = false;
+    if (bp->mode == nil) ;
+    else if ((c_mode =       (0 == (strcmp(bp->mode->string, "C")))));
+    else if ((lisp_mode =    (0 == (strcmp(bp->mode->string, "Lisp")))));
+    else if ((python_mode =  (0 == ((strcmp(bp->mode->string, "Python"))))));
+
+    //debug("parse_text(): c_mode %d, lisp_mode %d, python_mode %d\n", c_mode, lisp_mode, python_mode);
 
     // detect assignment operator for python
     if (python_mode == 1 && state == ID_DEFAULT && c_now == '=' && c_next != '=')
-	return (next_state = state = ID_ASSIGNMENT);
+        return (next_state = state = ID_ASSIGNMENT);
 
     // if in assignment state and now is whitespace , stay in assigment mode
     if (python_mode == 1 && state == ID_ASSIGNMENT  && (c_now == ' ' || c_now == '\t' || c_now == '\n'))
-	return (next_state = state = ID_ASSIGNMENT);
+        return (next_state = state = ID_ASSIGNMENT);
 
     // double quoted string
     if (python_mode == 1 && state == ID_ASSIGNMENT  && c_now == '"' && c_next != '"')
@@ -75,26 +83,26 @@ int parse_text(buffer_t *bp, point_t pt)
         return (next_state = ID_SINGLE_STRING);
 
     // if in assignment state and now is not triple single/double quote
-    if (python_mode == 1 && state == ID_ASSIGNMENT  
+    if (python_mode == 1 && state == ID_ASSIGNMENT
             && c_now != '\'' &&  c_next != '\'' && c_next_next !='\''
             && c_now != '\"' &&  c_next != '\"' && c_next_next !='\"')
-	return (next_state = state = ID_DEFAULT);
+        return (next_state = state = ID_DEFAULT);
 
-    // C start of block comment 
-    if (cmode == 1 && state == ID_DEFAULT && c_now == '/' && c_next == '*') {
+    // C start of block comment
+    if (c_mode == 1 && state == ID_DEFAULT && c_now == '/' && c_next == '*') {
         skip_count = 1;
         return (next_state = state = ID_BLOCK_COMMENT);
     }
 
     // C end of block comment
-    if (cmode == 1 && state == ID_BLOCK_COMMENT && c_now == '*' && c_next == '/') {
+    if (c_mode == 1 && state == ID_BLOCK_COMMENT && c_now == '*' && c_next == '/') {
         skip_count = 1;
         next_state = ID_DEFAULT;
         return ID_BLOCK_COMMENT;
     }
 
     // C line comment
-    if (cmode == 1 && state == ID_DEFAULT && c_now == '/' && c_next == '/') {
+    if (c_mode == 1 && state == ID_DEFAULT && c_now == '/' && c_next == '/') {
         skip_count = 1;
         return (next_state = state = ID_LINE_COMMENT);
     }
@@ -112,7 +120,7 @@ int parse_text(buffer_t *bp, point_t pt)
     }
 
     // Python, Lisp and C line comment end
-    if ((python_mode == 1 || cmode == 1 || lisp_mode == 1) && state == ID_LINE_COMMENT && c_now == '\n')
+    if ((python_mode == 1 || c_mode == 1 || lisp_mode == 1) && state == ID_LINE_COMMENT && c_now == '\n')
         return (next_state = ID_DEFAULT);
 
 
@@ -170,42 +178,42 @@ int parse_text(buffer_t *bp, point_t pt)
 
 
     // double quoted string
-    if ((python_mode == 1 || cmode == 1) && state == ID_DEFAULT && c_now == '"')
+    if ((python_mode == 1 || c_mode == 1) && state == ID_DEFAULT && c_now == '"')
         return (next_state = ID_DOUBLE_STRING);
 
     // escape inside double quoted string
-    if ((python_mode == 1 || cmode == 1) && state == ID_DOUBLE_STRING && c_now == '\\') {
+    if ((python_mode == 1 || c_mode == 1) && state == ID_DOUBLE_STRING && c_now == '\\') {
         skip_count = 1;
         return (next_state = ID_DOUBLE_STRING);
     }
 
     // end of double quoted string
-    if ((python_mode == 1 || cmode == 1) && state == ID_DOUBLE_STRING && c_now == '"') {
+    if ((python_mode == 1 || c_mode == 1) && state == ID_DOUBLE_STRING && c_now == '"') {
         next_state = ID_DEFAULT;
         return ID_DOUBLE_STRING;
     }
 
     // single quote matching, dont want in lisp code
-    if ((python_mode == 1 || cmode == 1) && state == ID_DEFAULT && c_now == '\'')
+    if ((python_mode == 1 || c_mode == 1) && state == ID_DEFAULT && c_now == '\'')
         return (next_state = ID_SINGLE_STRING);
 
     // escape inside single quote matching
-    if ((python_mode == 1 || cmode == 1) && state == ID_SINGLE_STRING && c_now == '\\') {
+    if ((python_mode == 1 || c_mode == 1) && state == ID_SINGLE_STRING && c_now == '\\') {
         skip_count = 1;
         return (next_state = ID_SINGLE_STRING);
     }
-    
-    // end of single quote matching 
-    if ((python_mode == 1 || cmode == 1) && state == ID_SINGLE_STRING && c_now == '\'') {
+
+    // end of single quote matching
+    if ((python_mode == 1 || c_mode == 1) && state == ID_SINGLE_STRING && c_now == '\'') {
         next_state = ID_DEFAULT;
         return ID_SINGLE_STRING;
     }
 
-    // general alphabet text, not attached to any mode    
+    // general alphabet text, not attached to any mode
     if (state != ID_DEFAULT)
         return (next_state = state);
 
-    // digits, not activated by any mode    
+    // digits, not activated by any mode
     if (state == ID_DEFAULT && c_now >= '0' && c_now <= '9') {
         next_state = ID_DEFAULT;
         return (state = ID_DIGITS);

@@ -164,7 +164,7 @@ void insert(void)
 
 
     /* overwrite if mid line, not EOL or EOF, CR will insert as normal */
-    if ((curbp->b_flags & B_OVERWRITE) && *input != '\r' && *(ptr(curbp, curbp->b_point)) != '\n' && curbp->b_point < pos(curbp,curbp->b_ebuf) ) {
+    if (curbp->overwrite && *input != '\r' && *(ptr(curbp, curbp->b_point)) != '\n' && curbp->b_point < pos(curbp,curbp->b_ebuf) ) {
         *(ptr(curbp, curbp->b_point)) = *input;
         if (curbp->b_point < pos(curbp, curbp->b_ebuf))
             ++curbp->b_point;
@@ -199,7 +199,7 @@ void insert_at(void)
 
 
     /* overwrite if mid line, not EOL or EOF, CR will insert as normal */
-    if ((curbp->b_flags & B_OVERWRITE) && *input != '\r' && *(ptr(curbp, curbp->b_point)) != '\n' && curbp->b_point < pos(curbp,curbp->b_ebuf) ) {
+    if (curbp->overwrite && *input != '\r' && *(ptr(curbp, curbp->b_point)) != '\n' && curbp->b_point < pos(curbp,curbp->b_ebuf) ) {
         *(ptr(curbp, curbp->b_point)) = *input;
         if (curbp->b_point < pos(curbp, curbp->b_ebuf))
             ++curbp->b_point;
@@ -302,12 +302,7 @@ void unmark(void)
     curbp->b_mark = NOMARK;
 }
 
-void toggle_overwrite_mode(void) {
-    if (curbp->b_flags & B_OVERWRITE)
-        curbp->b_flags &= ~B_OVERWRITE;
-    else
-        curbp->b_flags |= B_OVERWRITE;
-}
+void toggle_overwrite_mode(void) { curbp->overwrite = !curbp->overwrite; }
 
 int i_check_region(void)
 {
@@ -410,7 +405,7 @@ void insert_string(char *str)
 {
     int len = (str == NULL) ? 0 : strlen(str);
 
-    if (curbp->b_flags & B_OVERWRITE)
+    if (curbp->overwrite)
         return;
     if (len <= 0) {
         msg(m_empty);
@@ -579,15 +574,6 @@ void match_parens(void)
     }
 }
 
-int add_mode_global(char *mode_name)
-{
-    if (0 == strcmp(mode_name, "undo")) {
-        global_undo_mode = 1;
-        return 1;
-    }
-    return 0;
-}
-
 void version(void)
 {
     msg(m_version);
@@ -711,67 +697,6 @@ void user_func(void)
     if (eval_string(true, "(%s)", key_return->k_funcname) == NULL)
         return;
     free_lisp_output();
-}
-
-int add_mode_current_buffer(char* modename)
-{
-    if (strcmp(modename, "special") == 0) {
-        add_mode(curbp, B_SPECIAL);
-        return 1;
-    } else if (strcmp(modename, "modified") == 0) {
-        curbp->modified = TRUE;
-        return 1;
-    } else if (strcmp(modename, "cmode") == 0) {
-        add_mode(curbp, B_CMODE);;
-        return 1;
-    } else if (strcmp(modename, "lispmode") == 0) {
-        add_mode(curbp, B_LISP);;
-        return 1;
-    } else if (strcmp(modename, "python") == 0) {
-        add_mode(curbp, B_PYTHON);;
-        return 1;
-    }
-
-    return 0; // we did not add a mode
-}
-
-int delete_mode_current_buffer(char* modename)
-{
-    if (strcmp(modename, "special") == 0) {
-        delete_mode(curbp, B_SPECIAL);
-        return 1;
-    } else if (strcmp(modename, "modified") == 0) {
-        curbp->modified = FALSE;
-        return 1;
-    } else if (strcmp(modename, "cmode") == 0) {
-        delete_mode(curbp, B_CMODE);;
-        return 1;
-    } else if (strcmp(modename, "lispmode") == 0) {
-        delete_mode(curbp, B_LISP);;
-        return 1;
-    } else if (strcmp(modename, "python") == 0) {
-        delete_mode(curbp, B_PYTHON);;
-        return 1;
-    }
-
-    return 0; // we did not delete a mode
-}
-
-int get_mode_current_buffer(char* modename)
-{
-    if (strcmp(modename, "special") == 0) {
-        return 1;
-    } else if (strcmp(modename, "modified") == 0) {
-        return 1;
-    } else if (strcmp(modename, "cmode") == 0) {
-        return 1;
-    } else if (strcmp(modename, "lispmode") == 0) {
-        return 1;
-    } else if (strcmp(modename, "python") == 0) {
-        return 1;
-    }
-
-    return 0; // mode is not set
 }
 
 /*

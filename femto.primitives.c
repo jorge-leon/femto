@@ -50,10 +50,6 @@ DEFINE_EDITOR_FUNC(other_window)
 DEFINE_EDITOR_FUNC(execute_key)
 
 extern char *get_clipboard(void);
-extern void set_scrap(unsigned char *);
-extern int add_mode_current_buffer(char *);
-extern int delete_mode_current_buffer(char *);
-extern int get_mode_current_buffer(char *);
 extern int count_buffers(void);
 extern void msg(char *,...);
 extern void clear_message_line(void);
@@ -63,7 +59,6 @@ extern void move_to_search_result(point_t);
 extern point_t search_forward(char *);
 extern point_t search_backwards(char *);
 extern int goto_line(int);
-extern int add_mode_global(char *);
 extern char *get_version_string(void);
 extern char *get_temp_file(void);
 
@@ -101,24 +96,76 @@ Object *e_get_temp_file(Interpreter *interp, Object **args, Object **env)
 }
 
 /* Buffers */
-Object *e_add_mode_global(Interpreter *interp, Object **args, Object **env)
+/* (current-buffer) */
+Object *e_current_buffer(Interpreter *interp, Object **args, Object **env) { return newString(interp, curbp->name); }
+
+/* Helper function: return either current buffer or named buffer if first argument exists */
+buffer_t *get_buffer_arg_one(Interpreter *interp, Object **args, char *signature)
 {
-    return (1 == add_mode_global(FLISP_ARG_ONE->string) ? t : nil);
+    if (FLISP_ARG_ONE == nil)
+        return curbp;
+    if (FLISP_ARG_ONE->type != type_string)
+        exceptionWithObject(interp, FLISP_ARG_ONE, wrong_type_argument,
+                            "%s - expected %s, got: %s", signature,
+                            type_string->string, FLISP_ARG_ONE->type->string);
+    buffer_t *buffer = find_buffer(FLISP_ARG_ONE->string, false);
+    if (buffer == NULL)
+        exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value,
+                            "%s - buffer does not exist", signature);
+    return buffer;
 }
 
-Object *e_add_mode(Interpreter *interp, Object **args, Object **env)
+/* (buffer-mode[ buffer[ mode]]) => mode - gets or sets mode of buffer.
+ * if buffer is not given or nil, use the current buffer
+ */
+Object *e_buffer_mode(Interpreter *interp, Object **args, Object **env)
 {
-    return (1 == add_mode_current_buffer(FLISP_ARG_ONE->string) ? t : nil);
+    buffer_t *buffer = curbp;
+    if (FLISP_HAS_ARGS) {
+        buffer = get_buffer_arg_one(interp, args, "(buffer-mode[ buffer[ mode]])");
+        if (FLISP_HAS_ARG_TWO) {
+            CHECK_TYPE(FLISP_ARG_TWO, type_symbol, "buffer-mode[ buffer[ mode]]) - mode");
+            buffer->mode = FLISP_ARG_TWO;
+        }
+    }
+    return buffer->mode;
 }
 
-Object *e_delete_mode(Interpreter *interp, Object **args, Object **env)
-{
-    return (1 == delete_mode_current_buffer(FLISP_ARG_ONE->string) ? t : nil);
-}
+/* Buffer flags */
+#define GET_SET_BUFFER_FLAG(FLAG)                                       \
+    Object *e_buffer_##FLAG## _p(Interpreter *interp, Object **args, Object **env) \
+    {                                                                   \
+        buffer_t *buffer = curbp;                                       \
+        if (FLISP_HAS_ARGS) {                                           \
+            buffer = get_buffer_arg_one(interp, args, "(buffer-" #FLAG "-p[ buffer[ p]])"); \
+            if (FLISP_HAS_ARG_TWO)                                      \
+                buffer->FLAG = (FLISP_ARG_TWO != nil);                  \
+        }                                                               \
+        return buffer->FLAG ? t : nil;                                  \
+    }                                                                   \
 
-Object *e_get_mode(Interpreter *interp, Object **args, Object **env)
+/* (buffer-modified-p[ buffer[ bool]]) */
+GET_SET_BUFFER_FLAG(modified)
+/* (buffer-overwrite-p[ buffer[ bool]]) */
+GET_SET_BUFFER_FLAG(overwrite)
+/* (buffer-readonly-p[ buffer[ bool]]) */
+GET_SET_BUFFER_FLAG(readonly)
+/* (buffer-undo-p[ buffer[ bool]]) */
+GET_SET_BUFFER_FLAG(undo)
+
+
+/* (buffer-filename[ buffer]) */
+Object *e_get_buffer_filename(Interpreter *interp, Object **args, Object **env)
 {
-    return (1 == get_mode_current_buffer(FLISP_ARG_ONE->string) ? t : nil);
+    buffer_t *buffer = curbp;
+
+    if (FLISP_HAS_ARGS) {
+        buffer = get_buffer_arg_one(interp, args, "(buffer-filename[ buffer])");
+    }
+    if (buffer->fname == NULL)
+        return nil;
+
+    return newString(interp, buffer->fname);
 }
 
 /** (buffer-fread stream[ size]) - read size bytes from stream into current buffer at point, return bytes read
@@ -129,10 +176,10 @@ Object *e_buffer_fread(Interpreter *interp, Object **args, Object **env)
 {
     size_t len, size = 0;
 
-    CHECK_TYPE(FLISP_ARG_ONE, type_stream, "(buffer-fread size stream) - stream");
+    CHECK_TYPE(FLISP_ARG_ONE, type_stream, "(buffer-fread stream size) - stream");
 
     if (FLISP_HAS_ARG_TWO && FLISP_ARG_TWO != nil) {
-        CHECK_TYPE(FLISP_ARG_TWO, type_integer, "(buffer-fread size stream) - size");
+        CHECK_TYPE(FLISP_ARG_TWO, type_integer, "(buffer-fread stream size) - size");
         if (FLISP_ARG_TWO->integer == 0)
             return newInteger(interp, 0);
 
@@ -181,20 +228,6 @@ Object *e_buffer_fwrite(Interpreter *interp, Object **args, Object **env)
         exceptionWithObject(interp, FLISP_ARG_TWO, io_error, "buffer_fwrite() failed: %s", strerror(errno));
 
     return newInteger(interp, len);
-}
-
-Object *e_getfilename(Interpreter *interp, Object **args, Object **env)
-{
-
-    if (FLISP_HAS_ARG_TWO)
-        strcpy(response_buf, FLISP_ARG_TWO->string);
-    else
-        response_buf[0] = '\0';
-
-    if (!getfilename(FLISP_ARG_ONE->string, (char*) response_buf, NAME_MAX))
-        return nil;
-
-    return newString(interp, response_buf);
 }
 
 Object *e_find_buffer_by_fname(Interpreter *interp, Object **args, Object **env)
@@ -300,44 +333,6 @@ Object *e_set_buffer_filename(Interpreter *interp, Object **args, Object **env)
     return FLISP_ARG_ONE;
 }
 
-Object *e_current_buffer(Interpreter *interp, Object **args, Object **env)
-{
-    return newString(interp, curbp->name);
-}
-
-/* (buffer-filename[ buffer]) */
-Object *e_get_buffer_filename(Interpreter *interp, Object **args, Object **env)
-{
-    buffer_t *buffer = curbp;
-
-    if (FLISP_HAS_ARGS) {
-        buffer = find_buffer(FLISP_ARG_ONE->string, false);
-        if (!buffer)
-            exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(buffer-filename[ buffer]) - buffer does not exist");
-    }
-    if (buffer->fname == NULL)
-        return nil;
-
-    return newString(interp, buffer->fname);
-}
-
-/* (buffer-modified-p[ buffer[ bool]]) */
-Object *e_buffer_modified_p(Interpreter *interp, Object **args, Object **env)
-{
-    buffer_t *bp = curbp;
-
-    if (FLISP_HAS_ARGS) {
-        if (FLISP_ARG_ONE != nil) {
-            CHECK_TYPE(FLISP_ARG_ONE, type_string, "(buffer-modified-p[ buffer[ bool]])");
-            bp = find_buffer(FLISP_ARG_ONE->string, false);
-            if (!bp)
-                exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(buffer-modified-p[ buffer[ bool]]) - buffer does not exist");
-        }
-        if (FLISP_HAS_ARG_TWO)
-            bp->modified =  (FLISP_ARG_TWO != nil);
-    }
-    return bp->modified ? t : nil;
-}
 
 /* Interaction */
 Object *e_prompt(Interpreter *interp, Object **args, Object **env)
@@ -355,6 +350,22 @@ Object *e_prompt(Interpreter *interp, Object **args, Object **env)
         return newStringWithLength(interp, response, strlen(response));
     return nil;
 }
+
+/** (prompt-filename prompt[ default]) */
+Object *e_prompt_filename(Interpreter *interp, Object **args, Object **env)
+{
+
+    if (FLISP_HAS_ARG_TWO)
+        strcpy(response_buf, FLISP_ARG_TWO->string);
+    else
+        response_buf[0] = '\0';
+
+    if (!getfilename(FLISP_ARG_ONE->string, (char*) response_buf, NAME_MAX))
+        return nil;
+
+    return newString(interp, response_buf);
+}
+
 
 Object *e_get_version_string(Interpreter *interp, Object **args, Object **env)
 {
@@ -466,8 +477,8 @@ void list_buffers(void)
     bp = bheadp;
     while (bp != NULL) {
         if (bp != list_bp) {
-            mod_ch  = ((bp->modified) ? '*' : ' ');
-            over_ch = ((bp->b_flags & B_OVERWRITE) ? 'O' : ' ');
+            mod_ch  = (bp->modified ? '*' : ' ');
+            over_ch = (bp->overwrite ? 'O' : ' ');
             bn = (bp->name[0] != '\0' ? bp->name : blank);
             fn = (bp->fname != NULL ? bp->fname : blank);
             snprintf(report_line, sizeof(report_line),  "%c%c %7d %-16s %s\n",  mod_ch, over_ch, bp->b_size, bn, fn);

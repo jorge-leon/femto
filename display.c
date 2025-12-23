@@ -144,17 +144,19 @@ void display_utf8(buffer_t *bp, int n)
 void modeline(window_t *wp)
 {
     int i;
-    char lch, mch, och;
+    char lch, mch, och, *mode;
     static char modeline[256];
 
     /* n = utf8_size(*(ptr(wp->w_bufp, wp->w_bufp->b_point))); */
     attron(COLOR_PAIR(ID_MODELINE));
     move(wp->w_top + wp->w_rows, 0);
     lch = (wp == curwp ? '=' : '-');
-    mch = ((wp->w_bufp->modified) ? '*' : lch);
-    och = ((wp->w_bufp->b_flags & B_OVERWRITE) ? 'O' : lch);
-
-    sprintf(modeline, "%c%c%c Femto: %c%c %s ",  lch,och,mch,lch,lch, wp->w_bufp->name);
+    mch = (wp->w_bufp->modified ? '*' : lch);
+    och = (wp->w_bufp->overwrite ? 'O' : lch);
+    mode = (wp->w_bufp->mode == nil) ? "Text" : wp->w_bufp->mode->string;
+    snprintf(modeline, 256,
+             "%c%c%c Femto: %c%c %s (%s) ",
+             lch,och,mch,lch,lch, wp->w_bufp->name, mode);
     addstr(modeline);
 
     for (i = strlen(modeline) + 1; i <= COLS; i++)

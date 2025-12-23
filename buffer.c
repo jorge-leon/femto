@@ -19,11 +19,28 @@ point_t nscrap;
 buffer_t *curbp;                /* current buffer */
 buffer_t *bheadp;               /* head of list of buffers */
 
+Object *mode_c = &(Object) { .string = "C" };
+Object *mode_python = &(Object) { .string = "Python" };
+Object *mode_lisp = &(Object) { .string = "Lisp" };
+Object *mode_dired = &(Object) { .string = "Dired" };
+Object *mode_git = &(Object) { .string = "Git" };
+Object *mode_oxo = &(Object) { .string = "OXO" };
+
 
 void buffer_init(buffer_t *bp)
 {
+    bp->name = NULL;
+    bp->b_next = NULL;
+
+    bp->fname = NULL;
     bp->b_mark = NOMARK;
     bp->b_point = 0;
+    bp->mode = nil;
+    bp->modified = false;
+    bp->overwrite = false;
+    bp->readonly = false;
+    bp->undo = true;
+
     bp->b_paren = NOPAREN;
     bp->b_cpoint = 0;
     bp->b_page = 0;
@@ -31,16 +48,13 @@ void buffer_init(buffer_t *bp)
     bp->b_reframe = 0;
     bp->b_size = 0;
     bp->b_psize = 0;
-    bp->b_flags = 0;
-    bp->modified = false;
-    bp->b_cnt = 0;
+
     bp->b_buf = NULL;
     bp->b_ebuf = NULL;
     bp->b_gap = NULL;
     bp->b_egap = NULL;
-    bp->b_next = NULL;
-    bp->name = NULL;
-    bp->fname = NULL;
+
+    bp->b_cnt = 0;
     bp->b_utail = NULL;
     bp->b_ucnt = -1;
 }
@@ -116,10 +130,6 @@ buffer_t *new_buffer(char *name)
 
     buffer_init(bp);
 
-    if (name[0] == '*')
-        add_mode(bp, B_SPECIAL); /* special buffers start with * in the name */
-    else if (global_undo_mode)
-        add_mode(bp, B_UNDO);
     /* a newly created buffer needs to have a gap otherwise it is not ready for insertion */
     if (!growgap(bp, MIN_GAP_EXPAND))
         msg(f_alloc);
@@ -184,20 +194,6 @@ buffer_t *find_buffer_by_fname(char *fname)
             break;
     }
     return bp;
-}
-
-void add_mode(buffer_t *bp, buffer_flags_t mode)
-{
-    /* we dont allow undo mode for special buffers */
-    if ( mode == B_UNDO && (bp->b_flags & B_SPECIAL))
-        return;
-
-    bp->b_flags |= mode;
-}
-
-void delete_mode(buffer_t *bp, buffer_flags_t mode)
-{
-    bp->b_flags &= ~mode;
 }
 
 /** delete_buffer() - deallocate and unregister a buffer.

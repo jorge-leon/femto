@@ -37,6 +37,7 @@
 
 typedef void (*void_func)(void);
 
+/* Note: the buffer text is char_t, to facilityte utf8 handling */
 typedef unsigned char char_t;
 typedef int64_t point_t;
 typedef struct buffer_t buffer_t;
@@ -60,7 +61,6 @@ extern int debug_mode;          /* Enable debugging */
 extern int batch_mode;          /* If True GUI is not run */
 extern int done;                /* Quit flag. */
 extern int msgflag;             /* True if msgline should be displayed. */
-extern int global_undo_mode;    /* True if we are undo mode is allowed by default */
 extern char_t *scrap;           /* Allocated scrap buffer. */
 extern char_t *input;
 extern char msgline[];          /* Message line input/output buffer. */

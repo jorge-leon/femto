@@ -30,7 +30,7 @@
 	   (describe-functions)
 	   (insert-buffer-substring-no-properties "*help*")
 
-           (add-mode "lispmode")
+           (buffer-mode nil "lispmode")
            (restore-buffer-modified-p nil)
 
 	   ;; goto to top of buffer and update screen

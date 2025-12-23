@@ -38,6 +38,7 @@ available to be called as lisp functions
     {"find-buffer-visiting",      1, 1, TYPE_STRING,  e_find_buffer_by_fname},
     {"buffer-name",               0, 0, 0,            e_get_buffer_name},
     {"buffer-filename",           0, 1, TYPE_STRING,  e_get_buffer_filename},
+    /* Note: should be and behave like: (get-buffer-create) */
     {"generate-new-buffer",       1, 1, TYPE_STRING,  e_new_buffer},
     {"set-visited-filename",      1, 1, 0,            e_set_buffer_filename},
     {"buffer-fread",              1, 2, 0,            e_buffer_fread},

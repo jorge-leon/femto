@@ -22,11 +22,8 @@ window_t *wheadp;
 
 int win_cnt = 0;
 
-window_t* new_window(void)
+window_t* init_window(window_t *wp)
 {
-    window_t *wp = (window_t *)malloc(sizeof(window_t));
-
-    assert(wp != NULL);
     wp->w_next = NULL;
     wp->w_bufp = NULL;
     wp->w_hijack = NULL;
@@ -39,6 +36,13 @@ window_t* new_window(void)
     return wp;
 }
 
+window_t* new_window(void)
+{
+    window_t *wp = (window_t *)malloc(sizeof(window_t));
+
+    return (wp == NULL) ? NULL : init_window(wp);
+}
+
 void one_window(window_t *wp)
 {
     wp->w_top = 0;
@@ -48,10 +52,13 @@ void one_window(window_t *wp)
 
 void split_window(void)
 {
-    (void)split_current_window();
+    if (NULL == split_current_window())
+        msg("Cannot split window: out of memory");
 }
 
-/* always returns the previous current window pointer */
+/* Always returns the previous current window pointer
+ * Note: though this is never used
+ */
 window_t *split_current_window(void)
 {
     window_t *wp, *wp2;
@@ -63,6 +70,8 @@ window_t *split_current_window(void)
     }
 
     wp = new_window();
+    if (wp == NULL)
+        return NULL;
     associate_b2w(curwp->w_bufp,wp);
     b2w(wp); /* inherit buffer settings */
 

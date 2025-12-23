@@ -193,7 +193,7 @@ then select one of the following letters to operate on the file
 ;;
 (defun git-get-commit-string()
   (kill-buffer git-commit-buffer)
-  (split-window)
+  (unless (split-window) (throw out-of-memory "Failed to allocate memory for new window"))
   (switch-to-buffer git-commit-buffer)
   (restore-buffer-modified-p nil)
   (message "c-c c-c to commit, c-c c-q to cancel")

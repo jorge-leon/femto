@@ -149,7 +149,7 @@
      (setq bufm-stop t))
     ((and (eq k "2") (> bufm_count 1))
      (switch-to-buffer bufm-buf)
-     (split-window)
+     (unless (split-window) (throw out-of-memory "Failed to allocate memory for new window"))
      (switch-to-buffer bufm-obuf)
      (other-window)
      (setq bufm-stop t))

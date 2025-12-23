@@ -45,7 +45,6 @@ DEFINE_EDITOR_FUNC(delete_other_windows)
 DEFINE_EDITOR_FUNC(list_buffers)
 DEFINE_EDITOR_FUNC(describe_bindings)
 DEFINE_EDITOR_FUNC(describe_functions)
-DEFINE_EDITOR_FUNC(split_window)
 DEFINE_EDITOR_FUNC(other_window)
 DEFINE_EDITOR_FUNC(execute_key)
 
@@ -66,7 +65,8 @@ Object *e_get_char(Interpreter *interp, Object **args, Object **env) { return ne
 Object *e_get_key(Interpreter *interp, Object **args, Object **env) { return newString(interp, get_input_key()); }
 Object *e_get_key_name(Interpreter *interp, Object **args, Object **env) { return newString(interp, get_key_name()); }
 Object *e_get_key_funcname(Interpreter *interp, Object **args, Object **env) { return newString(interp, get_key_funcname()); }
-Object *e_get_clipboard(Interpreter *interp, Object **args, Object **env) { return newString(interp, get_clipboard()); }
+
+Object *e_split_window(Interpreter *interp, Object **args, Object **env) { return (NULL == split_current_window()) ? nil : t; }
 
 /* Display */
 Object *e_refresh(Interpreter *interp, Object ** args, Object **env)
@@ -80,13 +80,19 @@ Object *e_set_key(Interpreter *interp, Object **args, Object **env)
     return (1 == set_key(FLISP_ARG_ONE->string, FLISP_ARG_TWO->string) ? t : nil);
 }
 
+/* Selection aka Clipboard */
+Object *e_get_clipboard(Interpreter *interp, Object **args, Object **env)
+{
+    if (scrap == NULL)
+        return empty;
+    return newString(interp, (char *)scrap);
+}
 
 Object *e_set_clipboard(Interpreter *interp, Object **args, Object **env)
 {
-    /* gets freed by next call to set_clipboard */
-    char *sub = strdup(FLISP_ARG_ONE->string);
-    set_scrap((unsigned char *)sub);
-    return t;
+    if (scrap != NULL)  free(scrap);
+    scrap = (char_t *) strdup(FLISP_ARG_ONE->string);
+    return scrap == NULL ? nil : t;
 }
 
 Object *e_get_temp_file(Interpreter *interp, Object **args, Object **env)

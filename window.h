@@ -31,11 +31,11 @@ extern void mark_all_windows(void);
 extern void one_window(window_t *);
 extern void other_window(void);
 extern void restore_hijacked_window(window_t *);
-extern void split_window(void);
 extern window_t *find_window(char *);
 extern window_t* new_window(void);
 extern window_t *popup_window(char *);
 extern window_t *split_current_window(void);
+extern void split_window(void);
 
 
 #endif

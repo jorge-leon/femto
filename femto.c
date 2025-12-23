@@ -87,8 +87,13 @@ int main(int argc, char **argv)
     /* buffers */
     setlocale(LC_ALL, "") ; /* required for 3,4 byte UTF8 chars */
     curbp = new_buffer(str_scratch);
+    if (curbp == NULL)
+        fatal("failed to allocate memory for sratch buffer");
     /* windows */
-    wheadp = curwp = new_window();
+    curwp = wheadp = new_window();
+    if (curwp == NULL)
+        fatal("failed to allocate memory for first window");
+
     associate_b2w(curbp, curwp);
 
     /* keymaps */
@@ -106,7 +111,9 @@ int main(int argc, char **argv)
     // Note: we can't do
     //lisp_destroy(interp);
     //here, because we get segfaults in wide character routines.
-    if (scrap != NULL) free(scrap);
+
+    // Note: the following lines sometimes free not-allocated memory
+    // if (scrap != NULL) free(scrap);
     return 0;
 }
 

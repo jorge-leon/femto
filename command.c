@@ -371,31 +371,6 @@ void copy_cut(int cut)
     }
 }
 
-/* safe interface to clipboard so we dont pass a NULL pointer to lisp */
-char *get_clipboard(void)
-{
-    static char empty_string[] = "";
-
-    if (scrap == NULL) return empty_string;
-    return (char *)scrap;
-}
-
-unsigned char *get_scrap(void)
-{
-    return scrap;
-}
-
-/*
- * set the scrap pointer, a setter for external interface code
- * ptr must be a pointer to a malloc'd NULL terminated string
- */
-void set_scrap(unsigned char *ptr)
-{
-    if (scrap != NULL) free(scrap);
-    assert(ptr != NULL);
-    scrap = ptr;
-}
-
 void yank(void)
 {
     insert_string((char *)scrap);

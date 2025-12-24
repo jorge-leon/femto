@@ -427,7 +427,7 @@
 	       (size  (get-point-max))
 	       (len   (progn
 			(beginning-of-buffer)
-			(buffer-fwrite (get-point-max) fp))) )
+			(buffer-fwrite fp))) )
 	  (set-point point)
 	  (close fp)
 	  (unless (i= len size)  (throw io-error "(save-buffer) - error writing buffer to file: " filename))

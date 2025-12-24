@@ -217,21 +217,25 @@ Object *e_buffer_fread(Interpreter *interp, Object **args, Object **env)
     }
 }
 
-/** (buffer-fwrite size stream) - write size bytes from current buffer at point to stream, return bytes written */
+/** (buffer-fwrite stream size) - write size bytes from current buffer at point to stream, return bytes written */
 Object *e_buffer_fwrite(Interpreter *interp, Object **args, Object **env)
 {
-    CHECK_TYPE(FLISP_ARG_ONE, type_integer, "(buffer-fwrite size stream) - size");
-    CHECK_TYPE(FLISP_ARG_TWO, type_stream, "(buffer-fwrite size stream) - stream");
+    size_t len;
 
-    if (FLISP_ARG_ONE->integer == 0)
-        return newInteger(interp, 0);
-
-    if (FLISP_ARG_ONE->integer < 0)
-        exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(buffer-fwrite size stream) - size is negative");
-
-    size_t len = buffer_fwrite(curbp, FLISP_ARG_ONE->integer, FLISP_ARG_TWO->fd);
-    if (ferror(FLISP_ARG_TWO->fd))
-        exceptionWithObject(interp, FLISP_ARG_TWO, io_error, "buffer_fwrite() failed: %s", strerror(errno));
+    CHECK_TYPE(FLISP_ARG_ONE, type_stream, "(buffer-fwrite stream size) - stream");
+    if (FLISP_HAS_ARG_TWO) {
+        CHECK_TYPE(FLISP_ARG_TWO, type_stream, "(buffer-fwrite stream size) - size");
+        if (FLISP_ARG_TWO->integer == 0)
+            return newInteger(interp, 0);
+        if (FLISP_ARG_TWO->integer < 0)
+            exceptionWithObject(interp, FLISP_ARG_TWO, invalid_value, "(buffer-fwrite stream size) - size is negative");
+        len = FLISP_ARG_TWO->integer;
+    } else {
+        len = get_point_max() - get_point();
+    }
+    len = buffer_fwrite(curbp, FLISP_ARG_ONE->fd, len);
+    if (ferror(FLISP_ARG_ONE->fd))
+        exceptionWithObject(interp, FLISP_ARG_ONE, io_error, "buffer_fwrite() failed: %s", strerror(errno));
 
     return newInteger(interp, len);
 }
@@ -433,10 +437,10 @@ Object *e_insert_string(Interpreter *interp, Object **args, Object **env)
     return t;
 }
 
-extern void set_point(point_t);
-extern point_t get_mark(void);
-extern point_t get_point(void);
-extern point_t get_point_max(void);
+//extern void set_point(point_t);
+//extern point_t get_mark(void);
+//extern point_t get_point(void);
+//extern point_t get_point_max(void);
 
 Object *e_set_point(Interpreter *interp, Object **args, Object **env)
 {

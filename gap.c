@@ -30,7 +30,7 @@
  *
  */
 /* Note: The fatal exit should be left to the caller, though these
- *        mostly are careless and don't care.
+ *        mostly don't care.
  */
 bool growgap(buffer_t *bp, point_t n)
 {
@@ -123,7 +123,15 @@ point_t pos(buffer_t *bp, register char_t *cp)
     return (cp - bp->b_buf - (cp < bp->b_egap ? 0 : bp->b_egap - bp->b_gap));
 }
 
-size_t buffer_fwrite(buffer_t *buffer, size_t size, FILE *stream)
+/** buffer_fwrite() - write buffer content to stream
+ * @param stream
+ * @param size
+ *
+ * Writes size bytes starting from point to stream, but at most
+ * the bytes from point to the end of the buffer.
+ *
+ */
+size_t buffer_fwrite(buffer_t *buffer, FILE *stream, size_t size)
 {
     size_t len;
 
@@ -152,14 +160,10 @@ point_t document_size(buffer_t *bp)
     return (bp->b_ebuf - bp->b_buf) - (bp->b_egap - bp->b_gap);
 }
 
-int buffer_is_empty(buffer_t *bp)
+bool buffer_is_empty(buffer_t *bp)
 {
-    if (bp->b_gap == bp->b_buf && bp->b_egap == bp->b_ebuf)
-        return 1;
-    return 0;
+    return (bp->b_gap == bp->b_buf && bp->b_egap == bp->b_ebuf);
 }
-
-
 /** Read size bytes from stream into buffer starting at point
 
     @returns: number of bytes read or zero if the buffer cannot be grown by size

@@ -47,7 +47,7 @@
 {"find-buffer-visiting",      1, 1, TYPE_STRING,  e_find_buffer_by_fname},
 {"buffer-filename",           0, 1, TYPE_STRING,  e_get_buffer_filename},
 {"buffer-fread",              1, 2, 0,            e_buffer_fread},
-{"buffer-fwrite",             2, 2, 0,            e_buffer_fwrite},
+{"buffer-fwrite",             1, 2, 0,            e_buffer_fwrite},
 {"buffer-mode",               0, 2, 0,            e_buffer_mode},
 {"buffer-modified-p",         0, 2, 0,            e_buffer_modified_p},
 {"buffer-overwrite-p",        0, 2, 0,            e_buffer_overwrite_p},

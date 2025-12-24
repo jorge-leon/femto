@@ -26,9 +26,9 @@
  * be used as base directory.
  *
  */
+char sys_command[NAME_MAX];
 bool getfilename(char *prompt, char *buf, int nbuf)
 {
-    static char sys_command[NAME_MAX];
 
     int cpos = strlen(buf);    /* current character position in string */
     int wpos, dpos = cpos;
@@ -47,6 +47,7 @@ bool getfilename(char *prompt, char *buf, int nbuf)
         case 0x0a: /* cr, lf */
         case 0x0d:
             if (fp != NULL) pclose(fp);
+            debug("getfilename(): quitting\n");
             return (key != 0x07);
 
         case 0x7f: /* del, erase */
@@ -102,6 +103,7 @@ bool getfilename(char *prompt, char *buf, int nbuf)
             }
             break;
         }
+        debug("getfilename(): key processed: '%c', %u\n", key, key);
     }
 }
 

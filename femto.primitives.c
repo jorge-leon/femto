@@ -366,9 +366,12 @@ Object *e_prompt_filename(Interpreter *interp, Object **args, Object **env)
     else
         response_buf[0] = '\0';
 
-    if (!getfilename(FLISP_ARG_ONE->string, (char*) response_buf, NAME_MAX))
+    char *prompt = strdup(FLISP_ARG_ONE->string);
+    if (!getfilename(prompt, (char*) response_buf, NAME_MAX)) {
+        free(prompt);
         return nil;
-
+    }
+    free(prompt);
     return newString(interp, response_buf);
 }
 

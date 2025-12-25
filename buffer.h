@@ -63,6 +63,7 @@ extern Object *mode_dired;
 extern Object *mode_git;
 extern Object *mode_oxo;
 
+extern void femto_buffer_register(Interpreter *);
 
 extern buffer_t *new_buffer(char *);
 extern buffer_t *find_buffer(char *, bool);
@@ -70,6 +71,7 @@ extern buffer_t *find_buffer_by_fname(char *);
 extern bool set_buffer_name(buffer_t *, char *);
 extern bool delete_buffer(buffer_t *);
 extern void pull_buffer(buffer_t *);
+
 
 #endif
 /*

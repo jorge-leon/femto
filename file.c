@@ -481,7 +481,7 @@ Object *fl_getcwd(Interpreter *interp, Object **args, Object **env)
 }
 
 
-Primitive flisp_file_primitives[] = {
+Primitive file_primitives[] = {
     {"fflush",    0, 1, 0,           primitiveFflush},
     {"fseek",     2, 3, 0,           primitiveFseek},
     {"ftell",     0, 1, TYPE_STREAM, primitiveFtell},
@@ -499,6 +499,12 @@ Primitive flisp_file_primitives[] = {
     {"getcwd",    0, 0, 0,           fl_getcwd},
 };
 
+void lisp_file_register(Interpreter *interp)
+{
+    int i;
+    for (i = 0; i < sizeof(file_primitives) / sizeof(file_primitives[0]); i++)
+             lisp_register_primitive(interp, &file_primitives[i]);
+}
 
 /*
  * Local Variables:

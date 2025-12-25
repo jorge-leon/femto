@@ -8,24 +8,6 @@
 /* Constants */
 /* Types */
 Object *type_double =            &(Object) { NULL, .string  = "type-double" };
-/* Internal */
-Object *double_one =            &(Object) { NULL, .number  = 1.0 };
-
-Primitive flisp_double_primitives[] = {
-    {"integer", 1,  1, TYPE_DOUBLE,  integerFromDouble},
-    {"double",  1,  1, TYPE_INTEGER, doubleFromInteger},
-    {"d+",      2,  2, TYPE_DOUBLE, doubleAdd},
-    {"d-",      2,  2, TYPE_DOUBLE, doubleSubtract},
-    {"d*",      2,  2, TYPE_DOUBLE, doubleMultiply},
-    {"d/",      2,  2, TYPE_DOUBLE, doubleDivide},
-    {"d%",      2,  2, TYPE_DOUBLE, doubleMod},
-    {"d=",      2,  2, TYPE_DOUBLE, doubleEqual},
-    {"d<",      2,  2, TYPE_DOUBLE, doubleLess},
-    {"d<=",     2,  2, TYPE_DOUBLE, doubleLessEqual},
-    {"d>",      2,  2, TYPE_DOUBLE, doubleGreater},
-    {"d>=",     2,  2, TYPE_DOUBLE, doubleGreaterEqual},
-    {NULL,      0,  0, 0,           NULL}
-};
 
 Object *newDouble(Interpreter *interp, double number)
 {
@@ -87,6 +69,27 @@ FLISP_DOUBLE_MATHOP(doubleGreaterEqual, >=)
 Object *doubleMod(Interpreter *interp, Object **args, Object **env)
 {
     return newDouble(interp, fmod(FLISP_ARG_ONE->number, FLISP_ARG_TWO->number));
+}
+
+Primitive double_primitives[] = {
+    {"integer", 1,  1, TYPE_DOUBLE,  integerFromDouble},
+    {"double",  1,  1, TYPE_INTEGER, doubleFromInteger},
+    {"d+",      2,  2, TYPE_DOUBLE, doubleAdd},
+    {"d-",      2,  2, TYPE_DOUBLE, doubleSubtract},
+    {"d*",      2,  2, TYPE_DOUBLE, doubleMultiply},
+    {"d/",      2,  2, TYPE_DOUBLE, doubleDivide},
+    {"d%",      2,  2, TYPE_DOUBLE, doubleMod},
+    {"d=",      2,  2, TYPE_DOUBLE, doubleEqual},
+    {"d<",      2,  2, TYPE_DOUBLE, doubleLess},
+    {"d<=",     2,  2, TYPE_DOUBLE, doubleLessEqual},
+    {"d>",      2,  2, TYPE_DOUBLE, doubleGreater},
+    {"d>=",     2,  2, TYPE_DOUBLE, doubleGreaterEqual},
+};
+
+void lisp_double_register(Interpreter *interp) {
+    int i;
+    for (i = 0; i < sizeof(double_primitives) / sizeof(double_primitives[0]); i++)
+        lisp_register_primitive(interp, &double_primitives[i]);
 }
 
 /*

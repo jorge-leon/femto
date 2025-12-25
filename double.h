@@ -3,10 +3,7 @@
 
 #include "lisp.h"
 
-extern Primitive flisp_double_primitives[];
-
 extern Object *type_double;
-extern Object *double_one;
 
 extern Object *newDouble(Interpreter *, double);
 extern Object *readDouble(Interpreter *);
@@ -23,6 +20,8 @@ extern Object *doubleLess(Interpreter *, Object **, Object **);
 extern Object *doubleLessEqual(Interpreter *, Object **, Object **);
 extern Object *doubleGreater(Interpreter *, Object **, Object **);
 extern Object *doubleGreaterEqual(Interpreter *, Object **, Object **);
+
+extern void lisp_double_register(Interpreter *);
 
 #endif
 /*

@@ -18,7 +18,8 @@
 
 /* minimal Lisp object space size */
 //#define FLISP_MIN_MEMORY  24576UL  /* currently ~21k for flisp */
-#define FLISP_MIN_MEMORY  40960UL  /* currently ~34k for femto */
+//#define FLISP_MIN_MEMORY  40960UL  /* currently ~34k for femto */
+#define FLISP_MIN_MEMORY  80960UL  /* Note: we had to increase after dynamic loading in Femto, tbd: */
 #define FLISP_MEMORY_INC_SIZE 8192UL  /* Resize by this amount */
 
 /* buffersize for Lisp eval input */
@@ -39,14 +40,12 @@ typedef struct Interpreter Interpreter;
 typedef Object *(*LispEval) (Interpreter *, Object **, Object **);
 
 /* Note: Only used, because we do not know how to statically
- *       initialize the require Lisp type objects
+ *       initialize the required Lisp type objects
  */
 typedef enum ObjectType {
     TYPE_MOVED,
     TYPE_INTEGER,
-#ifdef FLISP_DOUBLE_EXTENSION
     TYPE_DOUBLE,
-#endif
     TYPE_STRING,
     TYPE_SYMBOL,
     TYPE_CONS,
@@ -155,8 +154,7 @@ extern Object *file_exists;
 extern Object *read_only;
 extern Object *is_directory;
 /* utility */
-extern Object *one;    /* Note: never used */
-extern Object *empty;  /* Note: only used internally */
+extern Object *lisp_empty_string;
 
 /* "Object" type for initializing constants with long names.
  * Note: currently wrong-number-of-arguments is the longest, if you
@@ -222,6 +220,9 @@ extern void lisp_destroy(Interpreter *);
 extern void lisp_eval(Interpreter *, char *);
 extern void lisp_write_object(Interpreter *, FILE *, Object *, bool);
 extern void lisp_write_error(Interpreter *, FILE *);
+
+extern void lisp_register_constant(Interpreter *, Object *, Object *);
+extern void lisp_register_primitive(Interpreter *, Primitive *);
 
 #define FLISP_RESULT_CODE(INTERPRETER) INTERPRETER->error
 #define FLISP_RESULT_MESSAGE(INTERPRETER) ((Object *)&INTERPRETER->message)

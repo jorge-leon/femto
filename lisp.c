@@ -15,19 +15,10 @@
 #include <string.h>
 #include <limits.h>
 
-// Note: can this be untangled?
-#ifdef FLISP_FEMTO_EXTENSION
-#include "femto.h"
-#include "buffer.h"
-#endif
 #include "lisp.h"
 
 #ifdef FLISP_DOUBLE_EXTENSION
 #include "double.h"
-#endif
-
-#ifdef FLISP_FILE_EXTENSION
-#include "file.h"
 #endif
 
 #define EXCEPTION_MEM_RESERVE 4*sizeof(Object)
@@ -83,18 +74,16 @@ Object *is_directory = &(Object) { NULL, .string = "is-directory" };
 /* Internal */
 Object *type_env =                              &(Object) { NULL, .string = "type-env" };
 Object *type_moved =                            &(Object) { NULL, .string = "type-moved" };
-Object *empty =                                 &(Object) { NULL, .string = "\0" };
-Object *one =                                   &(Object) { NULL, .integer = 1 };
+Object *lisp_empty_string =                     &(Object) { NULL, .string = "\0" };
 
-Constant flisp_constants[] = {
+
+Constant lisp_constants[] = {
     /* Fundamentals */
     { &nil, &nil },
     { &t, &t, },
     /* Types */
     { &type_integer,   &type_integer  },
-#ifdef FLISP_DOUBLE_EXTENSION
     { &type_double,    &type_double   },
-#endif
     { &type_string,    &type_string   },
     { &type_symbol,    &type_symbol   },
     { &type_cons,      &type_cons     },
@@ -132,9 +121,7 @@ Constant flisp_constants[] = {
 Object **flisp_object_type[] = {
     &type_moved,
     &type_integer,
-#ifdef FLISP_DOUBLE_EXTENSION
     &type_double,
-#endif
     &type_string,
     &type_symbol,
     &type_cons,
@@ -458,6 +445,7 @@ Object *memoryAllocObject(Interpreter *interp, Object *type, size_t size)
 
     /* If not done already allocate to space */
     if (!interp->memory->fromSpace) {
+        fl_debug(interp, "memoryAllocObject: allocate fromSpace: %lu bytes\n", interp->memory->capacity);
         if (!(interp->memory->fromSpace = mmap(NULL, interp->memory->capacity, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0)))
             fl_fatal("OOM, allocating from space, exiting\n", 64);
     }
@@ -642,7 +630,7 @@ Object *newStringWithLength(Interpreter *interp, char *string, size_t length)
     int i, nEscapes = 0;
 
     if (length == 0)
-        return empty;
+        return lisp_empty_string;
 
     for (i = 1; i < length; ++i)
         if (string[i - 1] == '\\' && strchr("\\\"trn", string[i]))
@@ -2295,7 +2283,7 @@ Object *stringSubstring(Interpreter *interp, Object **args, Object **env)
 
     len = strlen(FLISP_ARG_ONE->string);
     if (len == 0)
-        return empty;
+        return lisp_empty_string;
     end = start + len;
 
     if (FLISP_HAS_ARG_TWO) {
@@ -2321,7 +2309,7 @@ Object *stringSubstring(Interpreter *interp, Object **args, Object **env)
         exceptionWithObject(interp, FLISP_ARG_TWO, range_error,
                             "(substring string [start [end]]) - end > start");
     if (start == end)
-        return empty;
+        return lisp_empty_string;
 
     int newlen = end - start;
     char *buf = strdup(FLISP_ARG_ONE->string);
@@ -2403,10 +2391,6 @@ Object *primitiveInterp(Interpreter *interp, Object **args, Object **env)
                             "(flisp cmd[ arg..]) - unknown command");
 }
 
-#ifdef FLISP_FEMTO_EXTENSION
-#include "femto.primitives.c"
-#endif
-
 Primitive primitives[] = {
     {"quote",         1,  1, 0, (LispEval) PRIMITIVE_QUOTE /* special form */ },
     {"bind",          2,  3, 0, (LispEval) PRIMITIVE_BIND  /* special form */ },
@@ -2463,22 +2447,18 @@ Primitive primitives[] = {
     {"ascii",         1,  1, TYPE_INTEGER, asciiToString},
     {"ascii->number", 1,  1, TYPE_STRING,  asciiToInteger},
     {"interp",         1, -1, 0,           primitiveInterp},
-//    FLISP_REGISTER_FILE_EXTENSION
-#ifdef FLISP_FEMTO_EXTENSION
-#include "femto.register.c"
-#endif
 };
 
 
 // MAIN ///////////////////////////////////////////////////////////////////////
 
-void fl_register_constant(Interpreter *interp, Object *symbol, Object *value)
+void lisp_register_constant(Interpreter *interp, Object *symbol, Object *value)
 {
     symbol->type = type_symbol;
     envSet(interp, &symbol, &value, &interp->global, true);
     interp->symbols = newCons(interp, &symbol, &interp->symbols);
 }
-void fl_register_primitive(Interpreter * interp, Primitive *primitive)
+void lisp_register_primitive(Interpreter * interp, Primitive *primitive)
 {
     GC_CHECKPOINT;
     GC_TRACE(gcSymbol, newSymbol(interp, primitive->name));
@@ -2489,61 +2469,20 @@ void fl_register_primitive(Interpreter * interp, Primitive *primitive)
 
 void initRootEnv(Interpreter *interp)
 {
-    int i, nConstants;
-    Object *var, *val;
+    int i;
 
     interp->global = newEnv(interp, &nil, &nil);
 
-    // add constants
-    nConstants = sizeof(flisp_constants) / sizeof(flisp_constants[0]);
-    for (i = 0; i < nConstants; i++) {
-        (*flisp_constants[i].symbol)->type = type_symbol;
-        envSet(interp, flisp_constants[i].symbol, flisp_constants[i].value, &interp->global, true);
-        interp->symbols = newCons(interp, flisp_constants[i].symbol, &interp->symbols);
-    }
-
-    /* Add internal objects */
+    /* Fixup internal objects */
     type_env->type = type_symbol;
     type_moved->type = type_symbol;
-    empty->type = type_string;
-    one->type = type_integer;
-#ifdef FLISP_DOUBLE_EXTENSION
-    double_one->type = type_double;
-#endif
-
-    // add primitives
-    int nPrimitives = sizeof(primitives) / sizeof(primitives[0]);
-    for (i = 0; i < nPrimitives; ++i) {
-        var = newSymbol(interp, primitives[i].name);
-        val = newPrimitive(interp, &primitives[i]);
-
-        envSet(interp, &var, &val, &interp->global, true);
-    }
-#ifdef FLISP_DOUBLE_EXTENSION
-    for (Primitive *entry = flisp_double_primitives; entry->name != NULL; entry++) {
-        var = newSymbol(interp, entry->name);
-        val = newPrimitive(interp, entry);
-
-        envSet(interp, &var, &val, &interp->global, true);
-    }
-#endif
-#ifdef FLISP_FILE_EXTENSION
-    for (Primitive *entry = flisp_file_primitives; entry->name != NULL; entry++) {
-        var = newSymbol(interp, entry->name);
-        val = newPrimitive(interp, entry);
-
-        envSet(interp, &var, &val, &interp->global, true);
-    }
-#endif
-#ifdef FLISP_FEMTO_EXTENSION
-    #include "buffer.h"
-    fl_register_constant(interp, mode_c, mode_c);
-    fl_register_constant(interp, mode_lisp, mode_lisp);
-    fl_register_constant(interp, mode_python, mode_python);
-    fl_register_constant(interp, mode_dired, mode_dired);
-    fl_register_constant(interp, mode_git, mode_git);
-    fl_register_constant(interp, mode_oxo, mode_oxo);
-#endif
+    lisp_empty_string->type = type_string;
+    // Add constants
+    for (i = 0; i < sizeof(lisp_constants) / sizeof(lisp_constants[0]); i++)
+        lisp_register_constant(interp, *lisp_constants[i].symbol, *lisp_constants[i].value);
+    // Add primitives
+    for (i = 0; i < sizeof(primitives) / sizeof(primitives[0]); i++)
+        lisp_register_primitive(interp, &primitives[i]);
 }
 
 Memory *newMemory(size_t size)

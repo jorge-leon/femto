@@ -3,7 +3,7 @@
 
 #include "lisp.h"
 
-extern Primitive flisp_file_primitives[];
+extern void lisp_file_register(Interpreter *);
 
 #endif
 /*

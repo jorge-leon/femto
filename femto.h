@@ -124,6 +124,7 @@ extern void msg(char *m, ...);
 extern char *eval_string(bool, char *, ...);
 extern void free_lisp_output(void);
 
+/* Note: re-check memory handling: this seems not to have the right effect */
 #define FLISP_INITIAL_MEMORY 5242886UL  /* 256k Lisp object space, no gc on startup */
 
 /*

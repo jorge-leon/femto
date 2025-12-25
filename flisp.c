@@ -5,6 +5,14 @@
 #include <stdlib.h>
 #include "lisp.h"
 
+#ifdef FLISP_DOUBLE_EXTENSION
+#include "double.h"
+#endif
+#ifdef FLISP_FILE_EXTENSION
+#include "file.h"
+#endif
+
+
 void fatal(char *msg)
 {
     fputs("\n" FL_NAME " " FL_VERSION ": ", stderr);
@@ -36,6 +44,13 @@ int main(int argc, char **argv)
     interp = lisp_new(argv, library_path, input_fd, stdout, debug_fd);
     if (interp == NULL)
         fatal("fLisp interpreter initialization failed");
+
+#ifdef FLISP_DOUBLE_EXTENSION
+    lisp_double_register(interp);
+#endif
+#ifdef FLISP_FILE_EXTENSION
+    lisp_file_register(interp);
+#endif
 
     lisp_eval(interp, NULL);
     if (FLISP_RESULT_CODE(interp) != nil) {

@@ -12,19 +12,12 @@
 #include "command.h"
 #include "search.h"
 
-/************************* Editor Extensions **************************************/
+#include "lisp.h"
+
+#include <assert.h>
 
 
-#define DEFINE_EDITOR_FUNC(name)					\
-    extern void name(void);                                             \
-    Object *e_##name(Interpreter *interp, Object ** args, Object **env)	\
-    {									\
-        name();								\
-        return t;                                                       \
-    }
-
-DEFINE_EDITOR_FUNC(beginning_of_buffer)
-    DEFINE_EDITOR_FUNC(end_of_buffer)
+    
     DEFINE_EDITOR_FUNC(left)
     DEFINE_EDITOR_FUNC(right)
 DEFINE_EDITOR_FUNC(forward_word)

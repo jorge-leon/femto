@@ -25,12 +25,14 @@ void beginning_of_buffer(void)
 {
     curbp->b_point = 0;
 }
+DEFINE_EDITOR_FUNC(beginning_of_buffer)
 
 void end_of_buffer(void)
 {
     curbp->b_point = pos(curbp, curbp->b_ebuf);
     if (curbp->b_epage < pos(curbp, curbp->b_ebuf)) curbp->b_reframe = 1;
 }
+DEFINE_EDITOR_FUNC(end_of_buffer)
 
 void quit(void)
 {

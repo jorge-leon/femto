@@ -53,5 +53,17 @@ extern void user_func(void);
 extern void version(void);
 extern void yank(void);
 
+extern void femto_register(Interpreter *);
+
+/* Export void name(void) as Lisp function */
+/* Note: the C-Function is used by set_key_internal() bindings */
+#define DEFINE_EDITOR_FUNC(name)					\
+    extern void name(void);                                             \
+    Object *e_##name(Interpreter *interp, Object ** args, Object **env)	\
+    {									\
+        name();								\
+        return t;                                                       \
+    }
+
 
 #endif

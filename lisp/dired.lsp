@@ -38,8 +38,8 @@
 (defun dired-interactive ()
   (let* ((filename (buffer-filename))
 	 ;; Emacs convention: directory names are given with a trailing /
-	 (default (if (null filename) (string-append (getcwd) "/")
-		      (file-name-directory filename) ))
+	 (default (if filename  (or (file-name-directory filename) "")
+		      (string-append (getcwd) "/") ))
 	 (directory (prompt-filename "Dired (directory): " default)) )
     (if-not directory  (message "Canceled")
 	    (when (string-equal "" directory)  (setq directory default))
@@ -61,6 +61,7 @@
       (buffer-mode buffer 'Dired)
       (buffer-readonly-p buffer t)
       (buffer-undo-p buffer nil)
+      (buffer-special-p buffer t)
       (set-buffer buffer)
       (set-visited-filename directory) )
     buffer ))
@@ -107,7 +108,7 @@
 	 (result (catch (dired_process-key)))
 	 (code  (caddr result)) )
     (log 'DEBUG nil "dired:"ops": process-key: '"result"'")
-    (log 'DEBUG result)
+    (log 'DEBUG result "dired: result "ops)
     (if (cond
 	  ((i= ops 0) nil)
 	  ((memq code '(quit exit)) nil)
@@ -133,6 +134,13 @@
     (if-not (eq key "")  (dired_handle-command-key (intern key))
 	    (dired_handle-arrow-key (intern (get-key-funcname))) )))
 
+(defun dired_run_func_sym (func)
+  (let* ((input   (open (symbol-name func) "<"))
+	 (result  (catch (eval (read input)))) )
+    (close input)
+    (if-not (car result)  (apply (caddr result))
+	(log 'DEBUG result "dired: arrow-key") )))
+
 (defun dired_handle-arrow-key (func)
   (log 'DEBUG nil "dired: arrow key: "func)
   (when (memq func ; list of allowed "arrow" keys
@@ -140,17 +148,14 @@
 		forward-word forward-char  backward-word backward-char
 		beginning-of-line end-of-line  beginning-of-buffer end-of-buffer
 		next-buffer save-buffers-kill-terminal))
-    (let* ((input   (open (symbol-name func) "<"))
-	   (result  (catch (eval (read input)))) )
-      (close input)
-      (if-not (car result)  (apply (caddr result))
-	      (log 'DEBUG result "dired: arrow-key") )))
+    (dired_run_func_sym func) )
   (cond
     ((eq func 'save-buffers-kill-terminal) :exit)
     ((memq func '(previous-line next-line))
      (beginning-of-line)
-     (repeat 8 forward-word)
-     :continue )))
+     (repeat 8 forward-word)))
+  
+  :continue )
 
 (defun dired_handle-command-key (key)
   (cond

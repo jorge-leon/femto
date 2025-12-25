@@ -30,6 +30,7 @@ typedef struct buffer_t
     bool overwrite: 1;
     bool readonly: 1;
     bool undo: 1;
+    bool special: 1;
 
     point_t b_paren;            /* matching paren to the point */
     point_t b_cpoint;           /* the original current point, used for mutliple window displaying */
@@ -52,10 +53,7 @@ typedef struct buffer_t
     int b_ucnt;                 /* count of how many chars to undo on current undo */
 } buffer_t;
 
-
-extern point_t nscrap;          /* Length of scrap buffer. */
 extern buffer_t *curbp;         /* current buffer */
-extern buffer_t *bheadp;        /* head of list of buffers */
 
 /* Major modes */
 extern Object *mode_c;
@@ -66,16 +64,12 @@ extern Object *mode_git;
 extern Object *mode_oxo;
 
 
-extern buffer_t *search_buffer(char *);
 extern buffer_t *new_buffer(char *);
-extern buffer_t *find_buffer_by_fname(char *);
 extern buffer_t *find_buffer(char *, bool);
+extern buffer_t *find_buffer_by_fname(char *);
 extern bool set_buffer_name(buffer_t *, char *);
-extern char *get_current_filename(void);
-
 extern bool delete_buffer(buffer_t *);
-extern int delete_buffer_byname(char *);
-extern void switch_to_buffer(buffer_t *);
+extern void pull_buffer(buffer_t *);
 
 #endif
 /*

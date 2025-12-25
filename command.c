@@ -327,6 +327,8 @@ void kill_region(void) {
     if (i_check_region() == FALSE) return;
     copy_cut(TRUE);
 }
+/* Length of scrap buffer. */
+point_t nscrap;
 
 void copy_cut(int cut)
 {

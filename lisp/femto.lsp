@@ -253,23 +253,27 @@
 ;;; This hook is run after switching to a buffer
 (setq after-switch-to-buffer-hook ())
 
+(defun current-buffer () (buffer-next))
+
 (defun switch-to-buffer (name)
   (buffer-show name)
   (let ((result (catch (run-hooks 'after-switch-to-buffer-hook))))
-    (log 'DEBUG result "after-switch-to-buffer-hook") ))
+    (log 'DEBUG result "after-switch-to-buffer-hook") )
+  name )
 
 (defun restore-buffer-modified-p (bool)  (buffer-modified-p (current-buffer) bool))
 (defun set-buffer-modified-p (bool)  (buffer-modified-p (current-buffer) bool) (refresh))
 
 (defun buffer-list ()
-  (let loop ((buffers nil)  (buf (buffer-next)))
-       (if buf (loop (cons buf buffers) (buffer-next buf))
-	   (reverse buffers) )))
+  (let ((current (current-buffer)))
+    (let loop ((buffers (list current)) (next (buffer-next current)))
+	 (if (eq next current) (reverse buffers)
+	     (loop (cons next buffers) (buffer-next next)) ))))
+
+(defun buffer-basename (name)  (car (string-split "/" name)))
 
 (defun buffer-list_filtered (name)
   (filter (lambda (b)  (string-equal (buffer-basename b) name)) (buffer-list)) )
-
-(defun buffer-basename (name)  (car (string-split "/" name)))
 
 (defun buffer-name_split (name)
   (let ((parts (string-split "/" name)))
@@ -277,10 +281,6 @@
 	(cons (car parts) 0) )))
 
 (defun buffer-name_index (name)  (cdr (buffer-name_split name)))
-
-
-(defun create-file-buffer (filename)
-  (get-buffer-create (generate-new-buffer-name (file-name-nondirectory filename))) )
 
 (defun generate-new-buffer-name (name)
   (let ((index (buffer-name_maxindex name)))
@@ -291,15 +291,19 @@
   (when (memq name (buffer-list))
     (apply max (mapcar buffer-name_index (buffer-list_filtered name))) ))
 
+(defun create-file-buffer (filename)
+  (get-buffer-create (generate-new-buffer-name (file-name-nondirectory filename))) )
+
 ;;; (rename-buffer name[ unique-p])
 (defun rename-buffer (name . opts)
   (if (and opts (car opts))  (set-buffer-name (generate-new-buffer-name name))
       (set-buffer-name name) ))
 
-
-(defun next-buffer_rr ()  (or (buffer-next (current-buffer)) (buffer-next)))
-(defun next-buffer ()  (switch-to-buffer (next-buffer_rr)))
-(setq other-buffer next-buffer_rr)
+(defun next-buffer ()  (switch-to-buffer (buffer-next (current-buffer))))
+(defun other-buffer ()
+  (let ((visible (remove buffer-special-p (buffer-list))))
+    (if visible (car visible)
+	(car (filter buffer-special-p (buffer-list))) )))
 
 ;;; args: start end, default beginning, end
 (defun insert-buffer-substring-no-properties (from-buffer-or-name . args)
@@ -457,15 +461,13 @@
 
 ;;; Saving buffers
 
-(defun buffer_file_modified-p (buffer)
-  (and (buffer-modified-p buffer) (not (eq "" (buffer-filename buffer)))) )
-
 ;;; (save-some-buffers) - interactively save modified file buffers
-;;; returns t if user 'quits', nil otherwise
+;;; returns last "query" mode, see save-buffer_query.
+;;;
 (defun save-some-buffers ()
   (let* ((current   (current-buffer))
 	 (response
-	  (let loop ((buffers (filter buffer_file_modified-p (buffer-list))) (mode :ask))
+	  (let loop ((buffers (filter buffer-modified-p (remove buffer-special-p (buffer-list)))) (mode :ask))
 	       (if (null buffers) mode
 		   (setq mode (save-buffer_query (car buffers) mode))
 		   (if (memq mode '(abort break)) mode
@@ -478,7 +480,7 @@
 ;;; - ask ..
 ;;; - force .. save w/o asking
 ;;; returns:
-;;; - ask
+;;; - ask   .. while asking interactively
 ;;; - abort .. if user quits with q
 ;;; - break .. if user enters . - save this buffer and exit
 ;;; - force .. if user enters ! - save all remaining buffers and exit
@@ -500,7 +502,7 @@
 
 (defun save-buffers-kill-terminal ()
   (unless  (eq :abort (save-some-buffers))
-    (if (not (filter buffer_file_modified-p (buffer-list))) (exit)
+    (if-not (filter buffer-modified-p (remove buffer-special-p (buffer-list))) (exit)
 	(when (string-equal "yes" (prompt "Modified buffers exist; exit anyway? (yes or no) "))
 	  (exit) ))))
 

@@ -460,9 +460,10 @@ void list_undo_stats(void)
     int size;
 
     list_bp = find_buffer("*undos*", true);
+    list_bp->special = true;
 
     disassociate_b(curwp); /* we are leaving the old buffer for a new one */
-    curbp = list_bp;
+    pull_buffer(list_bp);
     associate_b2w(curbp, curwp);
     zero_buffer(curbp); /* throw away previous content */
 
@@ -470,18 +471,13 @@ void list_undo_stats(void)
     insert_string("Buffer            Num      Size\n");
     insert_string("---------------- ---- ---------\n");
 
-    bp = bheadp;
-    while (bp != NULL) {
-        if (bp != list_bp) {
-            /* Note: all buffers have non-empty names */
-            bn = (bp->name[0] != '\0' ? bp->name : blank);
-            count = count_undos(bp);
-            size = get_total_undo_size(bp);
+    for (bp = curbp->b_next; bp != curbp; bp = bp->b_next) {
+        bn = (bp->name == NULL) ? blank : bp->name;
+        count = count_undos(bp);
+        size = get_total_undo_size(bp);
 
-            sprintf(report_line, "%-16s %4d %9d\n",  bn, count, size);
-            insert_string(report_line);
-        }
-        bp = bp->b_next;
+        sprintf(report_line, "%-16s %4d %9d\n",  bn, count, size);
+        insert_string(report_line);
     }
 }
 

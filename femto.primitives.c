@@ -102,8 +102,6 @@ Object *e_get_temp_file(Interpreter *interp, Object **args, Object **env)
 }
 
 /* Buffers */
-/* (current-buffer) */
-Object *e_current_buffer(Interpreter *interp, Object **args, Object **env) { return newString(interp, curbp->name); }
 
 /* Helper function: return either current buffer or named buffer if first argument exists */
 buffer_t *get_buffer_arg_one(Interpreter *interp, Object **args, char *signature)
@@ -158,6 +156,8 @@ GET_SET_BUFFER_FLAG(overwrite)
 GET_SET_BUFFER_FLAG(readonly)
 /* (buffer-undo-p[ buffer[ bool]]) */
 GET_SET_BUFFER_FLAG(undo)
+/* (buffer-special-p[ buffer[ bool]]) */
+GET_SET_BUFFER_FLAG(special)
 
 
 /* (buffer-filename[ buffer]) */
@@ -263,17 +263,14 @@ Object *e_set_buffer(Interpreter *interp, Object **args, Object **env)
 Object *e_buffer_next(Interpreter *interp, Object **args,Object **env)
 {
     if (!(FLISP_HAS_ARGS))
-        return newString(interp, bheadp->name);
+        return newString(interp, curbp->name);
 
     buffer_t *bp = find_buffer(FLISP_ARG_ONE->string, false);
 
     if (!bp)
         exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(buffer-next buffer) - buffer does not exist");
 
-    if (bp->b_next)
-        return newString(interp, bp->b_next->name);
-
-    return nil;
+    return newString(interp, bp->b_next->name);
 }
 
 Object *e_buffer_show(Interpreter *interp, Object **args, Object **env)
@@ -283,7 +280,7 @@ Object *e_buffer_show(Interpreter *interp, Object **args, Object **env)
         exceptionWithObject(interp, FLISP_ARG_ONE, out_of_memory, "(generate-new-buffer name) failed, out of memory");
 
     disassociate_b(curwp);
-    curbp = bp;
+    pull_buffer(bp);
     associate_b2w(curbp,curwp);
 
     return FLISP_ARG_ONE;
@@ -291,7 +288,7 @@ Object *e_buffer_show(Interpreter *interp, Object **args, Object **env)
 
 Object *e_set_buffer_name(Interpreter *interp, Object **args, Object **env)
 {
-    buffer_t *buffer = search_buffer(FLISP_ARG_ONE->string);
+    buffer_t *buffer = find_buffer(FLISP_ARG_ONE->string, false);
 
     if (buffer != NULL)
         exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(set-buffer-name name) - name, already exists");
@@ -437,11 +434,6 @@ Object *e_insert_string(Interpreter *interp, Object **args, Object **env)
     return t;
 }
 
-//extern void set_point(point_t);
-//extern point_t get_mark(void);
-//extern point_t get_point(void);
-//extern point_t get_point_max(void);
-
 Object *e_set_point(Interpreter *interp, Object **args, Object **env)
 {
     set_point(FLISP_ARG_ONE->integer);
@@ -476,10 +468,11 @@ void list_buffers(void)
     char *fn;
 
     list_bp = find_buffer(str_buffers, true);
+    list_bp->special = 1;
 
     /* Notes: should'n we use popup-buffer here? */
     disassociate_b(curwp); /* we are leaving the old buffer for a new one */
-    curbp = list_bp;
+    pull_buffer(list_bp);
     associate_b2w(curbp, curwp);
     zero_buffer(curbp); /* throw away previous content */
 
@@ -487,17 +480,13 @@ void list_buffers(void)
     insert_string("CO    Size Buffer           File\n");
     insert_string("-- ------- ------           ----\n");
 
-    bp = bheadp;
-    while (bp != NULL) {
-        if (bp != list_bp) {
-            mod_ch  = (bp->modified ? '*' : ' ');
-            over_ch = (bp->overwrite ? 'O' : ' ');
-            bn = (bp->name[0] != '\0' ? bp->name : blank);
-            fn = (bp->fname != NULL ? bp->fname : blank);
-            snprintf(report_line, sizeof(report_line),  "%c%c %7d %-16s %s\n",  mod_ch, over_ch, bp->b_size, bn, fn);
-            insert_string(report_line);
-        }
-        bp = bp->b_next;
+    for (bp = curbp->b_next;  bp != curbp; bp = bp->b_next) {
+        mod_ch  = (bp->modified ? '*' : ' ');
+        over_ch = (bp->overwrite ? 'O' : ' ');
+        bn = (bp->name == NULL) ? blank : bp->name;
+        fn = (bp->fname == NULL) ? blank : bp->fname;
+        snprintf(report_line, sizeof(report_line),  "%c%c %7d %-16s %s\n",  mod_ch, over_ch, bp->b_size, bn, fn);
+        insert_string(report_line);
     }
 }
 

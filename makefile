@@ -28,7 +28,7 @@ INITFILE = $(SCRIPTDIR)/femto.rc
 
 OBJ = command.o display.o complete.o data.o gap.o key.o search.o	\
 	buffer.o replace.o window.o undo.o funcmap.o hilite.o	\
-	femto_lisp.o file.o double.o femto.o femto.primitives.o
+	femto_lisp.o file.o double.o femto.o
 
 FLISP_OBJ = flisp.o lisp.o double.o file.o
 FLISP_LIBS = -lm
@@ -85,10 +85,7 @@ femto: $(OBJ) femto.rc
 
 femto.rc: femto.sht lisp/core.lsp
 
-femto.primitives.o: femto.primitives.c lisp.h window.h buffer.h gap.h key.h command.h search.h
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
-
-femto_lisp.o: lisp.c femto.register.c
+femto_lisp.o: lisp.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -D FLISP_FEMTO_EXTENSION -D FLISP_FILE_EXTENSION -D FLISP_DOUBLE_EXTENSION -c lisp.c -o $@
 
 file.o: file.c file.h lisp.h

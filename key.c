@@ -14,7 +14,9 @@
 #include "window.h"
 #include "undo.h"
 #include "buffer.h"
+#include "gap.h"
 #include "key.h"
+#include "display.h"
 #include "command.h"
 #include "funcmap.h"
 #include "search.h"
@@ -25,6 +27,93 @@ keymap_t *key_return;
 keymap_t *khead = NULL;
 keymap_t *ktail = NULL;
 
+/* For use with key binding  */
+void i_set_mark(void)
+{
+    set_mark();
+    msg(str_mark);
+}
+
+void i_gotoline(void)
+{
+    int line;
+
+    response_buf[0] = '\0';
+    if (getinput(m_goto, (char*)response_buf, STRBUF_S)) {
+        line = atoi(response_buf);
+        goto_line(line);
+    }
+}
+
+void toggle_overwrite_mode(void) { curbp->overwrite = !curbp->overwrite; }
+
+void cursor_position(void)
+{
+    int current, lastln;
+    point_t end_p = pos(curbp, curbp->b_ebuf);
+
+    get_line_stats(&current, &lastln);
+
+    if (curbp->b_point == end_p) {
+        msg(str_endpos, current, lastln,
+            curbp->b_point, ((curbp->b_ebuf - curbp->b_buf) - (curbp->b_egap - curbp->b_gap)));
+    } else {
+        msg(str_pos, unctrl(*(ptr(curbp, curbp->b_point))), *(ptr(curbp, curbp->b_point)),
+            current, lastln,
+            curbp->b_point, ((curbp->b_ebuf - curbp->b_buf) - (curbp->b_egap - curbp->b_gap)));
+    }
+}
+
+void version(void)
+{
+    msg(m_version);
+}
+
+void resize_terminal(void)
+{
+    one_window(curwp);
+}
+
+/*
+ * execute a lisp command typed in at the command prompt >
+ * send any output to the message line.  This avoids text
+ * being sent to the current buffer which means the file
+ * contents could get corrupted if you are running commands
+ * on the buffers etc.
+ *
+ * If the output is too big for the message line then send it to
+ * a temp buffer called *lisp_output* and popup the window
+ *
+ */
+void repl(void)
+{
+    buffer_t *bp;
+    char *output;
+
+    response_buf[0] = '\0';
+    if (!getinput("> ", response_buf, TEMPBUF))
+        return;
+
+    if ((output = eval_string(false, response_buf)) == NULL)
+        return;
+
+    // Note: Emacs puts errors and output always into the *Messages*
+    //       buffer, plus errors are shown in the message line.
+    //       Decision about whether to insert the result into the
+    //       buffer or show it in the message line is done based on
+    //       key pressed/function invoked
+
+    if (strlen(output) < 60) {
+        msg(output);
+    } else {
+        bp = find_buffer("*lisp_output*", true);
+        append_string(bp, output);
+        (void)popup_window(bp->name);
+    }
+    free_lisp_output();
+}
+
+/* Keymap handling */
 
 keymap_t *new_key(char *name, char *bytes)
 {

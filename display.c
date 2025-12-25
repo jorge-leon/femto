@@ -34,6 +34,24 @@ point_t lnstart(buffer_t *bp, register point_t off)
 }
 
 /*
+ * work out number of bytes based on first byte
+ *
+ * 1 byte utf8 starts 0xxxxxxx  00 - 7F : 000 - 127
+ * 2 byte utf8 starts 110xxxxx  C0 - DF : 192 - 223
+ * 3 byte utf8 starts 1110xxxx  E0 - EF : 224 - 239
+ * 4 byte utf8 starts 11110xxx  F0 - F7 : 240 - 247
+ *
+ */
+int utf8_size(char_t c)
+{
+    if (c >= 192 && c < 224) return 2;
+    if (c >= 224 && c < 240) return 3;
+    if (c >= 240 && c < 248) return 4;
+    return 1; /* if in doubt it is 1 */
+}
+
+
+/*
  * Forward scan for start of logical line segment containing 'finish'.
  * A segment of a logical line corresponds to a physical screen line.
  */

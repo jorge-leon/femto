@@ -1,6 +1,7 @@
 /* undo.c, femto, Hugh Barney, Public Domain, 2017 */
 
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 
 #include <assert.h>
@@ -10,6 +11,7 @@
 #include "buffer.h"
 #include "gap.h"
 #include "key.h"
+#include "display.h"
 #include "command.h"
 #include "replace.h"
 #include "undo.h"
@@ -53,6 +55,41 @@ int get_buf_utf8_size(char_t *buf, int pos)
     return 1;
 }
 
+/*
+ * A special insert used as the undo of delete char (C-d or DEL)
+ * this is where the char is inserted at the point and the cursor
+ * is NOT moved on 1 char.  This MUST be a seperate function so that
+ *   INSERT + BACKSPACE are matching undo pairs
+ *   INSERT_AT + DELETE are matching undo pairs
+ * Note: This function is only ever called by execute_undo to undo a DEL.
+ */
+void insert_at(void)
+{
+    char_t the_char[2]; /* the inserted char plus a null */
+    assert(curbp->b_gap <= curbp->b_egap);
+
+    if (curbp->b_gap == curbp->b_egap && !growgap(curbp, CHUNK))
+        return;
+    curbp->b_point = movegap(curbp, curbp->b_point);
+
+
+    /* overwrite if mid line, not EOL or EOF, CR will insert as normal */
+    if (curbp->overwrite && *input != '\r' && *(ptr(curbp, curbp->b_point)) != '\n' && curbp->b_point < pos(curbp,curbp->b_ebuf) ) {
+        *(ptr(curbp, curbp->b_point)) = *input;
+        if (curbp->b_point < pos(curbp, curbp->b_ebuf))
+            ++curbp->b_point;
+        /* FIXME - overwite mode not handled properly for undo yet */
+    } else {
+        the_char[0] = *input == '\r' ? '\n' : *input;
+        the_char[1] = '\0'; /* null terminate */
+        *curbp->b_gap++ = the_char[0];
+        curbp->b_point = pos(curbp, curbp->b_egap);
+        curbp->b_point--; /* move point back to where it was before, should always be safe */
+        /* the point is set so that and undo will DELETE the char */
+        add_undo(curbp, UNDO_T_INSAT, curbp->b_point, the_char, NULL);
+    }
+    curbp->modified = true;
+}
 
 /*
  * this is where the actual undo work takes place

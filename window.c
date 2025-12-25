@@ -56,6 +56,14 @@ void split_window(void)
         msg("Cannot split window: out of memory");
 }
 
+void redraw(void)
+{
+    clear();
+    mark_all_windows();
+    update_display();
+}
+
+
 /* Always returns the previous current window pointer
  * Note: though this is never used
  */

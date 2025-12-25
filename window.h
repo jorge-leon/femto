@@ -36,6 +36,6 @@ extern window_t* new_window(void);
 extern window_t *popup_window(char *);
 extern window_t *split_current_window(void);
 extern void split_window(void);
-
+extern void redraw(void);
 
 #endif

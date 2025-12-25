@@ -14,5 +14,6 @@ extern void display(window_t *, int);
 extern void dispmsg(void);
 extern void update_display(void);
 extern void w2b(window_t *);
+extern int utf8_size(char_t c);
 
 #endif

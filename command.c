@@ -31,9 +31,10 @@ int prev_utf8_char_size(void)
     return 1;
 }
 
+/* The order of functions corresponds to the order of registration and
+ * documentation */
 
 /* Text manipulation: read from, write to buffer text */
-DEFINE_EDITOR_FUNC(backspace)
 void backspace(void)
 {
     char_t the_char[7]; /* the deleted char, allow 6 unsigned chars plus a null */
@@ -55,6 +56,7 @@ void backspace(void)
 
     curbp->b_point = pos(curbp, curbp->b_egap);
 }
+DEFINE_EDITOR_FUNC(backspace)
 
 void delete(void)
 {

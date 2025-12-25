@@ -86,7 +86,8 @@ femto: $(OBJ) femto.rc
 femto.rc: femto.sht lisp/core.lsp
 
 femto_lisp.o: lisp.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -D FLISP_FEMTO_EXTENSION -D FLISP_FILE_EXTENSION -D FLISP_DOUBLE_EXTENSION -c lisp.c -o $@
+	$(CC) $(CPPFLAGS) $(CFLAGS) -D FLISP_FEMTO_EXTENSION -D FLISP_FILE_EXTENSION -D FLISP_DOUBLE_EXTENSION \
+	-D FLISP_INITIAL_MEMORY=6291456UL -c lisp.c -o $@
 
 file.o: file.c file.h lisp.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $<

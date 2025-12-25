@@ -40,6 +40,7 @@
 (defun init()
  (oxo-debug "(init)\n")
  (switch-to-buffer "*oxo*")
+ (buffer-special-p "*oxo*" t)
  (beginning-of-buffer)
  (end-of-buffer)
  (kill-region)
@@ -208,7 +209,8 @@
     (t
      (msg "Thank you for playing" t)
      (restore-buffer-modified-p nil)
-     (kill-buffer)
+     (next-buffer)
+     (kill-buffer "*oxo*")
      (message "")) ))
 
 (provide 'oxo)

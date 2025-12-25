@@ -19,7 +19,7 @@
 /* minimal Lisp object space size */
 //#define FLISP_MIN_MEMORY  24576UL  /* currently ~21k for flisp */
 //#define FLISP_MIN_MEMORY  40960UL  /* currently ~34k for femto */
-#define FLISP_MIN_MEMORY  80960UL  /* Note: we had to increase after dynamic loading in Femto, tbd: */
+#define FLISP_MIN_MEMORY  80960UL  /* Note: we had to increase after dynamic loading in Femto, tbd: review */
 #define FLISP_MEMORY_INC_SIZE 8192UL  /* Resize by this amount */
 
 /* buffersize for Lisp eval input */

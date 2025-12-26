@@ -44,4 +44,5 @@ $(cat core.lsp)
     (repl-princ (interp 'version)"\n"
 		"exit with C-d\n" ))
   (let ((result (repl nil)))
-    (when (car result) (apply throw result)) ))
+    (if (car result) (apply throw result)
+	(caddr result) ) ))

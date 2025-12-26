@@ -10,6 +10,7 @@
   - (flisp error[ fd])
   - (flisp debug[ fd])
   - (flisp types[ type..]) => list of types
+  - (flisp body lambda|macro)
   - (flisp gc) => memory info
 - Add read and eval tracing.
 
@@ -24,7 +25,6 @@
   - Reduce binary operators to 'and' and 'xor' and write needed rest in Lisp.
 - Fix implement map, consider simplifying core functions and make them
   n-ary in Lisp.
-- Make extensions plugable.
 - Cleanup cerf: not so easy to do.
 - Hash
   - Add new 'hash' field as uintptr_t to Lisp object struct type union.
@@ -39,9 +39,6 @@
   - Default size = max input string
   - Rationale: embedding, 32, 16, 8 bit versions
 - posit's: https://en.wikipedia.org/wiki/Unum_(number_format)
-- Size reduction:
-  - Make double extension optional.
-  - Make file extension optional
 - Event based I/O
   - Buffered I/O operations throw yield exception if buffers are full (w) /empty
     (r).
@@ -50,6 +47,10 @@
 
 
 ## flisp 0.14
+- Size reduction:
+  - Make double extension optional.
+  - Make file extension optional
+- Make extensions plugable.
 - Fixed: (cond ('(0))) tries to evaluate (0) but should return (0)
 - Add (intern string) primitive.
 - Add (interp ..) intospection primitive.

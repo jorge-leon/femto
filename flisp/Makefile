@@ -10,7 +10,6 @@ CPPFLAGS += -D_DEFAULT_SOURCE -D_BSD_SOURCE
 CFLAGS += -O0 -std=c11 -Wall -pedantic -pedantic-errors -Werror=format-security -Wformat -g
 LD      = cc
 LDFLAGS =
-# Note: do we really need the math library?
 LIBS    =
 CP      = cp
 MV      = mv
@@ -60,7 +59,7 @@ flisp.o: flisp.c lisp.h file.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $<
 
 flispd: flispd.o $(OBJD) init.lsp
-	$(LD) $(LDFLAGS) -o $@ $< $(OBJD)
+	$(LD) $(LDFLAGS) -o $@ $< $(OBJD) -lm
 
 flispd.o: flisp.c lisp.h double.h file.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -D FLISP_DOUBLE_EXTENSION -c $< -o $@
@@ -88,7 +87,7 @@ doc/implementation.md: doc/implementation.html h2m.lua
 README.html: README.md
 	pandoc -o $@ -f gfm $<
 
-# Requires doxygen
+# Requires doxygen and graphviz (dot)
 doxygen: FORCE
 	doxygen
 
@@ -124,11 +123,11 @@ splint: FORCE
 TAGS: FORCE
 	ctags -e *.c *.h *.lsp
 
-test: flispd test/test.rc FORCE
+test: flispd test/test.lsp FORCE
 	@(cd test && ./test -as)
 
 # Exit 1 if any testsuite fails
-check: flispd femto test/test.rc FORCE
+check: flispd test/test.lsp FORCE
 	@(cd test && ./test -sa | grep tests, | \
 	while read RESULT; do \
 	   RESULT=$${RESULT#* tests, }; \
@@ -136,7 +135,7 @@ check: flispd femto test/test.rc FORCE
 	   [ "$$RESULT" = 0 ] || { echo failed >&2; exit 1; } \
         done )
 
-test/test.rc: test/test.sht core.lsp
+test/test.lsp: test/test.sht core.lsp
 
 # Install/package
 strip: $(BINARIES) FORCE
@@ -147,7 +146,7 @@ clean: FORCE
 	-$(RM) -rf doxygen
 	-$(RM) -f $(MOREDOCS)
 	-$(RM) -f f.log
-	-$(RM) -f test/test.rc  test/f.log
+	-$(RM) -f test/test.lsp  test/f.log
 
 # fLisp standalone
 install: install-bin install-lib install-doc

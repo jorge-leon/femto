@@ -1,0 +1,105 @@
+#!./test # -*- mode: sh -*-
+
+export FLISPRC=../init.lsp
+export PREPARE="(require 'string)"
+
+tap 32
+
+IN='(string-trim-front "")' OUT='""'
+flisp_expr; ok string-trim-front-1 emtpy string is itself
+
+IN='(string-trim-front "abc ")' OUT='"abc "'
+flisp_expr; ok string-trim-front-2 string is itself
+
+IN='(string-trim-front " abc ")' OUT='"abc "'
+flisp_expr; ok string-trim-front-3  single space prefixed string is trimmed
+
+IN='(string-trim-front "   abc ")' OUT='"abc "'
+flisp_expr; ok string-trim-front-4  triple space prefixed string is trimmed
+
+
+IN='(string-trim-back "")' OUT='""'
+flisp_expr; ok string-trim-back-1 emtpy string is itself
+
+IN='(string-trim-back " abc")' OUT='" abc"'
+flisp_expr; ok string-trim-back-2 string is itself
+
+IN='(string-trim-back " abc ")' OUT='" abc"'
+flisp_expr; ok string-trim-back-3  single space postfixed string is trimmed
+
+IN='(string-trim-back " abc   ")' OUT='" abc"'
+flisp_expr; ok string-trim-back-4  triple space postfixed string is trimmed
+
+
+IN='(string-trim "")' OUT='""'
+flisp_expr; ok string-trim-1 emtpy string is itself
+
+IN='(string-trim "abc")' OUT='"abc"'
+flisp_expr; ok string-trim-2 string is itself
+
+IN='(string-trim "  abc  ")' OUT='"abc"'
+flisp_expr; ok string-trim-3 string with spaces is trimmed
+
+IN='(string-ref "abcde" 0)' OUT='"a"'
+flisp_expr; ok string-ref-1 index 0 is a
+
+IN='(string-ref "abcde" 2)' OUT='"c"'
+flisp_expr; ok string-ref-2 index 2 is c
+
+IN='(string-ref "abcde" 4)' OUT='"e"'
+flisp_expr; ok string-ref-3 index 4 is e
+
+IN='(string-ref "" 0)' OUT='""'
+flisp_expr; ok string-ref-4 emtpy string 0 is empty string
+
+
+IN='(string-startswith "" "abcde")' OUT='nil'
+flisp_expr; ok string-startswith-1 emtpy string starts with string is nil
+
+IN='(string-startswith "abcde" "")' OUT='t'
+flisp_expr; ok string-startswith-2 string starts with empty string is t
+
+IN='(string-startswith "abcde" "ab")' OUT='t'
+flisp_expr; ok string-startswith-3 string starts with start string is t
+
+IN='(string-startswith "abcde" "cd")' OUT='nil'
+flisp_expr; ok string-startswith-4 string starts not with start string is nil
+
+IN='(string-shrink-right "")' OUT='""'
+flisp_expr; ok string-shrink-right-1 drop from empty string is empty string
+
+IN='(string-shrink-right "abcde")' OUT='"bcde"'
+flisp_expr; ok string-shrink-right-2 drop from string is on char less
+
+IN='(string-shrink-left "")' OUT='""'
+flisp_expr; ok string-string-shrink-left-1 string-shrink-left from empty string is empty string
+
+IN='(string-shrink-left "abcde")' OUT='"abcd"'
+flisp_expr; ok string-string-shrink-left-2 string-shrink-left from string is one char less
+
+IN='(string-first-char "answer")' OUT='"a"'
+flisp_expr; ok string-first-char-1 first char of answer is a
+
+IN='(string-first-char "")' OUT='""'
+flisp_expr; ok string-first-char-2 first char of empty string is empty string
+
+IN='(string-last-char "answer")' OUT='"r"'
+flisp_expr; ok string-last-char-1 last char of answer is r
+
+IN='(string-last-char "")' OUT='""'
+flisp_expr; ok string-last-char-2 last char of empty string is empty string
+
+IN='(string-empty-p "answer")' OUT='nil'
+flisp_expr; ok string-empty-p-1 answer is not empty
+
+IN='(string-empty-p "")' OUT='t'
+flisp_expr; ok string-empty-p-2 empty string is t
+
+IN='(string-split "a" "ansaawera")' OUT='("" "ns" "" "wer" "")'
+flisp_expr; ok string-split-1 on single character with repetitions gives list with empty strings
+
+IN='(string-split "" "answer")' OUT='("a" "n" "s" "w" "e" "r")'
+flisp_expr; ok string-split-2 split with empty string gives list of all characters
+
+IN='(string-split "sw" "answer")' OUT='("an" "er")'
+flisp_expr; ok string-split-3 split with string cuts out string

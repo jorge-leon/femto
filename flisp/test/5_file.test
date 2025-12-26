@@ -1,0 +1,73 @@
+#!./test # -*- mode: sh -*-
+
+export FLISPRC=../init.lsp
+export PREPARE="(require 'file)"
+
+tap 22
+
+false; ok mkdir-1 \# TODO
+
+IN='(file-name-directory "")' OUT='nil'
+flisp_expr; ok file-name-directory-1 empty string is empty
+
+IN='(file-name-directory "/")' OUT='"/"'
+flisp_expr; ok file-name-directory-2 root is root
+
+IN='(file-name-directory "/answer")' OUT='"/"'
+flisp_expr; ok file-name-directory-3 root with single element is root
+
+IN='(file-name-directory "/ans/wer")' OUT='"/ans/"'
+flisp_expr; ok file-name-directory-4 root with more then one element is parent
+
+IN='(file-name-directory "ans/wer")' OUT='"ans/"'
+flisp_expr; ok file-name-directory-5 relative with subdir is parent
+
+IN='(file-name-directory "answer")' OUT='nil'
+flisp_expr; ok file-name-directory-6 relative with single element is empty
+
+IN='(file-name-directory ".")' OUT='nil'
+flisp_expr; ok file-name-directory-7 empty string is empty
+
+IN='(file-name-directory "..")' OUT='nil'
+flisp_expr; ok file-name-directory-8 empty string is empty
+
+
+IN='(file-name-nondirectory "")' OUT='""'
+flisp_expr; ok file-name-nondirectory-1 empty string is empty
+
+IN='(file-name-nondirectory "/")' OUT='""'
+flisp_expr; ok file-name-nondirectory-2 root is empty
+
+IN='(file-name-nondirectory "/answer")' OUT='"answer"'
+flisp_expr; ok file-name-nondirectory-3 root with single element is element
+
+IN='(file-name-nondirectory "/ans/wer")' OUT='"wer"'
+flisp_expr; ok file-name-nondirectory-4 root with more then one element is last element
+
+IN='(file-name-nondirectory "ans/wer")' OUT='"wer"'
+flisp_expr; ok file-name-nondirectory-5 relative with subdir is last element
+
+IN='(file-name-nondirectory "answer")' OUT='"answer"'
+flisp_expr; ok file-name-nondirectory-6 relative with single element is element
+
+IN='(file-name-nondirectory ".")' OUT='"."'
+flisp_expr; ok file-name-nondirectory-7 relative with single element is element
+
+IN='(file-name-nondirectory "..")' OUT='".."'
+flisp_expr; ok file-name-nondirectory-8 relative with single element is element
+
+IN='(file-name-extension ".")' OUT=nil
+flisp_expr; ok file-name-extension-1 dot is nil
+
+IN='(file-name-extension "..")' OUT=nil
+flisp_expr; ok file-name-extension-2 dot-dot is nil
+
+IN='(file-name-extension "")' OUT=nil
+flisp_expr; ok file-name-extension-3 empty is nil
+
+IN='(file-name-extension "a/b")' OUT=nil
+flisp_expr; ok file-name-extension-4 w/o extension is nil
+
+IN='(file-name-extension "a/b.c")' OUT='"c"'
+flisp_expr; ok file-name-extension-5 with extension is extension
+

@@ -2,6 +2,7 @@
 # fLisp Makefile, leg20251226
 #
 
+AR      = ar
 CC      = cc
 CPP     = cpp
 #CPPFLAGS += -D_DEFAULT_SOURCE -D_BSD_SOURCE -DNDEBUG
@@ -26,9 +27,10 @@ PACKAGE = flisp
 SCRIPTDIR = $(DATADIR)/flisp
 INITFILE = $(SCRIPTDIR)/init.lsp
 
-OBJ = file.o libflisp.o
-OBJD = double.o file.o libflispd.o
+OBJ = file.o lisp.o
+OBJD = double.o file.o lispd.o
 BINARIES = flisp flispd
+LIBRARIES = libflisp.a libflispd.a
 RC_FILES = init.lsp
 
 LISPLIB = core.lsp flisp.lsp string.lsp file.lsp
@@ -41,7 +43,7 @@ MOREDOCS = README.html doc/flisp.md doc/develop.md doc/implementation.md
 .sht.lsp:
 	./sht $*.sht >$@
 
-all: $(BINARIES)
+all: $(BINARIES) $(LIBRARIES)
 
 debug: CPPFLAGS += -UNDEBUG -g
 debug: flispd flisp
@@ -66,11 +68,18 @@ flispd.o: flisp.c lisp.h double.h file.h
 
 init.lsp: init.sht core.lsp
 
-libflisp.o: lisp.c lisp.h
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+lisp.o: lisp.c lisp.h
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@ -lc
 
-libflispd.o: lisp.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -D FLISP_DOUBLE_EXTENSION -c $< -o $@
+lispd.o: lisp.c lisp.h
+	$(CC) $(CPPFLAGS) $(CFLAGS) -D FLISP_DOUBLE_EXTENSION -c $< -o $@ -lc
+
+libflisp.a: lisp.o file.o
+	$(AR) rcs $@ $^
+
+libflispd.a: lisp.o file.o double.o
+	$(AR) rcs $@ $^
+
 
 # Requires pandoc
 doc: $(MOREDOCS)
@@ -142,7 +151,7 @@ strip: $(BINARIES) FORCE
 	strip $(BINARIES)
 
 clean: FORCE
-	-$(RM) -f $(OBJ) $(OBJD) $(BINARIES) $(RC_FILES)
+	-$(RM) -f $(OBJ) $(OBJD) $(BINARIES) $(LIBRARIES) $(RC_FILES)
 	-$(RM) -rf doxygen
 	-$(RM) -f $(MOREDOCS)
 	-$(RM) -f f.log

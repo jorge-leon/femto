@@ -140,7 +140,7 @@
   (eq k (ascii 19)))
 
 (defun is_control_char(k)
-  (and (>= (ascii->number k) 0) (<= (ascii->number k) 31)))
+  (and (i>= (ascii->number k) 0) (i<= (ascii->number k) 31)))
 
 
 ;; prompt for a keystroke then show its name

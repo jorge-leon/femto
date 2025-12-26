@@ -7,7 +7,6 @@
 
 /* Constants */
 /* Types */
-Object *type_double =            &(Object) { NULL, .string  = "type-double" };
 
 Object *newDouble(Interpreter *interp, double number)
 {

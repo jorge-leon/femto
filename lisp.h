@@ -215,7 +215,7 @@ void fl_debug(Interpreter *, char *, ...);
                             SIGNATURE " expected %s, got: %s", TYPE->string, PARAM->type->string)
 
 // PUBLIC INTERFACE ///////////////////////////////////////////////////////
-extern Interpreter *lisp_new(char **, char*, FILE*, FILE*, FILE*);
+extern Interpreter *lisp_new(size_t size, char **, char*, FILE*, FILE*, FILE*);
 extern void lisp_destroy(Interpreter *);
 extern void lisp_eval(Interpreter *, char *);
 extern void lisp_write_object(Interpreter *, FILE *, Object *, bool);

@@ -46,6 +46,7 @@ Object *nil =                                   &(Object) { NULL, .string = "nil
 Object *t =                                     &(Object) { NULL, .string = "t" };
 /* Types */
 Object *type_integer =                          &(Object) { NULL, .string = "type-integer" };
+Object *type_double =                           &(Object) { NULL, .string  = "type-double" };
 Object *type_string =                           &(Object) { NULL, .string = "type-string" };
 Object *type_symbol =                           &(Object) { NULL, .string = "type-symbol" };
 Object *type_cons =                             &(Object) { NULL, .string = "type-cons" };
@@ -487,12 +488,6 @@ Object *memoryAllocObject(Interpreter *interp, Object *type, size_t size)
         interp->memory->toSpace = new;
         interp->memory->capacity += memory;
         gc(interp);
-        /* Increase former from space */
-        //new = mmap(NULL, interp->memory->capacity, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-        //if (new == (void *) -1) {
-        //    interp->memory->capacity+= EXCEPTION_MEM_RESERVE;
-        //    exception(interp, out_of_memory, "OOM reallocating fromSpace: %s", strerror(errno));
-        //}
         if (munmap(interp->memory->toSpace, interp->memory->capacity - memory) == -1) {
             interp->memory->capacity+= EXCEPTION_MEM_RESERVE;
             exception(interp, out_of_memory, "munmap(fromSpace) failed: %s", strerror(errno));
@@ -2505,6 +2500,7 @@ Memory *newMemory(size_t size)
 
 /** Initialize and return an fLisp interpreter.
  *
+ * @param size          Initial size of Lisp object space in bytes.
  * @param argv          null terminated array to arguments to be imported.
  * @param library_path  path to Lisp library, aka 'script_dir'.
  * @param input         open readable file descriptor for default input or NULL
@@ -2519,6 +2515,7 @@ Memory *newMemory(size_t size)
  *
  */
 Interpreter *lisp_new(
+    size_t size,
     char **argv, char *library_path,
     FILE *input, FILE *output, FILE* debug)
 {
@@ -2540,7 +2537,7 @@ Interpreter *lisp_new(
     count += objectSize(strlen(library_path));
     count += 2*sizeof(Object);
     fl_debug(interp, "lisp_new(): additional memory for argv and library path storage: %lu\n", (COUNTFMT) count);
-    Memory *memory = newMemory(FLISP_MIN_MEMORY+count+FLISP_INITIAL_MEMORY);
+    Memory *memory = newMemory(FLISP_MIN_MEMORY+count+size);
     if (memory == NULL) {
         setInterpreterResult(interp, nil, out_of_memory, "failed to allocate memory for the interpreter");
         return NULL;

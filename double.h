@@ -3,8 +3,6 @@
 
 #include "lisp.h"
 
-extern Object *type_double;
-
 extern Object *newDouble(Interpreter *, double);
 extern Object *readDouble(Interpreter *);
 

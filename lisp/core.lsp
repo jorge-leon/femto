@@ -148,7 +148,6 @@
     (if (p (car l))  (remove p (cdr l))
 	(cons (car l) (remove p (cdr l))) )))
 
-
 (defun fold-left (f i l)
   (if (null l)  i
       (fold-left f (f i (car l)) (cdr l)) ))
@@ -226,29 +225,39 @@
     ((null (cdr l)) (f i (car l)))
     ( t (fold-left f (f (car l) (cadr l)) (cddr l)))))
 
-(defun coerce (ifunc dfunc x y)
-  (cond  ((doublep x) (cond ((integerp y) (dfunc x (double y))) (t (dfunc x y))))
-         ((doublep y) (cond ((integerp x) (dfunc (double x) y)) (t (dfunc x y))))
-         (t (ifunc x y))))
-
-(defun coercec (ifunc dfunc) ; coerce "curry"
-  (lambda (x y) (coerce ifunc dfunc x y)))
-
-(defun +  args (fold-left (coercec i+ d+)  0 args))
-(defun -  args (nfold     (coercec i- d-)  0 args))
-(defun *  args (fold-left (coercec i* d*)  1 args))
-(defun /  args (nfold     (coercec i/ d/)  1 args))
-(defun %  args (nfold     (coercec i% d%)  1 args))
-
 (defun fold-leftp (predicate start list)
   (cond ((null list))
 	((predicate start (car list)) (fold-leftp predicate (car list) (cdr list)))))
 
-(defun =  (n . args) (fold-leftp (coercec i=  d=)  n args))
-(defun <  (n . args) (fold-leftp (coercec i<  d<)  n args))
-(defun <= (n . args) (fold-leftp (coercec i<= d<=)  n args))
-(defun >  (n . args) (fold-leftp (coercec i>  d>)  n args))
-(defun >= (n . args) (fold-leftp (coercec i>= d>=)  n args))
+(cond ((car (catch d=)) ;; only integer operations available
+       (defun + args (fold-left i+ 0 args))
+       (defun - args (nfold     i- 0 args))
+       (defun * args (fold-left i* 1 args))
+       (defun / args (nfold     i/ 1 args))
+       (defun =  (n . args) (fold-leftp i=  n args))
+       (defun <  (n . args) (fold-leftp i<  n args))
+       (defun <= (n . args) (fold-leftp i<= n args))
+       (defun >  (n . args) (fold-leftp i>  n args))
+       (defun >= (n . args) (fold-leftp i>= n args)) )
+      (t ;; with floating point we need argument coercion for arithmetics
+       (defun coerce (ifunc dfunc x y)
+	 (cond  ((doublep x) (if (integerp y)  (dfunc x (double y))  (dfunc x y)))
+		((doublep y) (if (integerp x)  (dfunc (double x) y)  (dfunc x y)))
+		(t (ifunc x y)) ))
+       
+       (defun coercec (ifunc dfunc) ; coerce "curry"
+	 (lambda (x y) (coerce ifunc dfunc x y)))
+       
+       (defun +  args (fold-left (coercec i+ d+)  0 args))
+       (defun -  args (nfold     (coercec i- d-)  0 args))
+       (defun *  args (fold-left (coercec i* d*)  1 args))
+       (defun /  args (nfold     (coercec i/ d/)  1 args))
+       (defun %  args (nfold     (coercec i% d%)  1 args))
+       (defun =  (n . args) (fold-leftp (coercec i=  d=)  n args))
+       (defun <  (n . args) (fold-leftp (coercec i<  d<)  n args))
+       (defun <= (n . args) (fold-leftp (coercec i<= d<=)  n args))
+       (defun >  (n . args) (fold-leftp (coercec i>  d>)  n args))
+       (defun >= (n . args) (fold-leftp (coercec i>= d>=)  n args)) ))
 
 (defun min (n . args)
   (assert-number n "(min n[ arg ..]) n")

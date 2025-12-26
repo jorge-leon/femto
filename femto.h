@@ -35,6 +35,8 @@
 #define REV_SEARCH      2
 #define TEMPFILE        "/tmp/feXXXXXX"
 
+#define FLISP_INITIAL_MEMORY 6291456UL
+
 typedef void (*void_func)(void);
 
 /* Note: the buffer text is char_t, to facilityte utf8 handling */

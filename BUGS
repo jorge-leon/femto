@@ -1,3 +1,8 @@
+BUGS encountered while and since dynamic loading of symbols and primitives:
+
+- dired: still recursive calling
+- prompt-filename segfaults on Alpine Linux when pressing TAB then C-g
+
 BUGS encountered since fLisp refactoring and batch mode
 
 funcmap.c:86:22: warning: variable 'count' set but not used [-Wunused-but-set-variable]

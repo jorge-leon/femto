@@ -62,13 +62,14 @@ void lisp_init(char **argv)
     if ((init_fd = fopen(init_file, "r")) == NULL)
         debug("failed to open rc file %s: %s\n", init_file, strerror(errno));
 
-    interp = lisp_new(argv, library_path, init_fd, debug_fp, debug_fp);
+    interp = lisp_new(FLISP_INITIAL_MEMORY, argv, library_path, init_fd, debug_fp, debug_fp);
     if (interp == NULL)
         fatal("fLisp initialization failed");
     lisp_file_register(interp);
 #ifdef FLISP_DOUBLE_EXTENSION
     lisp_double_register(interp);
- #endif
+    debug("double extension registered\n");
+#endif
     femto_register(interp);
     debug("evaluating rc file %s\n", init_file);
     lisp_eval(interp, NULL);

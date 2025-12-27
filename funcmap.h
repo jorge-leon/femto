@@ -13,9 +13,11 @@ typedef struct command_t {
     struct command_t *c_next;
 } command_t;
 
+typedef void (*void_func)(void);
+
 extern command_t *cheadp;
 
-extern command_t *register_command(char *, void (*)(void));
+extern command_t *register_command(char *, void_func);
 extern void apropos(void);
 extern void execute_command(void);
 extern void describe_bindings(void);

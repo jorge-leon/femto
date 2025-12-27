@@ -46,7 +46,7 @@ MOREDOCS = README.html doc/flisp.md doc/develop.md doc/implementation.md
 all: $(BINARIES) $(LIBRARIES)
 
 debug: CPPFLAGS += -UNDEBUG -g
-debug: flispd flisp
+debug: $(BINARIES) $(LIBRARIES)
 
 double.o: double.c double.h lisp.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -D FLISP_DOUBLE_EXTENSION -c $<

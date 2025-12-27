@@ -14,7 +14,7 @@
 #define E_SCRIPTDIR    "/usr/local/share/femto"
 #endif
 #ifndef E_INITFILE
-#define E_INITFILE      "/usr/local/share/femto/femto.rc"
+#define E_INITFILE      "/usr/local/share/femto/init.lsp"
 #endif
 #define E_VERSION_STR    E_NAME " " E_VERSION ", Public Domain, December 2026, by Hugh Barney, Georg Lehner, No warranty."
 
@@ -37,7 +37,9 @@
 
 #define FLISP_INITIAL_MEMORY 6291456UL
 
-typedef void (*void_func)(void);
+/* For inserting E_SCRIPTDIR, E_INITFILE */
+#define CPP_XSTR(s) CPP_STR(s)
+#define CPP_STR(s) #s
 
 /* Note: the buffer text is char_t, to facilityte utf8 handling */
 typedef unsigned char char_t;

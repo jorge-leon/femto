@@ -10,6 +10,7 @@ RM      = rm
 MKDIR	= mkdir
 LD      = cc
 LDFLAGS =
+# Path to flisp include file(s), binary libraries and Lisp libraries.
 FL_INC  = flisp
 FL_LIBS = flisp
 FL_LSP  = flisp
@@ -54,7 +55,7 @@ MOREDOCS = README.html docs/femto.md docs/editor.md
 
 .SUFFIXES: .lsp .sht  .md .html
 .sht.lsp:
-	./sht $*.sht >$@
+	FL_LSP=$(FL_LSP) ./sht $*.sht >$@
 
 # Artifacts
 all: femto
@@ -95,8 +96,6 @@ femtod.o: femto.c femto.h
 	  -D E_INITFILE=$(INITFILE) \
 	  -D FLISP_DOUBLE_EXTENSION \
 	  -c femto.c -o $@
-
-init.lsp: init.sht
 
 funcmap.o: funcmap.c femto.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c funcmap.c
@@ -155,7 +154,7 @@ measure: $(RC_FILES) $(BINARIES) strip FORCE
 	@echo "Total files:  " $$(ls *.c *.h $(LISPFILES) | wc -l)
 
 run: femto FORCE
-	FEMTORC=femto.rc FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto
+	FEMTORC=init.lsp FLISPLIB=$(FL_LSP) FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto
 
 rund: femtod FORCE
 	FEMTORC=femto.rc FEMTOLIB=lisp FEMTO_DEBUG=1  ./femtod

@@ -22,15 +22,13 @@
 #include "hilite.h"
 #include "command.h"
 
+#include "lisp.h"
 #include "file.h"
 #ifdef FLISP_DOUBLE_EXTENSION
 #include "double.h"
 #endif
 
 void gui(void); /* The GUI loop used in interactive mode */
-
-#define CPP_XSTR(s) CPP_STR(s)
-#define CPP_STR(s) #s
 
 static Interpreter *interp;
 char debug_file[] = "debug.out";
@@ -51,10 +49,7 @@ size_t len;
 void lisp_init(char **argv)
 {
     FILE *init_fd = NULL;
-    char *library_path, *init_file;
-
-    if ((library_path=getenv("FEMTOLIB")) == NULL)
-        library_path = CPP_XSTR(E_SCRIPTDIR);
+    char *init_file;
 
     if ((init_file = getenv("FEMTORC")) == NULL)
         init_file = CPP_XSTR(E_INITFILE);
@@ -62,7 +57,7 @@ void lisp_init(char **argv)
     if ((init_fd = fopen(init_file, "r")) == NULL)
         debug("failed to open rc file %s: %s\n", init_file, strerror(errno));
 
-    interp = lisp_new(FLISP_INITIAL_MEMORY, argv, library_path, init_fd, debug_fp, debug_fp);
+    interp = lisp_new(FLISP_INITIAL_MEMORY, argv, NULL, init_fd, debug_fp, debug_fp);
     if (interp == NULL)
         fatal("fLisp initialization failed");
     lisp_file_register(interp);

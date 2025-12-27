@@ -21,7 +21,7 @@ void fatal(char *msg)
 
 int main(int argc, char **argv)
 {
-    char *library_path, *rcfile, *debug_file;
+    char *rcfile, *debug_file;
     FILE *debug_fd = NULL, *input_fd = stdin;
     Interpreter *interp;
 
@@ -36,10 +36,7 @@ int main(int argc, char **argv)
         if ((debug_fd = fopen(debug_file, "w")) == NULL)
             fatal("failed to open debug file");
 
-    if ((library_path=getenv("FLISPLIB")) == NULL)
-        library_path = FL_LIBDIR;
-
-    interp = lisp_new(0, argv, library_path, input_fd, stdout, debug_fd);
+    interp = lisp_new(0, argv, NULL, input_fd, stdout, debug_fd);
     if (interp == NULL)
         fatal("fLisp interpreter initialization failed");
 

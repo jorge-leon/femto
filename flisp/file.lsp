@@ -69,3 +69,5 @@
 	((eq extension name)  nil)
 	((eq extension "")    nil) ; . and ..
 	(t  extension) ))))
+
+(provide 'file)

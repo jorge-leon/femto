@@ -1386,7 +1386,7 @@ Object *evalBind(Interpreter *interp, Object **args, Object **env)
                             "(bind symbol object[ globalp] - symbol: is a constant and cannot be redefined");
     if (FLISP_HAS_ARG_THREE)
         globalp = (FLISP_ARG_THREE != nil);
-    
+
     GC_CHECKPOINT;
     GC_TRACE(gcEnv, *env);
     GC_TRACE(gcVar, FLISP_ARG_ONE);
@@ -2532,6 +2532,11 @@ Interpreter *lisp_new(
     /* enable debug output */
     interp->debug = debug;
 
+    /* determine library path */
+    if (library_path == NULL)
+        if ((library_path=getenv("FLISPLIB")) == NULL)
+            library_path = FL_LIBDIR;
+
     /* Account for the size of argv and library_path objects and their symbols */
     for (int i = 0; s[i]; count += objectSize(strlen(s[i++])));
     count += objectSize(strlen(library_path));
@@ -2575,6 +2580,7 @@ Interpreter *lisp_new(
         (*j)->car = newString(interp, *argv);
     }
     (void)envSet(interp, &var, &val, &interp->global, true);
+
 
     /* Add library_path to the environment */
     var = newSymbol(interp, "script_dir");

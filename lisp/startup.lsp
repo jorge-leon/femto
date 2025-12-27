@@ -45,13 +45,13 @@
 ;; Load and edit user specific config
 (setq
  config_dir ".config/femto"
- config_file "femto.rc")
+ config_file "init.lsp")
 
 (defun confn(fn)
   (concat (getenv "HOME") "/" config_dir "/" fn))
 
 (defun edit-config()
-  (find-file (confn config_file)))
+  (find-file-noselect (confn config_file)))
 
 (defun log (level result . message)
   (cond (result

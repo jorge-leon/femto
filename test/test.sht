@@ -2,7 +2,7 @@
 ;;
 ;; flisp/femto test suite startup file
 
-$(cat lisp/core.lsp)
+$(cat $FL_LSP/core.lsp)
 
 (require 'flisp)
 

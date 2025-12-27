@@ -1068,9 +1068,13 @@ Primitive femto_primitives[] = {
     {"suspend",                   0, 0, 0,            e_suspend}
 };
 
+Object *femto_libs = &(Object) { .string = "femto_lib" };
+
 void femto_register(Interpreter *interp)
 {
     int i;
+    char *library_path;
+    Object *femto_script_dir;
 
     femto_buffer_register(interp);
     debug("femto buffer module registered\n");
@@ -1078,6 +1082,12 @@ void femto_register(Interpreter *interp)
     for (i = 0; i < sizeof(femto_primitives) / sizeof(femto_primitives[0]); i++)
         lisp_register_primitive(interp, &femto_primitives[i]);
     debug("femto primitives registered\n");
+
+    if ((library_path=getenv("FEMTOLIB")) == NULL)
+        library_path = CPP_XSTR(E_SCRIPTDIR);
+    femto_script_dir= newString(interp, library_path);
+    lisp_register_constant(interp, femto_libs, femto_script_dir);
+
 }
 
 /*

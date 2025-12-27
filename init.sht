@@ -9,14 +9,19 @@
 ;; For example: (set-key "c-k" "(kill-to-eol)")
 ;;
 
-$(cat lisp/core.lsp)
+$(cat $FL_LSP/core.lsp)
 
 ;; Batch mode processing and Femto editor startup
 
 (setq env-batch-mode (getenv "FEMTO_BATCH"))
 
-(cond
-  ((eq "0" env-batch-mode) (require 'startup))
-  (env-batch-mode)
-  (t (require 'startup)))
+(when (or (null env-batch-mode) (string-equal "0" env-batch-mode))
+  (require 'flisp)
+  (require 'string)
+  (require 'file)
+  (log-debug (concat "Loaded fLisp libraries: "features" from: "script_dir"\n"))
+  (log-debug (concat "Switching script_dir to: "femto_lib"\n"))
+  ;; Switch require path to Femto
+  (setq script_dir femto_lib)
+  (require 'startup) )
 

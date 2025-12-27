@@ -26,11 +26,11 @@ int main(int argc, char **argv)
     Interpreter *interp;
 
     if ((rcfile = getenv("FLISPRC")) == NULL)
-        rcfile = FL_LIBDIR "/" FL_RCFILE;
+        rcfile = CPP_XSTR(FLISPRC);
 
     if (*rcfile != '\0')
         if (!(input_fd = fopen(rcfile, "r")))
-            fatal("failed to open rcfile");
+            fatal("failed to open rcfile, FLISPRC or: " CPP_XSTR(FLISPRC));
 
     if ((debug_file=getenv("FLISP_DEBUG")) != NULL)
         if ((debug_fd = fopen(debug_file, "w")) == NULL)

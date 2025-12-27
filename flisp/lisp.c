@@ -2535,7 +2535,7 @@ Interpreter *lisp_new(
     /* determine library path */
     if (library_path == NULL)
         if ((library_path=getenv("FLISPLIB")) == NULL)
-            library_path = FL_LIBDIR;
+            library_path = CPP_XSTR(FLISPLIB);
 
     /* Account for the size of argv and library_path objects and their symbols */
     for (int i = 0; s[i]; count += objectSize(strlen(s[i++])));

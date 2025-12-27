@@ -1,0 +1,14 @@
+#!/usr/bin/make -f
+
+clean:
+	@make clean
+	echo rm -rf $(DESTDIR)
+
+build:
+	@make doc
+	@make PREFIX=/usr
+
+binary:
+	make install DESTDIR=debian/flisp PREFIX=/usr
+	dh_gencontrol
+	dh_builddeb

@@ -13,8 +13,16 @@
 #define FL_NAME     "fLisp"
 #define FL_VERSION  "0.14"
 
-#define FL_RCFILE "flisp.rc"
-#define FL_LIBDIR "/usr/local/share/flisp"
+#ifndef FLISPLIB
+#define FLISPLIB /usr/local/share/flisp
+#endif
+#ifndef FLISPRC
+#define FLISPRC  FLISPRC/init.lsp
+#endif
+
+/* For inserting FLISPLIP, FLISPRC */
+#define CPP_XSTR(s) CPP_STR(s)
+#define CPP_STR(s) #s
 
 /* minimal Lisp object space size */
 //#define FLISP_MIN_MEMORY  24576UL  /* currently ~21k for flisp */

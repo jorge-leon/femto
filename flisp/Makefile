@@ -24,8 +24,7 @@ DOCDIR  = $(DATADIR)/doc
 PACKAGE = flisp
 
 # Defaults in C-source
-SCRIPTDIR = $(DATADIR)/flisp
-INITFILE = $(SCRIPTDIR)/init.lsp
+CFLAGS += -D FLISPLIB=$(DATADIR)/$(PACKAGE) -D FLISPRC=$(DATADIR)/$(PACKAGE)/init.lsp
 
 OBJ = file.o lisp.o
 OBJD = double.o file.o lispd.o
@@ -151,11 +150,14 @@ strip: $(BINARIES) FORCE
 	strip $(BINARIES)
 
 clean: FORCE
-	-$(RM) -f $(OBJ) $(OBJD) $(BINARIES) $(LIBRARIES) $(RC_FILES)
+	-$(RM) -f $(OBJ) $(OBJD) $(BINARIES) $(LIBRARIES) $(RC_FILES) flisp.o flispd.o
 	-$(RM) -rf doxygen
 	-$(RM) -f $(MOREDOCS)
 	-$(RM) -f f.log
 	-$(RM) -f test/test.lsp  test/f.log
+
+deb: FORCE
+	dpkg-buildpackage -b -us -uc
 
 # fLisp standalone
 install: install-bin install-lib install-doc

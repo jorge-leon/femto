@@ -1,0 +1,5 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Source: https://github.com/jorge-leon/femto
+Files:
+ *
+License: public-domain

@@ -1,0 +1,4 @@
+flisp (0.14-1) trixie; urgency=medium
+
+  * Initial Debian packaging of fLisp.
+ -- Georg Lehner <jorge@magma-soft.at>  Sat, 27 Dec 2025 20:39:12 +0200

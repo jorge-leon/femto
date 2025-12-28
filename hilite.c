@@ -8,7 +8,7 @@
 #include "buffer.h"
 #include "gap.h"
 #include "hilite.h"
-#include "lisp.h"
+#include "flisp.h"
 
 int state = ID_DEFAULT;
 int next_state = ID_DEFAULT;

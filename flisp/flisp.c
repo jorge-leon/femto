@@ -3,7 +3,7 @@
  */
 
 #include <stdlib.h>
-#include "lisp.h"
+#include "flisp.h"
 
 #ifdef FLISP_DOUBLE_EXTENSION
 #include "double.h"

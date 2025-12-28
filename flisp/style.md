@@ -1,6 +1,11 @@
 # Coding Style
 
-Femto is coded in C and Lisp.  For C code use the Kernighan and
+fLisp is coded in C and Lisp.
+
+## C Code
+
+### C Style
+For C code use the Kernighan and
 Ritchie (K&R) style, using 4 spaces for indentation.
 
 This style can be set up in GNU Emacs using the following elisp code
@@ -71,6 +76,20 @@ void func2(int n) {
 
 ```
 
+### C Coding Conventions
+
+For flags use `stbool.h`, the `bool` data type and the `true` and
+`false` constants.
+
+Use early exits instead of nested if - then - else clauses.
+
+Always use comparision with `NULL` instead of considering the pointer as flag;
+onstead of `(!ptr)` use `(ptr == NULL)`.
+
+
+## Lisp Code
+
+### Lisp Style
 For Lisp files lean to Emacs Lisp formatting, specifically:
 
 - Indentation is two spaces.
@@ -80,6 +99,8 @@ For Lisp files lean to Emacs Lisp formatting, specifically:
 
         (defun example ()
 		  (+ 3 4) )
+
+### Lisp Coding Conventions
 
 Use a dash '-' as namespace separator for function and variable names,
 just like in Emacs. Use an underscore '_' for "private" function
@@ -115,11 +136,3 @@ with tail recursion, but always consider using (mapcar) (filter) and
 
 Use (assert-type) and (assert-number) for parameter validation.
 
-For Femto library development always try to take over Emacs/Elisp
-function signatures, but only implement the minimally needed
-functionality.
-
-For interactive functions implement the non-interactive functionality
-with the Emacs/Elisp function name and if needed the interactive
-functionality with an '-interactive' suffix, example: (foo),
-(foo-interactive).

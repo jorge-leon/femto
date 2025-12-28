@@ -19,6 +19,7 @@ MKDIR	= mkdir
 PREFIX  = /usr/local
 BINDIR  = $(PREFIX)/bin
 LIBDIR  = $(PREFIX)/lib
+INCDIR  = $(PREFIX)/include
 DATADIR = $(PREFIX)/share
 DOCDIR  = $(DATADIR)/doc
 PACKAGE = flisp
@@ -31,9 +32,10 @@ OBJD = double.o file.o lispd.o
 BINARIES = flisp flispd
 LIBRARIES = libflisp.a libflispd.a
 RC_FILES = init.lsp
+HEADER = flisp.h
 
 LISPLIB = core.lsp flisp.lsp string.lsp file.lsp
-SOURCES = flisp.c lisp.c lisp.h double.c double.h file.c file.h
+SOURCES = flisp.c lisp.c flisp.h double.c double.h file.c file.h
 
 DOCFILES = README.md doc/flisp.html doc/develop.html doc/implementation.html
 MOREDOCS = README.html doc/flisp.md doc/develop.md doc/implementation.md
@@ -42,35 +44,38 @@ MOREDOCS = README.html doc/flisp.md doc/develop.md doc/implementation.md
 .sht.lsp:
 	./sht $*.sht >$@
 
-all: $(BINARIES) $(LIBRARIES)
+all: $(BINARIES) $(LIBRARIES) $(PACKAGE).pc
 
 debug: CPPFLAGS += -UNDEBUG -g
 debug: $(BINARIES) $(LIBRARIES)
 
-double.o: double.c double.h lisp.h
+double.o: double.c double.h flisp.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -D FLISP_DOUBLE_EXTENSION -c $<
 
-file.o: file.c file.h lisp.h
+file.o: file.c file.h flisp.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $<
 
 flisp: flisp.o $(OBJ) init.lsp
 	$(LD) $(LDFLAGS) -o $@ $< $(OBJ)
 
-flisp.o: flisp.c lisp.h file.h
+flisp.o: flisp.c flisp.h file.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $<
 
 flispd: flispd.o $(OBJD) init.lsp
 	$(LD) $(LDFLAGS) -o $@ $< $(OBJD) -lm
 
-flispd.o: flisp.c lisp.h double.h file.h
+flispd.o: flisp.c flisp.h double.h file.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -D FLISP_DOUBLE_EXTENSION -c $< -o $@
+
+flisp.pc: flisp.pc.sht
+	PREFIX=$(PREFIX) ./sht $< > $@
 
 init.lsp: init.sht core.lsp
 
-lisp.o: lisp.c lisp.h
+lisp.o: lisp.c flisp.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@ -lc
 
-lispd.o: lisp.c lisp.h
+lispd.o: lisp.c flisp.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -D FLISP_DOUBLE_EXTENSION -c $< -o $@ -lc
 
 libflisp.a: lisp.o file.o
@@ -150,17 +155,18 @@ strip: $(BINARIES) FORCE
 	strip $(BINARIES)
 
 clean: FORCE
-	-$(RM) -f $(OBJ) $(OBJD) $(BINARIES) $(LIBRARIES) $(RC_FILES) flisp.o flispd.o
+	-$(RM) -f $(OBJ) $(OBJD) $(BINARIES) $(LIBRARIES) $(RC_FILES) flisp.o flispd.o flisp.pc
 	-$(RM) -rf doxygen
 	-$(RM) -f $(MOREDOCS)
 	-$(RM) -f f.log
 	-$(RM) -f test/test.lsp  test/f.log
+	-$(RM) -rf debian/flisp debian/flisp-dev
 
 deb: FORCE
 	dpkg-buildpackage -b -us -uc
 
 # fLisp standalone
-install: install-bin install-lib install-doc install-dev
+install: install-bin install-lib install-doc
 
 install-bin: $(BINARIES) FORCE
 	-$(MKDIR) -p $(DESTDIR)$(BINDIR)
@@ -178,14 +184,20 @@ install-lib: $(RC_FILES) $(LISPLIB) FORCE
 	-$(MKDIR) -p $(DESTDIR)$(DATADIR)/$(PACKAGE)
 	-$(CP) $(RC_FILES) $(LISPLIB) $(DESTDIR)$(DATADIR)/$(PACKAGE)
 
-install-dev: $(LIBRARIES) FORCE
+install-dev: $(LIBRARIES) $(HEADER) FORCE
 	-$(MKDIR) -p $(DESTDIR)$(LIBDIR)
-	-$(CP) $(LIBRARIES) $(DESTDIR)$(LIBDIR)/$(PACKAGE)
+	-$(CP) $(LIBRARIES) $(DESTDIR)$(LIBDIR)
+	-$(MKDIR) -p $(DESTDIR)$(INCDIR)
+	-$(CP) $(HEADER) $(DESTDIR)$(INCDIR)
+	-$(MKDIR) -p $(DESTDIR)$(LIBDIR)/pkgconfig
+	-$(CP) $(PACKAGE).pc $(DESTDIR)$(LIBDIR)/pkgconfig
 
 uninstall: FORCE
 	-(cd  $(DESTDIR)$(BINDIR) && $(RM) -f $(BINARIES))
+	-(cd  $(DESTDIR)$(INCDIR) && $(RM) -f $(HEADER))
+	-(cd  $(DESTDIR)$(LIBDIR) && $(RM) -f $(LIBRARIES))
+	-(cd  $(DESTDIR)$(LIBDIR)/pkgconfig && $(RM) -f $(PACKAGE).pc)
 	-$(RM) -rf $(DESTDIR)$(DATADIR)/$(PACKAGE)
-	-$(RM) -rf $(DESTDIR)$(LIBDIR)/$(PACKAGE)
 	-$(RM) -rf $(DESTDIR)$(DOCDIR)/$(PACKAGE)
 
 # Used as dependency forces rebuild, aka .PHONY in GNU make

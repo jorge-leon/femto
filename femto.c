@@ -22,7 +22,7 @@
 #include "hilite.h"
 #include "command.h"
 
-#include "lisp.h"
+#include "flisp.h"
 #include "file.h"
 #ifdef FLISP_DOUBLE_EXTENSION
 #include "double.h"

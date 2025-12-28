@@ -4,7 +4,7 @@
  * Derived from: Anthony's Editor January 93, (Public Domain 1991, 1993 by Anthony Howe)
  */
 
-#include "lisp.h"
+#include "flisp.h"
 
 #define E_NAME          "femto"
 #define E_VERSION       "2.25"

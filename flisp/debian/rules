@@ -10,5 +10,6 @@ build:
 
 binary:
 	make install DESTDIR=debian/flisp PREFIX=/usr
+	make install-dev DESTDIR=debian/flisp-dev PREFIX=/usr
 	dh_gencontrol
 	dh_builddeb

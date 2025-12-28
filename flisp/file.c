@@ -6,7 +6,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include "lisp.h"
+#include "flisp.h"
 #include "file.h"
 
 /** (fflush[ stream]) - flush stream, output or all streams

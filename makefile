@@ -58,7 +58,10 @@ MOREDOCS = README.html docs/femto.md docs/editor.md
 	FL_LSP=$(FL_LSP) ./sht $*.sht >$@
 
 # Artifacts
-all: femto
+all: have_flisp femto
+
+have_flisp: FORCE
+	pkgconf -exists flisp || [ -f flisp/libflisp.a -a -f flisp/libflispd.a ]
 
 buffer.o: buffer.c femto.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c buffer.c

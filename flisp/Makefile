@@ -160,11 +160,11 @@ deb: FORCE
 	dpkg-buildpackage -b -us -uc
 
 # fLisp standalone
-install: install-bin install-lib install-doc
+install: install-bin install-lib install-doc install-dev
 
 install-bin: $(BINARIES) FORCE
 	-$(MKDIR) -p $(DESTDIR)$(BINDIR)
-	-$(CP) flisp flispd $(DESTDIR)$(BINDIR)
+	-$(CP) $(BINARIES) $(DESTDIR)$(BINDIR)
 
 install-doc: $(DOCFILES) FORCE
 	-$(MKDIR) -p $(DESTDIR)$(DOCDIR)/$(PACKAGE)
@@ -178,9 +178,14 @@ install-lib: $(RC_FILES) $(LISPLIB) FORCE
 	-$(MKDIR) -p $(DESTDIR)$(DATADIR)/$(PACKAGE)
 	-$(CP) $(RC_FILES) $(LISPLIB) $(DESTDIR)$(DATADIR)/$(PACKAGE)
 
+install-dev: $(LIBRARIES) FORCE
+	-$(MKDIR) -p $(DESTDIR)$(LIBDIR)
+	-$(CP) $(LIBRARIES) $(DESTDIR)$(LIBDIR)/$(PACKAGE)
+
 uninstall: FORCE
 	-(cd  $(DESTDIR)$(BINDIR) && $(RM) -f $(BINARIES))
 	-$(RM) -rf $(DESTDIR)$(DATADIR)/$(PACKAGE)
+	-$(RM) -rf $(DESTDIR)$(LIBDIR)/$(PACKAGE)
 	-$(RM) -rf $(DESTDIR)$(DOCDIR)/$(PACKAGE)
 
 # Used as dependency forces rebuild, aka .PHONY in GNU make

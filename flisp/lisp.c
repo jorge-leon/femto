@@ -2555,22 +2555,25 @@ Interpreter *lisp_new(
 
     interp->catch = &interp->exceptionEnv;
 
-    /* symbols */
-    Object *object;
-    object = newCons(interp, &nil, &nil);
-    object = newCons(interp, &t, &object);
-    interp->symbols = object;
-
     interp->next = interp;
     lisp_interpreters = interp;
+
+    interp->gcTop = nil;
+    /* symbols */
+    GC_CHECKPOINT;
+    GC_TRACE(gcVal, newCons(interp, &nil, &nil));
+    interp->symbols = newCons(interp, &t, gcVal);
 
     /* global environment */
     initRootEnv(interp);
 
     /* Add argv0 to the environment */
+    *gcVal = newString(interp, *argv);
     Object *var = newSymbol(interp, "argv0");
-    Object *val = newString(interp, *argv);
-    (void)envSet(interp, &var, &val, &interp->global, true);
+    (void)envSet(interp, &var, gcVal, &interp->global, true);
+    GC_RELEASE;
+
+    Object *val;
 
     /* Add argv to the environement */
     var = newSymbol(interp, "argv");
@@ -2587,16 +2590,16 @@ Interpreter *lisp_new(
     val = newString(interp, library_path);
     envSet(interp, &var, &val, &interp->global, true);
 
+    /* Add *INPUT* symbol */
+    val = (input) ? newStreamObject(interp, input, "STDIN") : nil;
+    var = newSymbol(interp, "*INPUT*");
+    (void)envSet(interp, &var, &val, &interp->global, true);
     /* input stream */
-    var = newSymbol(interp, "*INPUT*");
-    val = (interp) ? newStreamObject(interp, input, "STDIN") : nil;
-    var = newSymbol(interp, "*INPUT*");
     interp->input.type = type_stream;
     interp->input.fd = input;
     interp->input.path = var;
     interp->input.buf = NULL;
     interp->input.len = 0;
-    (void)envSet(interp, &var, &val, &interp->global, true);
 
     /* output stream */
     if (output) {

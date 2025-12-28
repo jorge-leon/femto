@@ -1087,7 +1087,6 @@ void femto_register(Interpreter *interp)
         library_path = CPP_XSTR(E_SCRIPTDIR);
     femto_script_dir= newString(interp, library_path);
     lisp_register_constant(interp, femto_libs, femto_script_dir);
-
 }
 
 /*

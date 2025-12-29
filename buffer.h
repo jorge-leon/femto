@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <limits.h>
 
-#include "flisp.h"
+#include "flisp/lisp.h"
 
 typedef struct buffer_t
 {

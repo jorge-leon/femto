@@ -10,13 +10,8 @@ RM      = rm
 MKDIR	= mkdir
 LD      = cc
 LDFLAGS =
-# Path to flisp include file(s), binary libraries and Lisp libraries.
-FL_INC  = flisp
-FL_LIBS = flisp
-FL_LSP  = flisp
 
-LIBS    = -L $(FL_LIBS) -lflisp -lncursesw -lm
-LIBSD   = -L $(FL_LIBS) -lflispd -lncursesw -lm
+LIBS    = -lncursesw -lm
 
 #CPPFLAGS += -D_DEFAULT_SOURCE -D_BSD_SOURCE -DNDEBUG
 CPPFLAGS += -D_DEFAULT_SOURCE -D_BSD_SOURCE
@@ -29,6 +24,12 @@ BINDIR  = $(PREFIX)/bin
 DATADIR = $(PREFIX)/share
 DOCDIR  = $(DATADIR)/doc
 PACKAGE = femto
+
+# Path to flisp include file(s), binary libraries and Lisp libraries.
+FL_INC  = $(PREFIX)/include
+FL_LIBS = $(PREFIX)/lib
+FL_LSP  = $(DATADIR)/flisp
+
 
 # Defaults in C-source
 SCRIPTDIR = $(DATADIR)/femto
@@ -82,19 +83,21 @@ display.o: display.c femto.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c display.c
 
 femto: femto.o $(OBJ) init.lsp
-	$(LD) $(LDFLAGS) -o $@ femto.o $(OBJ) $(LIBS)
+	$(LD) $(LDFLAGS) -o $@ femto.o $(OBJ) $$(pkg-config --libs flisp) $(LIBS)
 
 femto.o: femto.c femto.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) \
+	  $$(pkg-config --cflags flisp) \
 	  -D E_SCRIPTDIR=$(SCRIPTDIR) \
 	  -D E_INITFILE=$(INITFILE) \
 	  -c femto.c
 
 femtod: femtod.o $(OBJD) init.lsp
-	$(LD) $(LDFLAGS) -o $@ femtod.o $(OBJD) $(LIBSD)
+	$(LD) $(LDFLAGS) -o $@ femtod.o $(OBJD) $$(pkg-config --libs flispd) $(LIBS)
 
 femtod.o: femto.c femto.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) \
+	  $$(pkg-config --cflags flispd) \
 	  -D E_SCRIPTDIR=$(SCRIPTDIR) \
 	  -D E_INITFILE=$(INITFILE) \
 	  -D FLISP_DOUBLE_EXTENSION \

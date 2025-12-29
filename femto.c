@@ -22,10 +22,10 @@
 #include "hilite.h"
 #include "command.h"
 
-#include "flisp.h"
-#include "file.h"
+#include "flisp/lisp.h"
+#include "flisp/file.h"
 #ifdef FLISP_DOUBLE_EXTENSION
-#include "double.h"
+#include "flisp/double.h"
 #endif
 
 void gui(void); /* The GUI loop used in interactive mode */

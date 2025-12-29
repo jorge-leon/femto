@@ -2520,14 +2520,15 @@ Interpreter *lisp_new(
     FILE *input, FILE *output, FILE* debug)
 {
     Interpreter *interp;
-    size_t count = 0;
-    char **s = argv;
-
-    if (lisp_interpreters != NULL)
-        return NULL;
 
     interp = malloc(sizeof(Interpreter));
     if (interp == NULL) return NULL;
+
+    if (lisp_interpreters == NULL)
+        interp->next = interp;
+    else
+        interp->next = lisp_interpreters;
+    lisp_interpreters = interp;
 
     /* enable debug output */
     interp->debug = debug;
@@ -2537,12 +2538,7 @@ Interpreter *lisp_new(
         if ((library_path=getenv("FLISPLIB")) == NULL)
             library_path = CPP_XSTR(FLISPLIB);
 
-    /* Account for the size of argv and library_path objects and their symbols */
-    for (int i = 0; s[i]; count += objectSize(strlen(s[i++])));
-    count += objectSize(strlen(library_path));
-    count += 2*sizeof(Object);
-    fl_debug(interp, "lisp_new(): additional memory for argv and library path storage: %lu\n", (COUNTFMT) count);
-    Memory *memory = newMemory(FLISP_MIN_MEMORY+count+size);
+    Memory *memory = newMemory((size < FLISP_MEMORY_INC_SIZE) ? FLISP_MEMORY_INC_SIZE :size);
     if (memory == NULL) {
         setInterpreterResult(interp, nil, out_of_memory, "failed to allocate memory for the interpreter");
         return NULL;
@@ -2555,8 +2551,9 @@ Interpreter *lisp_new(
 
     interp->catch = &interp->exceptionEnv;
 
-    interp->next = interp;
-    lisp_interpreters = interp;
+#if DEBUG_GC_ALWAYS
+    gc_always = true;
+#endif
 
     interp->gcTop = nil;
     /* symbols */
@@ -2571,29 +2568,26 @@ Interpreter *lisp_new(
     *gcVal = newString(interp, *argv);
     Object *var = newSymbol(interp, "argv0");
     (void)envSet(interp, &var, gcVal, &interp->global, true);
-    GC_RELEASE;
-
-    Object *val;
 
     /* Add argv to the environement */
-    var = newSymbol(interp, "argv");
-    val = nil;
-    for (Object **j = &val; *++argv; j = &(*j)->cdr) {
+    *gcVal = nil;
+    for (Object **j = gcVal; *++argv; j = &(*j)->cdr) {
         *j = newCons(interp, &nil, &nil);
         (*j)->car = newString(interp, *argv);
     }
-    (void)envSet(interp, &var, &val, &interp->global, true);
+    var = newSymbol(interp, "argv");
+    (void)envSet(interp, &var, gcVal, &interp->global, true);
 
 
     /* Add library_path to the environment */
+    *gcVal = newString(interp, library_path);
     var = newSymbol(interp, "script_dir");
-    val = newString(interp, library_path);
-    envSet(interp, &var, &val, &interp->global, true);
+    envSet(interp, &var, gcVal, &interp->global, true);
 
     /* Add *INPUT* symbol */
-    val = (input) ? newStreamObject(interp, input, "STDIN") : nil;
+    *gcVal = (input) ? newStreamObject(interp, input, "STDIN") : nil;
     var = newSymbol(interp, "*INPUT*");
-    (void)envSet(interp, &var, &val, &interp->global, true);
+    (void)envSet(interp, &var, gcVal, &interp->global, true);
     /* input stream */
     interp->input.type = type_stream;
     interp->input.fd = input;
@@ -2604,16 +2598,12 @@ Interpreter *lisp_new(
     /* output stream */
     if (output) {
         interp->output = output;
-        val = newStreamObject(interp, output, "STDOUT");
+        *gcVal = newStreamObject(interp, output, "STDOUT");
         var = newSymbol(interp, "*OUTPUT*");
-        (void)envSet(interp, &var, &val, &interp->global, true);
+        (void)envSet(interp, &var, gcVal, &interp->global, true);
     }
-    fl_debug(interp, "lisp_init: %lu/%lu bytes allocated before gc\n",
-             (COUNTFMT) interp->memory->fromOffset, (COUNTFMT) interp->memory->capacity);
+    GC_RELEASE;
 
-#if DEBUG_GC_ALWAYS
-    gc_always = true;
-#endif
     return interp;
 }
 

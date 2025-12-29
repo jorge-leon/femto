@@ -24,11 +24,9 @@
 #define CPP_XSTR(s) CPP_STR(s)
 #define CPP_STR(s) #s
 
-/* minimal Lisp object space size */
-//#define FLISP_MIN_MEMORY  24576UL  /* currently ~21k for flisp */
-//#define FLISP_MIN_MEMORY  40960UL  /* currently ~34k for femto */
-#define FLISP_MIN_MEMORY  80960UL  /* Note: we had to increase after dynamic loading in Femto, tbd: review */
-#define FLISP_MEMORY_INC_SIZE 8192UL  /* Resize by this amount */
+#ifndef FLISP_MEMORY_INC_SIZE
+#define FLISP_MEMORY_INC_SIZE 8192UL  /* Increase memory by this amount if not enough */
+#endif
 
 /* buffersize for Lisp eval input */
 #define INPUT_FMT_BUFSIZ 2048

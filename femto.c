@@ -74,7 +74,7 @@ void lisp_init(char **argv)
         if (FLISP_RESULT_CODE(interp) == out_of_memory)
             fatal("OOM, exiting..");
     }
-    if (fclose(init_fd))
+    if (init_fd != NULL && fclose(init_fd))
         debug("failed to close rcfile %s: %s\n", init_file, strerror(errno));
 }
 

@@ -65,7 +65,9 @@ void lisp_init(char **argv)
     flisp_double_register(interp);
     debug("double extension registered\n");
 #endif
-    femto_register(interp);
+    if (!femto_register(interp))
+        fatal("faile to register femto primitives");
+    debug("femto primitives and constants registered\n");
     debug("evaluating rc file %s\n", init_file);
     flisp_eval(interp, NULL);
     if (FLISP_RESULT_CODE(interp) != nil) {

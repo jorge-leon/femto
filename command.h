@@ -29,7 +29,7 @@ extern void up(void);
 extern void user_func(void);
 extern void yank(void);
 
-extern void femto_register(Interpreter *);
+extern bool femto_register(Interpreter *);
 
 /* Export void name(void) as Lisp function */
 /* Note: the C-Function is used by set_key_internal() bindings */

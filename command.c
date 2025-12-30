@@ -976,7 +976,7 @@ void user_func(void)
     free_lisp_output();
 }
 
-
+#if 0
 Primitive femto_primitives[] = {
 /* Text manipulation: read from, write to buffer text */
 
@@ -1067,26 +1067,115 @@ Primitive femto_primitives[] = {
     {"log-message",               1, 1, TYPE_STRING,  e_log_message},
     {"suspend",                   0, 0, 0,            e_suspend}
 };
+#endif
 
 Object *femto_libs = &(Object) { .string = "femto_lib" };
 
-void femto_register(Interpreter *interp)
+bool femto_register(Interpreter *interp)
 {
-    int i;
     char *library_path;
     Object *femto_script_dir;
 
     femto_buffer_register(interp);
     debug("femto buffer module registered\n");
 
-    for (i = 0; i < sizeof(femto_primitives) / sizeof(femto_primitives[0]); i++)
-        flisp_register_primitive(interp, &femto_primitives[i]);
-    debug("femto primitives registered\n");
-
     if ((library_path=getenv("FEMTOLIB")) == NULL)
         library_path = CPP_XSTR(E_SCRIPTDIR);
     femto_script_dir= newString(interp, library_path);
     flisp_register_constant(interp, femto_libs, femto_script_dir);
+
+#if 0
+    for (i = 0; i < sizeof(femto_primitives) / sizeof(femto_primitives[0]); i++)
+        flisp_register_primitive(interp, &femto_primitives[i]);
+#endif
+
+    return
+        flisp_register_primitive(   interp, "backspace",             0, 0, nil,         e_backspace)
+        && flisp_register_primitive(interp, "delete",                0, 0, nil,         e_delete)
+        && flisp_register_primitive(interp, "erase-buffer",          0, 0, nil,         e_zero_buffer)
+        && flisp_register_primitive(interp, "get-char",              0, 0, nil,         e_get_char)
+        && flisp_register_primitive(interp, "insert-string",         1, 1, type_string, e_insert_string)
+        && flisp_register_primitive(interp, "kill-region",           0, 0, nil,         e_kill_region)
+        && flisp_register_primitive(interp, "yank",                  0, 0, nil,         e_yank)
+
+/* Selection */
+        && flisp_register_primitive(interp, "copy-region",           0, 0, nil,         e_copy_region)
+        && flisp_register_primitive(interp, "get-clipboard",         0, 0, nil,         e_get_clipboard)
+        && flisp_register_primitive(interp, "get-mark",              0, 0, nil,         e_get_mark)
+        && flisp_register_primitive(interp, "set-clipboard",         1, 1, type_string, e_set_clipboard)
+        && flisp_register_primitive(interp, "set-mark",              0, 0, nil,         e_set_mark)
+
+/* Cursor Movement and information */
+        && flisp_register_primitive(interp, "backward-char",         0, 0, nil,         e_left)
+        && flisp_register_primitive(interp, "backward-word",         0, 0, nil,         e_backward_word)
+        && flisp_register_primitive(interp, "beginning-of-buffer",   0, 0, nil,         e_beginning_of_buffer)
+        && flisp_register_primitive(interp, "beginning-of-line",     0, 0, nil,         e_lnbegin)
+        && flisp_register_primitive(interp, "end-of-buffer",         0, 0, nil,         e_end_of_buffer)
+        && flisp_register_primitive(interp, "end-of-line",           0, 0, nil,         e_lnend)
+        && flisp_register_primitive(interp, "forward-char",          0, 0, nil,         e_right)
+        && flisp_register_primitive(interp, "forward-word",          0, 0, nil,         e_forward_word)
+        && flisp_register_primitive(interp, "get-point",             0, 0, nil,         e_get_point)
+        && flisp_register_primitive(interp, "get-point-max",         0, 0, nil,         e_get_point_max)
+        && flisp_register_primitive(interp, "goto-line",             1, 1, type_integer, e_goto_line)
+        && flisp_register_primitive(interp, "next-line",             0, 0, nil,         e_down)
+        && flisp_register_primitive(interp, "previous-line",         0, 0, nil,         e_up)
+        && flisp_register_primitive(interp, "scroll-up",             0, 0, nil,         e_scroll_up)
+        && flisp_register_primitive(interp, "scroll-down",           0, 0, nil,         e_scroll_down)
+        && flisp_register_primitive(interp, "search-forward",        1, 1, type_string, e_search_forward)
+        && flisp_register_primitive(interp, "search-backward",       1, 1, type_string, e_search_backward)
+        && flisp_register_primitive(interp, "set-point",             1, 1, type_integer, e_set_point)
+
+/* Buffer Management and information */
+        && flisp_register_primitive(interp, "find-buffer-visiting",  1, 1, type_string, e_find_buffer_by_fname)
+        && flisp_register_primitive(interp, "buffer-filename",       0, 1, type_string, e_get_buffer_filename)
+        && flisp_register_primitive(interp, "buffer-fread",          1, 2, nil,         e_buffer_fread)
+        && flisp_register_primitive(interp, "buffer-fwrite",         1, 2, nil,         e_buffer_fwrite)
+        && flisp_register_primitive(interp, "buffer-mode",           0, 2, nil,         e_buffer_mode)
+        && flisp_register_primitive(interp, "buffer-modified-p",     0, 2, nil,         e_buffer_modified_p)
+        && flisp_register_primitive(interp, "buffer-overwrite-p",    0, 2, nil,         e_buffer_overwrite_p)
+        && flisp_register_primitive(interp, "buffer-readonly-p",     0, 2, nil,         e_buffer_readonly_p)
+        && flisp_register_primitive(interp, "buffer-special-p",      0, 2, nil,         e_buffer_special_p)
+        && flisp_register_primitive(interp, "buffer-undo-p",         0, 2, nil,         e_buffer_undo_p)
+        && flisp_register_primitive(interp, "buffer-next",           0, 1, type_string, e_buffer_next)
+        && flisp_register_primitive(interp, "buffer-show",           1, 1, type_string, e_buffer_show)
+        && flisp_register_primitive(interp, "delete-buffer",         1, 1, type_string, e_delete_buffer)
+        && flisp_register_primitive(interp, "get-buffer-create",     1, 1, type_string, e_get_buffer_create)
+        && flisp_register_primitive(interp, "list-buffers",          0, 0, nil,         e_list_buffers)
+        && flisp_register_primitive(interp, "set-buffer",            1, 1, type_string, e_set_buffer)
+        && flisp_register_primitive(interp, "set-buffer-name",       1, 1, type_string, e_set_buffer_name)
+        && flisp_register_primitive(interp, "set-visited-filename",  1, 1, nil,         e_set_buffer_filename)
+
+/* Window Handling */
+        && flisp_register_primitive(interp, "delete-other-windows",  0, 0, nil,         e_delete_other_windows)
+        && flisp_register_primitive(interp, "split-window",          0, 0, nil,         e_split_window)
+        && flisp_register_primitive(interp, "other-window",          0, 0, nil,         e_other_window)
+        && flisp_register_primitive(interp, "update-display",        0, 0, nil,         e_update_display)
+        && flisp_register_primitive(interp, "refresh",               0, 0, nil,         e_refresh)
+
+/* Message Line */
+        && flisp_register_primitive(interp, "clear-message-line",    0, 0, nil,         e_clear_message_line)
+        && flisp_register_primitive(interp, "message",               1, 1, type_string, e_message)
+        && flisp_register_primitive(interp, "prompt",                1, 2, type_string, e_prompt)
+        && flisp_register_primitive(interp, "prompt-filename",       1, 2, type_string, e_prompt_filename)
+
+/* Keyboard Handling */
+        && flisp_register_primitive(interp, "describe-bindings",     0, 0, nil,         e_describe_bindings)
+        && flisp_register_primitive(interp, "describe-functions",    0, 0, nil,         e_describe_functions)
+        && flisp_register_primitive(interp, "execute-key",           0, 0, nil,         e_execute_key)
+        && flisp_register_primitive(interp, "getch",                 0, 0, nil,         e_getch)
+        && flisp_register_primitive(interp, "get-key",               0, 0, nil,         e_get_key)
+        && flisp_register_primitive(interp, "get-key-funcname",      0, 0, nil,         e_get_key_funcname)
+        && flisp_register_primitive(interp, "get-key-name",          0, 0, nil,         e_get_key_name)
+        && flisp_register_primitive(interp, "set-key",               2, 2, type_string, e_set_key)
+
+/* Programming and System Interaction */
+        && flisp_register_primitive(interp, "eval-block",            0, 0, nil,         e_eval_block)
+        && flisp_register_primitive(interp, "exit",                  0, 0, nil,         e_quit)
+        && flisp_register_primitive(interp, "get-temp-file",         0, 0, nil,         e_get_temp_file)
+        && flisp_register_primitive(interp, "get-version-string",    0, 0, nil,         e_get_version_string)
+        && flisp_register_primitive(interp, "log-debug",             1, 1, type_string, e_log_debug)
+        && flisp_register_primitive(interp, "log-message",           1, 1, type_string, e_log_message)
+        && flisp_register_primitive(interp, "suspend",               0, 0, nil,         e_suspend);
 }
 
 /*

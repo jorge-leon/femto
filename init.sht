@@ -9,7 +9,7 @@
 ;; For example: (set-key "c-k" "(kill-to-eol)")
 ;;
 
-$(cat $(pkg-config --variable=datadir flisp)/core.lsp)
+$(cat $(pkg-config --variable=lisplib flisp)/core.lsp)
 
 ;; Batch mode processing and Femto editor startup
 

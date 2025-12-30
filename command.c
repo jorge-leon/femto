@@ -190,7 +190,7 @@ DEFINE_EDITOR_FUNC(copy_region)
 Object *e_get_clipboard(Interpreter *interp, Object **args, Object **env)
 {
     if (scrap == NULL)
-        return lisp_empty_string;
+        return flisp_empty_string;
     return newString(interp, (char *)scrap);
 }
 
@@ -417,10 +417,10 @@ Object *e_buffer_fread(Interpreter *interp, Object **args, Object **env)
 {
     size_t len, size = 0;
 
-    CHECK_TYPE(FLISP_ARG_ONE, type_stream, "(buffer-fread stream size) - stream");
+    FLISP_CHECK_TYPE(FLISP_ARG_ONE, type_stream, "(buffer-fread stream size) - stream");
 
     if (FLISP_HAS_ARG_TWO && FLISP_ARG_TWO != nil) {
-        CHECK_TYPE(FLISP_ARG_TWO, type_integer, "(buffer-fread stream size) - size");
+        FLISP_CHECK_TYPE(FLISP_ARG_TWO, type_integer, "(buffer-fread stream size) - size");
         if (FLISP_ARG_TWO->integer == 0)
             return newInteger(interp, 0);
 
@@ -457,9 +457,9 @@ Object *e_buffer_fwrite(Interpreter *interp, Object **args, Object **env)
 {
     size_t len;
 
-    CHECK_TYPE(FLISP_ARG_ONE, type_stream, "(buffer-fwrite stream size) - stream");
+    FLISP_CHECK_TYPE(FLISP_ARG_ONE, type_stream, "(buffer-fwrite stream size) - stream");
     if (FLISP_HAS_ARG_TWO) {
-        CHECK_TYPE(FLISP_ARG_TWO, type_stream, "(buffer-fwrite stream size) - size");
+        FLISP_CHECK_TYPE(FLISP_ARG_TWO, type_stream, "(buffer-fwrite stream size) - size");
         if (FLISP_ARG_TWO->integer == 0)
             return newInteger(interp, 0);
         if (FLISP_ARG_TWO->integer < 0)
@@ -484,7 +484,7 @@ Object *e_buffer_mode(Interpreter *interp, Object **args, Object **env)
     if (FLISP_HAS_ARGS) {
         buffer = get_buffer_arg_one(interp, args, "(buffer-mode[ buffer[ mode]])");
         if (FLISP_HAS_ARG_TWO) {
-            CHECK_TYPE(FLISP_ARG_TWO, type_symbol, "buffer-mode[ buffer[ mode]]) - mode");
+            FLISP_CHECK_TYPE(FLISP_ARG_TWO, type_symbol, "buffer-mode[ buffer[ mode]]) - mode");
             buffer->mode = FLISP_ARG_TWO;
         }
     }
@@ -627,7 +627,7 @@ Object *e_set_buffer_filename(Interpreter *interp, Object **args, Object **env)
         return nil;
     }
 
-    CHECK_TYPE(FLISP_ARG_ONE, type_string, "(set-visited-filename name) - name");
+    FLISP_CHECK_TYPE(FLISP_ARG_ONE, type_string, "(set-visited-filename name) - name");
     curbp->fname = strdup(FLISP_ARG_ONE->string);
     if (curbp->fname == NULL)
         exception(interp, out_of_memory, "(set-visited-filename name) - name, cannot allocate memory for filename");
@@ -1080,13 +1080,13 @@ void femto_register(Interpreter *interp)
     debug("femto buffer module registered\n");
 
     for (i = 0; i < sizeof(femto_primitives) / sizeof(femto_primitives[0]); i++)
-        lisp_register_primitive(interp, &femto_primitives[i]);
+        flisp_register_primitive(interp, &femto_primitives[i]);
     debug("femto primitives registered\n");
 
     if ((library_path=getenv("FEMTOLIB")) == NULL)
         library_path = CPP_XSTR(E_SCRIPTDIR);
     femto_script_dir= newString(interp, library_path);
-    lisp_register_constant(interp, femto_libs, femto_script_dir);
+    flisp_register_constant(interp, femto_libs, femto_script_dir);
 }
 
 /*

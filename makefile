@@ -16,7 +16,7 @@ LIBS    = -lncursesw -lm
 #CPPFLAGS += -D_DEFAULT_SOURCE -D_BSD_SOURCE -DNDEBUG
 CPPFLAGS += -D_DEFAULT_SOURCE -D_BSD_SOURCE
 #CFLAGS += -O2 -std=c11 -Wall -pedantic -pedantic-errors
-CFLAGS += -O0 -std=c11 -Wall -pedantic -pedantic-errors -Werror=format-security -Wformat -g -I $(FL_INC)
+CFLAGS += -O0 -std=c11 -Wall -pedantic -pedantic-errors -Werror=format-security -Wformat -g
 
 
 PREFIX  = /usr/local
@@ -24,11 +24,6 @@ BINDIR  = $(PREFIX)/bin
 DATADIR = $(PREFIX)/share
 DOCDIR  = $(DATADIR)/doc
 PACKAGE = femto
-
-# Path to flisp include file(s), binary libraries and Lisp libraries.
-FL_INC  = $(PREFIX)/include
-FL_LIBS = $(PREFIX)/lib
-FL_LSP  = $(DATADIR)/flisp
 
 
 # Defaults in C-source
@@ -48,15 +43,14 @@ RC_FILES = init.lsp
 
 LISPFILES = init.lsp lisp/startup.lsp lisp/defmacro.lsp			\
 	lisp/bufmenu.lsp lisp/dired.lsp lisp/grep.lsp lisp/git.lsp	\
-	lisp/oxo.lsp lisp/femto.lsp lisp/info.lsp        		\
-	flisp/flisp.lsp flisp/string.lsp flisp/file.lsp
+	lisp/oxo.lsp lisp/femto.lsp lisp/info.lsp
 
 DOCFILES = BUGS CHANGE.LOG.md README.md
 MOREDOCS = README.html docs/femto.md docs/editor.md
 
 .SUFFIXES: .lsp .sht  .md .html
 .sht.lsp:
-	FL_LSP=$(FL_LSP) ./sht $*.sht >$@
+	./sht $*.sht >$@
 
 # Artifacts
 all: have_flisp femto
@@ -71,7 +65,10 @@ complete.o: complete.c femto.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c complete.c
 
 command.o: command.c femto.h
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c command.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) \
+	  $$(pkg-config --cflags flisp) \
+	  -D E_SCRIPTDIR=$(SCRIPTDIR) \
+	  -c command.c
 
 data.o: data.c femto.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c data.c
@@ -160,7 +157,7 @@ measure: $(RC_FILES) $(BINARIES) strip FORCE
 	@echo "Total files:  " $$(ls *.c *.h $(LISPFILES) | wc -l)
 
 run: femto FORCE
-	FEMTORC=init.lsp FLISPLIB=$(FL_LSP) FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto
+	FEMTORC=init.lsp FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto
 
 rund: femtod FORCE
 	FEMTORC=femto.rc FEMTOLIB=lisp FEMTO_DEBUG=1  ./femtod

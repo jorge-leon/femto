@@ -57,20 +57,20 @@ void lisp_init(char **argv)
     if ((init_fd = fopen(init_file, "r")) == NULL)
         debug("failed to open rc file %s: %s\n", init_file, strerror(errno));
 
-    interp = lisp_new(FLISP_INITIAL_MEMORY, argv, NULL, init_fd, debug_fp, debug_fp);
+    interp = flisp_new(FLISP_INITIAL_MEMORY, argv, NULL, init_fd, debug_fp, debug_fp);
     if (interp == NULL)
         fatal("fLisp initialization failed");
-    lisp_file_register(interp);
+    flisp_file_register(interp);
 #ifdef FLISP_DOUBLE_EXTENSION
-    lisp_double_register(interp);
+    flisp_double_register(interp);
     debug("double extension registered\n");
 #endif
     femto_register(interp);
     debug("evaluating rc file %s\n", init_file);
-    lisp_eval(interp, NULL);
+    flisp_eval(interp, NULL);
     if (FLISP_RESULT_CODE(interp) != nil) {
         debug("failed to load rc file %s:\n", init_file);
-        lisp_write_error(interp, debug_fp);
+        flisp_write_error(interp, debug_fp);
         if (FLISP_RESULT_CODE(interp) == out_of_memory)
             fatal("OOM, exiting..");
     }
@@ -114,7 +114,7 @@ int main(int argc, char **argv)
     debug("main(): shutdown\n");
     // Note: exit frees all memory, do we need this here?
     // Note: we can't do
-    //lisp_destroy(interp);
+    //flisp_destroy(interp);
     //here, because we get segfaults in wide character routines.
 
     // Note: the following lines sometimes free not-allocated memory
@@ -134,7 +134,7 @@ void msg_lisp_err(Interpreter *interp)
 
     if (NULL == (fd = open_memstream(&buf, &len)))
         fatal("failed to allocate error formatting buffer");
-    lisp_write_error(interp, fd);
+    flisp_write_error(interp, fd);
     msg("%s", buf);
     fclose(fd);
     free(buf);
@@ -173,14 +173,14 @@ char *eval_string(bool do_format, char *format, ...)
 
     prev = interp->output;  // Note: save for double invocation with user defined functions.
     interp->output = open_memstream(&output, &len);
-    lisp_eval(interp, input);
+    flisp_eval(interp, input);
     if (interp->output)
         fflush(interp->output);
     if (FLISP_RESULT_CODE(interp) == nil)
         return output;
     msg_lisp_err(interp);
     if (debug_mode) {
-        lisp_write_error(interp, debug_fp);
+        flisp_write_error(interp, debug_fp);
         debug("=> %s\n", output);
     }
     if (FLISP_RESULT_CODE(interp) == out_of_memory)

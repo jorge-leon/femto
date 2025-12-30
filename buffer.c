@@ -26,12 +26,12 @@ Object *mode_oxo = &(Object) { .string = "OXO" };
 
 void femto_buffer_register(Interpreter *interp)
 {
-    lisp_register_constant(interp, mode_c, mode_c);
-    lisp_register_constant(interp, mode_lisp, mode_lisp);
-    lisp_register_constant(interp, mode_python, mode_python);
-    lisp_register_constant(interp, mode_dired, mode_dired);
-    lisp_register_constant(interp, mode_git, mode_git);
-    lisp_register_constant(interp, mode_oxo, mode_oxo);
+    flisp_register_constant(interp, mode_c, mode_c);
+    flisp_register_constant(interp, mode_lisp, mode_lisp);
+    flisp_register_constant(interp, mode_python, mode_python);
+    flisp_register_constant(interp, mode_dired, mode_dired);
+    flisp_register_constant(interp, mode_git, mode_git);
+    flisp_register_constant(interp, mode_oxo, mode_oxo);
 }
 
 void buffer_init(buffer_t *bp)

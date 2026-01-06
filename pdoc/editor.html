@@ -193,27 +193,22 @@
 	<dd>Return and optionally set the respective flag of <var>buffer</var>, or the current buffer if <var>buffer</var> is not given or <code>nil</code>.</dd>
 	<dt><code>(buffer-next[ <var>buffer</var>])</code></dt>
 	<dd>Return the next buffer after <var>buffer</var> in the list, or the current buffer if none given.</dd>
+	<dt><code>(buffer-show&nbsp;<var>buffer</var>)</code></dt>
+	<dd>Associate&nbsp;<var>buffer</var> with the current window and put it first in the buffer list.</dd>
+	<dt><code>(delete-buffer <var>buffer</var>)</code></dt>
+	<dd>Kill the buffer named <var>string</var>. Unsaved changes are discarded. Throws an&nbsp;exception if the buffer does not exist or when trying to delete the scratch buffer or the current buffer. <u>f</u></dd>
+	<dt><code>(get-buffer-create <var>name</var>)</code></dt>
+	<dd>If buffer <var>name</var>&nbsp;exists return it, otherwise createe&nbsp;a new, empty buffer with that name and returns it.</dd>
 	<dt><code>(list-buffers)</code></dt>
 	<dd>Lists all the buffers in a buffer called <samp>*buffers*</samp>.</dd>
 	<dt><code>(get-buffer-count)</code></dt>
 	<dd>Returns the number of buffers, includes all special buffers and <samp>*buffers*</samp>.</dd>
-	<dt><code>(next-buffer[ <var>buffer</var>])</code></dt>
-	<dd>Returns the buffer after the given one, or after the first buffer in the buffer list. If <var>buffer</var> is the last buffer <code>nil</code> is returned.</dd>
-	<dt><code>(generate-new-buffer string)</code></dt>
-	<dd>Creates a new, empty buffer named <code>string</code> and returns it. It is an error to use an existing name.</dd>
 	<dt><code>(set-buffer <var>string</var>)</code></dt>
 	<dd>Makes the buffer named <var>string</var> the current buffer. <u>C</u></dd>
 	<dt><code>(set-buffer-name <var>string</var>)</code></dt>
 	<dd>Set the name of the current buffer to <var>string</var>. <u>S: rename-buffer</u></dd>
-	<dt><code>(kill-buffer <var>string</var>)</code></dt>
-	<dd>Kill the buffer named <var>string</var>. Unsaved changes are discarded. Throws and exception if the buffer does not exist. <u>C</u></dd>
-	<dt>&nbsp;</dt>
-	<dt><code>(add-mode-global <var>string</var>)</code></dt>
-	<dd>Sets global mode <var>string</var> for all buffers. Currently the only global mode is <kbd>undo</kbd>.</dd>
-	<dt><code>(add-mode <var>string</var>)</code></dt>
-	<dd>Set a flag for the current buffer.</dd>
-	<dt><code>(delete-mode <var>string</var>)</code></dt>
-	<dd>Reset a flag for the current buffer.</dd>
+	<dt><code>(set-visited-file-name <var>string</var>)</code></dt>
+	<dd>Set the filename of the current buffer to <var>string</var>.</dd>
 	<dt>&nbsp;</dt>
 </dl>
 

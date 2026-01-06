@@ -369,7 +369,7 @@
 	  (catch
 	      (progn
 		(insert-file-contents-literally filename)
-		(set-visited-filename filename)
+		(set-visited-file-name filename)
 		(restore-buffer-modified-p nil)
 		;; Note: read-only mode pending implementation
 		(when read-only  (buffer-modified-p nil "read-only"))
@@ -384,7 +384,7 @@
 	 (result
 	  (catch
 	      (progn
-		(set-visited-filename filename)
+		(set-visited-file-name filename)
 		(restore-buffer-modified-p nil)
 		(after-find-file) ))))
     (when (car result) (apply throw result))
@@ -405,7 +405,7 @@
 (defun find-file_directory (filename)
   ;; Note: Workaround for current dired implementation.  Instead
   ;; dired should receive the directory as filename and it/we
-  ;; should provide a file buffer with (set-visited-filename
+  ;; should provide a file buffer with (set-visited-file-name
   ;; directory)
   (setq dired-dir filename)
   (dired)
@@ -443,7 +443,7 @@
     (if (null path)  (message "Quit")
 	(let ((path (write-file_check_path path)))
 	  (if (null path)  (message "Canceled")
-	      (set-visited-filename path)
+	      (set-visited-file-name path)
 	      (rename-buffer (generate-new-buffer-name (file-name-nondirectory path)))
 	      (save-buffer) )))))
 

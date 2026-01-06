@@ -617,7 +617,7 @@ Object *e_set_buffer_name(Interpreter *interp, Object **args, Object **env)
     return FLISP_ARG_ONE;
 }
 
-/** (set-visited-filename name) */
+/** (set-visited-file-name name) */
 Object *e_set_buffer_filename(Interpreter *interp, Object **args, Object **env)
 {
     if (FLISP_ARG_ONE == nil) {
@@ -627,10 +627,10 @@ Object *e_set_buffer_filename(Interpreter *interp, Object **args, Object **env)
         return nil;
     }
 
-    FLISP_CHECK_TYPE(FLISP_ARG_ONE, type_string, "(set-visited-filename name) - name");
+    FLISP_CHECK_TYPE(FLISP_ARG_ONE, type_string, "(set-visited-file-name name) - name");
     curbp->fname = strdup(FLISP_ARG_ONE->string);
     if (curbp->fname == NULL)
-        exception(interp, out_of_memory, "(set-visited-filename name) - name, cannot allocate memory for filename");
+        exception(interp, out_of_memory, "(set-visited-file-name name) - name, cannot allocate memory for filename");
     curbp->modified = TRUE;
     return FLISP_ARG_ONE;
 }
@@ -1033,7 +1033,7 @@ Primitive femto_primitives[] = {
     {"list-buffers",              0, 0, 0,            e_list_buffers},
     {"set-buffer",                1, 1, TYPE_STRING,  e_set_buffer},
     {"set-buffer-name",           1, 1, TYPE_STRING,  e_set_buffer_name},
-    {"set-visited-filename",      1, 1, 0,            e_set_buffer_filename},
+    {"set-visited-file-name",     1, 1, 0,            e_set_buffer_filename},
 
 /* Window Handling */
     {"delete-other-windows",      0, 0, 0,            e_delete_other_windows},
@@ -1143,7 +1143,7 @@ bool femto_register(Interpreter *interp)
         && flisp_register_primitive(interp, "list-buffers",          0, 0, nil,         e_list_buffers)
         && flisp_register_primitive(interp, "set-buffer",            1, 1, type_string, e_set_buffer)
         && flisp_register_primitive(interp, "set-buffer-name",       1, 1, type_string, e_set_buffer_name)
-        && flisp_register_primitive(interp, "set-visited-filename",  1, 1, nil,         e_set_buffer_filename)
+        && flisp_register_primitive(interp, "set-visited-file-name",  1, 1, nil,         e_set_buffer_filename)
 
 /* Window Handling */
         && flisp_register_primitive(interp, "delete-other-windows",  0, 0, nil,         e_delete_other_windows)

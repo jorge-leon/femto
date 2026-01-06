@@ -16,7 +16,7 @@
 #ifndef E_INITFILE
 #define E_INITFILE      "/usr/local/share/femto/init.lsp"
 #endif
-#define E_VERSION_STR    E_NAME " " E_VERSION ", Public Domain, December 2026, by Hugh Barney, Georg Lehner, No warranty."
+#define E_VERSION_STR    E_NAME " " E_VERSION ", Public Domain, December 2025, by Hugh Barney, Georg Lehner, No warranty."
 
 #define MSGLINE         (LINES-1)
 #define NOMARK          -1

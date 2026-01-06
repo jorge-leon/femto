@@ -63,7 +63,7 @@
       (buffer-undo-p buffer nil)
       (buffer-special-p buffer t)
       (set-buffer buffer)
-      (set-visited-filename directory) )
+      (set-visited-file-name directory) )
     buffer ))
 
 ;;; Hook function

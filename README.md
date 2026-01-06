@@ -22,9 +22,7 @@ documentation formats from their respective source files by running:
 
 The documentation is prebuilt in this repository and can be found in
 
-* [femto.md](docs/femto.md) ([HTML](pdoc/femto.html)) for Femto
-* [flisp.md](docs/flisp.md) ([HTML](pdoc/flisp.html)) for fLisp.
-
+[femto.md](docs/femto.md) ([HTML](pdoc/femto.html))
 
 
 ## Goals of Femto Emacs
@@ -80,7 +78,7 @@ searching, a replace function and basic syntax hilighting. The proviso
 being that all this will fit in less than 2000 lines of C.
 
 Femto is an extended version of Atto Emacs with its own extension
-language and less then 20.000 lines of C and Lisp.
+language and less then 12.000 lines of C and Lisp.
 
 
 ## History
@@ -110,8 +108,7 @@ language and less then 20.000 lines of C and Lisp.
 
 For a full version history please refer to the file
 [CHANGE.LOG.md](./CHANGE.LOG.md) for past and future plans
-see the [Femto](./misc/ROADMAP.femto.md) and
-[fLisp](./misc/ROADMAP.flisp.md) roadmaps.
+see the [Femto](./misc/ROADMAP.femto.md)
 
 ## Comparisons with Other Emacs Implementations
 
@@ -125,7 +122,7 @@ codebase less then half of the size.
 	pEmacs         pe         59465     5.7K      16
 	Esatz-Emacs    ee         59050     5.7K      14
 	GNOME          GNOME      55922     9.8k      13
-	femto          femto     169608    11.5k/7.9k 35/48 **
+	femto          femto     169608    11.5k/7.9k 36/48 **
 	Zile           zile      257360    11.7k      48
 	Mg             mg        585313    16.5K      50
 	uEmacs/Pk      em        147546    17.5K      34
@@ -143,31 +140,64 @@ includes the required Lisp files.
 
 ## Building
 
-### Build Debendencies
+Note: this is the README for the unofficial Femto 2.25 release. All
+relevant links point to the Github account `jorge-leon`, all credits
+go the original author `hughbarney`.
+
+### Build Dependencies
+
+#### ncurses and pkgconf
 
 Debian and Ubuntu:
 
 Before ncurses 6 and as of Femto 1.2 you will need to install the
 libcurses dev package.
 
-	$ sudo apt-get install libncurses5-dev libncursesw5-dev
+	$ sudo apt-get install libncurses5-dev libncursesw5-dev pgkconf
 
 Since ncurses 6:
 
-	$ sudo apt-get install ncurses-dev
+	$ sudo apt-get install ncurses-dev pkgconf
 
 Alpine Linux:
 
-	$ sudo apk add ncurses-dev
+	$ sudo apk add ncurses-dev pkgconf
+
+NetBSD:
+
+	$ doas pgkin install ncurses pkgconf
 
 FreeBSD:
 
-	$ sudo pkg install devel/ncurses
+	$ doas pkg install devel/ncurses pkgconf
+
+#### fLisp
+
+Since Femto 2.25 fLisp is split out into its own source tree so it has
+to be installed separately.
+
+From source:
+
+```sh
+git clone https://github.com/jorge-leon/flisp
+cd flisp
+make
+sudo make install-dev
+```
+
+Or download a suitable `flisp-dev` Debian Package from
+https://github.com/jorge-leon/flisp/releases and install it with
+
+	sudo dpkg -i flisp-dev_*version*_*arch*.deb
+
 
 ### Build, Test and Installation
 
-	$ git clone https://github.com/hughbarney/femto.git
+TBD branch
+
+	$ git clone https://github.com/jorge-leon/femto.git
 	$ cd femto
+	$ git switch femto-fixes
 	$ make femto
 	$ make test
 	$ sudo make install
@@ -196,13 +226,14 @@ The following enhancements are envisaged.
 
 See the [coding style](./style.md) guide.
 
-Pandoc is required for doc generation.
-- Debian/Ubuntu: `sudo apt-get install pandoc`
-- Alpine: `sudo apk add pandoc-cli`
-- NetBSD: `sudo pkgin install pandoc-cli`
-- FreeBSD: `pkg install hs-pandoc`
+Pandoc and tidy is required for doc generation.
+- Debian/Ubuntu: `sudo apt-get install pandoc tidy`
+- Alpine: `sudo apk add pandoc-cli tidyhtml`
+- NetBSD: `doas pkgin install pandoc-cli tidy`
+- FreeBSD: `doas pkg install hs-pandoc tidy-html5`
 
-There is a Doxyfile to create full cross references and call graphs.
+There is a Doxyfile to create full cross references and call
+graphs.
 
 Usefull build targets:
 
@@ -227,10 +258,12 @@ Make sure to run:
 
 before commiting code to Github.
 
+Note: build on NetBSD and FreeBSD is currently not working.
 
 ## Copying
 
-Femto code is released to the public domain. hughbarney@gmail.com November 2017
+Femto code is released to the public domain. hughbarney@gmail.com
+November 2017, jorge@magma-soft.at 2023
 
 ## References
 

@@ -2,7 +2,7 @@ Source: femto
 Section: editors
 Priority: optional
 Maintainer: Georg Lehner <jorge@magma-soft.at>
-Build-Depends: debhelper (>= 9), libncurses-dev (>= 6), pandoc
+Build-Depends: debhelper (>= 9), libncurses-dev (>= 6), pandoc, tidy
 
 Package: femto
 Architecture: any
@@ -13,13 +13,4 @@ Description: Tiny Emacs clone with tiny Lisp extension language
   .
   It is the fifth smallest of the common Emacs emulators and has almost
   the same level of functionality as MicroEmacs 3.10 for a codebase
-  about 15% of the size.
-
-#Package: flisp
-#Architecture: any
-#Description: fLisp - a tiny Lisp language interpreter
-# fLisp is a tiny yet practical interpreter for a dialect of the Lisp
-# programming language.
-# .
-# This package provides fLisp as a standalone command line interpreter.
- 
+  about 20% of the size.

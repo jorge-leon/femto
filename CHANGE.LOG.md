@@ -12,11 +12,14 @@ Femto:
 
 Lisp:
 
-Refine and complement the fLisp and file extensions primitives and the
-core, flisp and string library, add file library; stdlib.lsp is
-removed.
+* fLisp can now dynamically load extensions and is factored out into
+  its own source tree.
 
-The read-eval-print loop is now completely written in Lisp.
+* Refine and complement the fLisp and file extensions primitives and
+  the core, flisp and string library, add file library; stdlib.lsp is
+  removed.
+
+* The read-eval-print loop is now completely written in Lisp.
 
 
 ## Femto 2.24/fLisp 0.6 Aug 2025

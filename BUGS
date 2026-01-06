@@ -5,11 +5,6 @@ BUGS encountered while and since dynamic loading of symbols and primitives:
 
 BUGS encountered since fLisp refactoring and batch mode
 
-funcmap.c:86:22: warning: variable 'count' set but not used [-Wunused-but-set-variable]
-   86 |     int              count = 0;
-      |                      ^
-
-
 - valgrind detects several memory leaks, call with:
   FEMTO_DEBUG=0 valgrind --leak-check=full --track-origins=yes femto
 

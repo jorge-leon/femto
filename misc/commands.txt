@@ -1,6 +1,8 @@
 Femto Editor Commands In Alphabetical Order
 ===========================================
 
+Note: to be updated for 2.25
+
 Key
  - not implemented yet
  + a comment on the name

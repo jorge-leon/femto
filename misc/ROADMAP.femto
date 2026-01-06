@@ -2,11 +2,8 @@
 
 # Next
 - Bug: femto segfaults w/o femtorc, batch-mode
-- Implement (buffer-flags-special)
-  - Don't consider special flags for saving or as other buffer
-- Rethink buffer list, simplify with ring?
-  - Insert new buffers at head, instead of alphabetical.
-  - Consider implementing bury-buffer and moving buffers to head.
+- Move prompt-filename to Lisp.
+- Consider implementing bury-buffer.
 - Make buffer mode a Lisp Object, register default symbols for it as self
   evaluating constants.
 - Improve readability, stability and reduce code size of Femto libraries:
@@ -38,6 +35,9 @@
 The main goal of this release was to fix file saving into non-existing
 directories. This lead to a plenty of innovations:
 
+
+- Buffer list is a ring. Order is recently used, instead of alphabetical
+- Buffers with special flags are not considered for saving
 - Less C-code, less redundant C-code, each C file has it's own header file.
 - main.c/header.h renamed to femto.c/femto.h
 - Review of the buffer list implementation.

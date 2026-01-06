@@ -232,7 +232,7 @@ install-lib: $(LISPFILES) FORCE
 	-$(CP) $(LISPFILES) $(DESTDIR)$(DATADIR)/$(PACKAGE)
 
 uninstall: FORCE
-	-$(RM) -f $(DESTDIR)$(BINDIR)/$(PACKAGE)
+	-(cd $(DESTDIR)$(BINDIR) && $(RM) -f $(BINARIES))
 	-$(RM) -rf $(DESTDIR)$(DATADIR)/$(PACKAGE)
 	-$(RM) -rf $(DESTDIR)$(DOCDIR)/$(PACKAGE)
 

@@ -4,7 +4,7 @@
 	<title>fLisp Femto Editor Extension</title>
 	<meta content="text/html; charset=utf-8" http-equiv="content-type" /><meta content="Emacs, editor, Lisp, tiny, reference, manual" name="keywords" /><meta content="Manual for the Femto editor extension" name="description" /><meta content="Georg Lehner &lt;jorge@magma-soft.at&gt;" name="author" /><meta content="2023" name="copyright" />
 </head>
-<body class="openlink">
+<body>
 <h1>fLisp Femto Editor Extension</h1>
 
 <h3>Overview</h3>
@@ -293,9 +293,121 @@
 
 <h4 id="femto_lib"><code>femto</code></h4>
 
-<p><i>Femto</i> editor specific functions.</p>
+<p>Standard editor functions, mostly tailored to Emacs compatibility and wrappers of the editor extension primitives.</p>
 
-<p>This library implements helper function required by the Femto editor. It is written only in <i>fLisp</i> primitives and plus the <code>flisp</code> Library.</p>
+<p><i>Femto</i> editor&nbsp; functions.</p>
+
+<dl>
+	<dt><code>(load-script&nbsp;<var>fn</var>)</code></dt>
+	<dd>deprecated, use <code>require</code>.</dd>
+	<dt><code>(insert-file-contents-literally <var>path</var>)</code></dt>
+	<dt><code>(insert-file)</code></dt>
+	<dd>Interactively insert file in current buffer.</dd>
+	<dt><code>(shell-command[ <var>command_line</var>])</code></dt>
+	<dd>Execute string <var>command_line</var>&nbsp;with the <code>system()</code> call. If not given prompt for commandline.</dd>
+	<dt><code>(shell-exec <var>command_line</var>)</code> <u>f</u></dt>
+	<dd>Helper function for <code>shell-command</code>.<code>&nbsp;</code></dd>
+	<dt><code>(shell-command-lines <var>command</var>[ <var>arg</var>..])</code>&nbsp;&rArr; <u>f</u></dt>
+	<dd>Join string&nbsp;<var>command</var> and all <var>arg</var>s with a space and execute the resulting command line with <code>popen()</code>. Read output and return it as list of lines without the trailing newlines.</dd>
+	<dt><code>(shell_strip_eol <i>line</i>)</code></dt>
+	<dd>Strip newline and carriage return characters from end of string <var>line</var>.</dd>
+	<dt>(repeat n func)</dt>
+	<dd>-</dd>
+	<dt>(string-restrict-chars-p rl s)</dt>
+	<dd>-</dd>
+	<dt>(posix-filename s)</dt>
+	<dd>-</dd>
+	<dt>(delete-next-word()</dt>
+	<dd>-</dd>
+	<dt>(delete-previous-word()</dt>
+	<dd>-</dd>
+	<dt>(kill-to-eol()</dt>
+	<dd>-</dd>
+	<dt>(is_ctl_g(k)</dt>
+	<dd>-</dd>
+	<dt>(is_escape(k)</dt>
+	<dd>&nbsp;</dd>
+	<dt>(is_backspace(k)</dt>
+	<dd>&nbsp;</dd>
+	<dt>(is_ctl_s(k)</dt>
+	<dd>&nbsp;</dd>
+	<dt>(is_control_char(k)</dt>
+	<dd>&nbsp;</dd>
+	<dt>(describe-key()</dt>
+	<dd>&nbsp;</dd>
+	<dt>(find_end_p()</dt>
+	<dd>&nbsp;</dd>
+	<dt>(find_start_p()</dt>
+	<dd>&nbsp;</dd>
+	<dt>(find_and_eval_sexp()</dt>
+	<dd>&nbsp;</dd>
+	<dt>(transpose-chars)</dt>
+	<dd>&nbsp;</dd>
+	<dt>(run-hook hookvar)</dt>
+	<dd>&nbsp;</dd>
+	<dt>(buffer-name arg)</dt>
+	<dd>&nbsp;</dd>
+	<dt>(current-buffer)</dt>
+	<dd>-</dd>
+	<dt>(switch-to-buffer name)</dt>
+	<dd>-</dd>
+	<dt>(restore-buffer-modified-p bool)</dt>
+	<dd>-</dd>
+	<dt>(set-buffer-modified-p bool)</dt>
+	<dd>&nbsp;</dd>
+	<dt>(buffer-list) (buffer-basename name)</dt>
+	<dd>&nbsp;</dd>
+	<dt>(buffer-list_filtered name)</dt>
+	<dd>&nbsp;</dd>
+	<dt>(buffer-name_split name)</dt>
+	<dd>&nbsp;</dd>
+	<dt>(buffer-name_index name)</dt>
+	<dd>&nbsp;</dd>
+	<dt>(generate-new-buffer-name name)</dt>
+	<dd>&nbsp;</dd>
+	<dt>(buffer-name_maxindex name)</dt>
+	<dd>&nbsp;</dd>
+	<dt>(create-file-buffer filename)</dt>
+	<dd>&nbsp;</dd>
+	<dt>(rename-buffer name . opts)</dt>
+	<dd>&nbsp;</dd>
+	<dt>(next-buffer)</dt>
+	<dd>-</dd>
+	<dt>(other-buffer)</dt>
+	<dd>-</dd>
+	<dt>(insert-buffer-substring-no-properties from-buffer-or-name . args)</dt>
+	<dd>-</dd>
+	<dt>(kill-buffer-interactive)</dt>
+	<dd>-</dd>
+	<dt>(kill-buffer args)</dt>
+	<dd>-</dd>
+	<dt>(kill-buffer_and_switch buffer current)</dt>
+	<dd>-</dd>
+	<dt>(find-file)</dt>
+	<dd>-</dd>
+	<dt>(find-file-noselect filename)</dt>
+	<dd>-</dd>
+	<dt>(find-file_load fd filename read-only)</dt>
+	<dd>-</dd>
+	<dt>(find-file_new filename)</dt>
+	<dd>&nbsp;</dd>
+	<dt>(after-find-file)</dt>
+	<dd>&nbsp;</dd>
+	<dt>(find-file_directory filename)</dt>
+	<dd>-</dd>
+	<dt>(save-buffer)</dt>
+	<dd>-</dd>
+	<dt>(write-file)</dt>
+	<dd>-</dd>
+	<dt>(write-file_check_path path)</dt>
+	<dd>-</dd>
+	<dt>(save-some-buffers)</dt>
+	<dd>-</dd>
+	<dt>(save-buffer_query buffer mode)</dt>
+	<dd>-</dd>
+	<dt>(save-buffers-kill-terminal)</dt>
+	<dd>-</dd>
+</dl>
 
 <h4 id="bufmenu"><code>bufmenu</code> Buffer Selection Menu</h4>
 

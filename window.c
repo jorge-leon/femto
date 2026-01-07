@@ -64,9 +64,7 @@ void redraw(void)
 }
 
 
-/* Always returns the previous current window pointer
- * Note: though this is never used
- */
+/* Returns the (new) current window pointer on success, NULL on failure. */
 window_t *split_current_window(void)
 {
     window_t *wp, *wp2;

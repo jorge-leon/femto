@@ -122,7 +122,7 @@ codebase less then half of the size.
 	pEmacs         pe         59465     5.7K      16
 	Esatz-Emacs    ee         59050     5.7K      14
 	GNOME          GNOME      55922     9.8k      13
-	femto          femto     169608    11.5k/7.9k 36/48 **
+	femto          femto     169608    11.7k/8  k 36/48 **
 	Zile           zile      257360    11.7k      48
 	Mg             mg        585313    16.5K      50
 	uEmacs/Pk      em        147546    17.5K      34

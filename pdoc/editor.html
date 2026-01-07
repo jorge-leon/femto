@@ -4,7 +4,7 @@
 	<title>fLisp Femto Editor Extension</title>
 	<meta content="text/html; charset=utf-8" http-equiv="content-type" /><meta content="Emacs, editor, Lisp, tiny, reference, manual" name="keywords" /><meta content="Manual for the Femto editor extension" name="description" /><meta content="Georg Lehner &lt;jorge@magma-soft.at&gt;" name="author" /><meta content="2023" name="copyright" />
 </head>
-<body>
+<body class="openlink">
 <h1>fLisp Femto Editor Extension</h1>
 
 <h3>Overview</h3>
@@ -94,34 +94,34 @@
 <h5 id="text">Text manipulation</h5>
 
 <dl>
-	<dt><code>(backspace)</code></dt>
+	<dt><code>(backspace)</code>&nbsp;&rArr; <code>t</code></dt>
 	<dd>Deletes the character to the left of <var>point</var>. <u>S: delete-backward-char</u></dd>
-	<dt><code>(delete)</code></dt>
+	<dt><code>(delete)</code>&nbsp;&rArr; <code>t</code></dt>
 	<dd>Deletes the character after <var>point</var>. <u>S: delete-char</u></dd>
-	<dt><code>(erase-buffer)</code></dt>
+	<dt><code>(erase-buffer)</code>&nbsp;&rArr; <code>t</code></dt>
 	<dd>Erases all text in the current buffer. <u>C</u></dd>
-	<dt><code>(insert-string <var>string</var>)</code></dt>
-	<dd>Inserts <var>string</var> before <var>point</var>. <u>S: insert</u>.</dd>
-	<dt><code>(get-char)</code></dt>
+	<dt><code>(get-char)</code>&nbsp;&rArr; <code><var><font face="monospace">string</font></var></code></dt>
 	<dd>Returns the character at <var>point</var>. <u>S: get-byte</u></dd>
-	<dt><code>(kill-region)</code></dt>
+	<dt><code>(insert-string <var>string</var>)</code>&nbsp;&rArr; <code>t</code></dt>
+	<dd>Inserts <var>string</var> before <var>point</var>. <u>S: insert</u>.</dd>
+	<dt><code>(kill-region)</code>&nbsp;&rArr; <code>t</code></dt>
 	<dd>Deletes the text in the <var>region</var> and copies it to the <var>clipboard</var>. <u>D</u></dd>
-	<dt><code>(yank)</code></dt>
+	<dt><code>(yank)</code>&nbsp;&rArr; <code>t</code></dt>
 	<dd>Pastes the <var>clipboard</var> before <var>point</var>. <u>C</u></dd>
 </dl>
 
 <h5 id="selection">Selection</h5>
 
 <dl>
-	<dt><code>(copy-region)</code></dt>
+	<dt><code>(copy-region)</code>&nbsp;&rArr; <code>t</code></dt>
 	<dd>Copies <var>region</var> to the <var>clipboard</var>. <u>S: copy-region-as-kill</u></dd>
-	<dt><code>(get-clipboard)</code></dt>
-	<dd>Returns the <var>clipboard</var> contents. <u>S: gui-get-selection</u></dd>
-	<dt><code>(get-mark)</code></dt>
+	<dt><code>(get-clipboard)</code>&nbsp;&rArr; <var><font face="monospace">string</font></var></dt>
+	<dd>Returns the <var>clipboard</var> contents or the empty string if none. <u>S: gui-get-selection</u></dd>
+	<dt><code>(get-mark)</code>&nbsp;&rArr; <var><font face="monospace">integer</font></var></dt>
 	<dd>Returns the position of <var>mark</var>, -1 if <var>mark</var> is unset. <u>S: mark</u></dd>
-	<dt><code>(set-clipboard <var>variable</var>)</code></dt>
-	<dd>Sets <var>clipboard</var> to the contents of <var>variable</var>. <u>S: gui-set-selection</u></dd>
-	<dt><code>(set-mark)</code></dt>
+	<dt><code>(set-clipboard <var>string</var>)</code>&nbsp;&rArr; <code>t</code>|<code>nil</code></dt>
+	<dd>Sets <var>clipboard</var> to the contents of <var>string</var>. Returns <code>t</code> on success, <code>nil</code> if memory allocation fails.&nbsp;<u>S: gui-set-selection</u></dd>
+	<dt><code>(set-mark)</code>&nbsp;&rArr; <code>t</code></dt>
 	<dd>Sets <var>mark</var> to <var>point</var>. <u>D</u></dd>
 	<dt>&nbsp;</dt>
 	<dt>&nbsp;</dt>
@@ -130,41 +130,41 @@
 <h5 id="cursor">Cursor Movement and Information</h5>
 
 <dl>
-	<dt><code>(backward-char)</code></dt>
+	<dt><code>(backward-char)</code>&nbsp;&rArr; <code>t</code></dt>
 	<dd>Moves the point in the current buffer one character backward, but not before the end of the buffer. <u>C</u></dd>
-	<dt><code>(backward-word)</code></dt>
+	<dt><code>(backward-word)</code>&nbsp;&rArr; <code>t</code></dt>
 	<dd>Moves the point in the current buffer backward after the last char of the previous word. If there is no word left the point is set to the beginning of the buffer. If the point is already at the end or within a word, the current word is skipped. <u>D</u>: <b>Note</b>: Elisp moves to the <em>beginning</em> of the previous word.</dd>
-	<dt><code>(beginning-of-buffer)</code></dt>
+	<dt><code>(beginning-of-buffer)</code>&nbsp;&rArr; <code>t</code></dt>
 	<dd>Sets the point in the current buffer to the first buffer position, leaving mark in its current position. <u>C</u></dd>
-	<dt><code>(beginning-of-line)</code></dt>
+	<dt><code>(beginning-of-line)</code>&nbsp;&rArr; <code>t</code></dt>
 	<dd>Sets point before the first character of the current line, leaving mark in its current position. <u>S: move-beginning-of-line</u></dd>
-	<dt><code>(end-of-buffer)</code></dt>
+	<dt><code>(end-of-buffer)</code>&nbsp;&rArr; <code>t</code></dt>
 	<dd>Sets the point in the current buffer to the last buffer position, leaving mark in its current position. <u>C</u></dd>
-	<dt><code>(end-of-line)</code></dt>
+	<dt><code>(end-of-line)</code>&nbsp;&rArr; <code>t</code></dt>
 	<dd>Sets point after the last character of the current line, i.e. before the end-of-line character sequence, leaving mark in its current position. <u>S: move-end-of-line</u></dd>
-	<dt><code>(forward-char)</code></dt>
+	<dt><code>(forward-char)</code>&nbsp;&rArr; <code>t</code></dt>
 	<dd>Moves the point in the current buffer one character forward, but not past the end of the buffer. <u>C</u></dd>
-	<dt><code>(forward-word)</code></dt>
+	<dt><code>(forward-word)</code>&nbsp;&rArr; <code>t</code></dt>
 	<dd>Moves the point in the current buffer forward before the first char of the next word. If there is no word left the point is set to the end of the buffer. If the point is already at the start or within a word, the current word is skipped. <u>D</u>: <b>Note</b>: Elisp moves to the <em>end</em> of the the next word.</dd>
-	<dt><code>(get-point)</code></dt>
+	<dt><code>(get-point)</code>&nbsp;&rArr; <var>integer</var></dt>
 	<dd>Returns the position of <var>point</var>. <u>S: point</u></dd>
-	<dt><code>(get-point-max)</code></dt>
+	<dt><code>(get-point-max)</code>&nbsp;&rArr; <var>integer</var></dt>
 	<dd>Returns the maximum accessible value of point in the current buffer. <u>S: point-max</u></dd>
-	<dt><code>(goto-line <var>number</var>)</code></dt>
-	<dd>Sets the point in the current buffer to the first character on line <var>number</var>. <u>S: goto-line</u>, not an Elisp function.</dd>
-	<dt><code>(next-line)</code></dt>
+	<dt><code>(goto-line <var>number</var>)</code>&nbsp;&rArr; <code>t</code>|<code>nil</code></dt>
+	<dd>Sets the point in the current buffer to the first character on line <var>number</var>. Returns <code>t</code> on success, <code>nil</code> when line is not found.&nbsp;<u>S: goto-line</u>, not an Elisp function.</dd>
+	<dt><code>(next-line)</code>&nbsp;&rArr; <code>t</code></dt>
 	<dd>Moves the point in the current buffer to the same character position in the next line, or to the end of the next line if there are not enough characters. In the last line of the buffer moves the point to the end of the buffer. <u>C</u></dd>
-	<dt><code>(previous-line)</code></dt>
+	<dt><code>(previous-line)</code>&nbsp;&rArr; <code>t</code></dt>
 	<dd>Moves the point in the current buffer to the same character position in the previous line, or to the end of the previous line if there are not enough characters. In the first line of the buffer the point is not moved. <u>C</u></dd>
-	<dt><code>(scroll-up)</code></dt>
+	<dt><code>(scroll-up)</code>&nbsp;&rArr; <code>t</code></dt>
 	<dd>Moves the point of the current buffer to the beginning of the last visible line of the associated screen and scrolls the screen up to show it as the first line. <u>C</u></dd>
-	<dt><code>(scroll-down)</code></dt>
+	<dt><code>(scroll-down)</code>&nbsp;&rArr; <code>t</code></dt>
 	<dd>Moves the point of the current buffer to the beginning of the first visible line of the associated screen and scrolls the screen down to show it as the last line. <u>C</u></dd>
-	<dt><code>(search-forward <var>string</var>)</code></dt>
+	<dt><code>(search-forward <var>string</var>)</code>&nbsp;&rArr; <code>t</code>|<code>nil</code></dt>
 	<dd>Searches for <var>string</var> in the current buffer, starting from point forward. If string is found, sets the point after the first occurrence of <var>string</var> and returns <samp>t</samp>, otherwise leaves point alone and returns <samp>nil</samp>. <u>D</u></dd>
-	<dt><code>(search-backward <var>string</var>)</code></dt>
+	<dt><code>(search-backward <var>string</var>)</code>&nbsp;&rArr; <code>t</code>|<code>nil</code></dt>
 	<dd>Searches for <var>string</var> in the current buffer, starting from point backwards. If string is found, sets the point before the first occurrence of <var>string</var> and returns <samp>t</samp>, otherwise leaves point alone and returns <samp>nil</samp>. <u>D</u></dd>
-	<dt><code>(set-point <var>number</var>)</code></dt>
+	<dt><code>(set-point <var>number</var>)</code>&nbsp;&rArr; <code>t</code></dt>
 	<dd>Sets the point&nbsp;in the current buffer to the position <var>number</var>. <u>S: goto-char</u></dd>
 	<dt>&nbsp;</dt>
 	<dt>&nbsp;</dt>
@@ -179,36 +179,34 @@
 	<dd>Returns the buffer name of the buffer associated with the file or directory <var>path</var>.</dd>
 	<dt><code>(buffer-filename[ <var>string</var>)</code>&nbsp;&rArr; <var>buffer</var>|<code>nil</code></dt>
 	<dd>Return the file name associated with buffer <var>string</var> or the current buffer if not given. If no file is associated returns <code>nil</code>.&nbsp;<u>C</u></dd>
-	<dt><code>(buffer-fread <var>stream[</var>&nbsp;<var>size]</var>)</code></dt>
-	<dd>Inserts <var>size</var> bytes from <var>stream</var> into the current buffer, starting at point. If <var>size</var> is not given, <var>stream</var> is read in until end-of-line.</dd>
-	<dt><code>(buffer-fwrite <var>stream</var>[ <var>size</var>])</code></dt>
-	<dd>Write <var>size</var> bytes from the current buffer, starting at point. If <var>size</var> is not given or greater then the rest of the buffer the rest of the buffer is written.</dd>
-	<dt><code>(buffer-mode[ <var>buffer</var>[ <var>mode</var>])</code></dt>
+	<dt><code>(buffer-fread <var>stream[</var>&nbsp;<var>size]</var>)</code>&nbsp;&rArr; <var>integer</var><font face="monospace">&nbsp;</font><u>f</u></dt>
+	<dd>Inserts <var>size</var> bytes from <var>stream</var> into the current buffer, starting at point. If <var>size</var> is not given, <var>stream</var> is read in until end-of-line. Returns number of bytes read.</dd>
+	<dt><code>(buffer-fwrite <var>stream</var>[ <var>size</var>])</code>&nbsp;&rArr; <var>integer </var><u>f</u></dt>
+	<dd>Write <var>size</var> bytes from the current buffer, starting at point. If <var>size</var> is not given or greater then the rest of the buffer the rest of the buffer is written. Returns number of bytes written.</dd>
+	<dt><code>(buffer-mode[ <var>buffer</var>[ <var>mode</var>])</code>&nbsp;&rArr; <font face="monospace"><var>mode</var> <u>f</u></font></dt>
 	<dd>Return and optionally&nbsp;set the mode of given <var>buffer</var> or&nbsp;current buffer if <var>buffer</var> is not given or <code>nil</code>.</dd>
-	<dt><code>(buffer-modified-p[ <var>buffer</var> [ <var>p</var>])</code></dt>
-	<dt><code>(buffer-overwrite-p[ <var>buffer</var> [ <var>p</var>])</code></dt>
-	<dt><code>(buffer-readonly-p[ <var>buffer</var> [ <var>p</var>])</code></dt>
-	<dt><code>(buffer-special-p[ <var>buffer</var> [ <var>p</var>])</code></dt>
-	<dt><code>(buffer-undo-p[ <var>buffer</var> [ <var>p</var>])</code></dt>
+	<dt><code>(buffer-modified-p[ <var>buffer</var> [ <var>p</var>])</code>&nbsp;&rArr; <code>p</code></dt>
+	<dt><code>(buffer-overwrite-p[ <var>buffer</var> [ <var>p</var>])</code>&nbsp;&rArr; <code>p</code></dt>
+	<dt><code>(buffer-readonly-p[ <var>buffer</var> [ <var>p</var>])</code>&nbsp;&rArr; <code>p</code></dt>
+	<dt><code>(buffer-special-p[ <var>buffer</var> [ <var>p</var>])</code>&nbsp;&rArr; <code>p</code></dt>
+	<dt><code>(buffer-undo-p[ <var>buffer</var> [ <var>p</var>])</code>&nbsp;&rArr; <code>p</code></dt>
 	<dd>Return and optionally set the respective flag of <var>buffer</var>, or the current buffer if <var>buffer</var> is not given or <code>nil</code>.</dd>
-	<dt><code>(buffer-next[ <var>buffer</var>])</code></dt>
+	<dt><code>(buffer-next[ <var>buffer</var>])</code>&nbsp;&rArr; <var>buffer&#39;</var></dt>
 	<dd>Return the next buffer after <var>buffer</var> in the list, or the current buffer if none given.</dd>
-	<dt><code>(buffer-show&nbsp;<var>buffer</var>)</code></dt>
-	<dd>Associate&nbsp;<var>buffer</var> with the current window and put it first in the buffer list.</dd>
-	<dt><code>(delete-buffer <var>buffer</var>)</code></dt>
-	<dd>Kill the buffer named <var>string</var>. Unsaved changes are discarded. Throws an&nbsp;exception if the buffer does not exist or when trying to delete the scratch buffer or the current buffer. <u>f</u></dd>
-	<dt><code>(get-buffer-create <var>name</var>)</code></dt>
-	<dd>If buffer <var>name</var>&nbsp;exists return it, otherwise createe&nbsp;a new, empty buffer with that name and returns it.</dd>
-	<dt><code>(list-buffers)</code></dt>
+	<dt><code>(buffer-show&nbsp;<var>buffer</var>)</code>&nbsp;&rArr; <var>buffer</var></dt>
+	<dd>Associate&nbsp;<var>buffer</var> with the current window and put it first in the buffer list. Returns <var>buffer</var>.</dd>
+	<dt><code>(delete-buffer <var>buffer</var>)</code>&nbsp;&rArr; <var>buffer</var> <u>f</u></dt>
+	<dd>Kill the buffer named <var>string</var>. Unsaved changes are discarded. Throws an&nbsp;exception if the buffer does not exist or when trying to delete the scratch buffer or the current buffer. Returns the buffer name.</dd>
+	<dt><code>(get-buffer-create <var>name</var>)</code>&nbsp;&rArr; <var>buffer</var></dt>
+	<dd>If buffer <var>name</var>&nbsp;exists return it, otherwise create&nbsp;a new, empty buffer with that name and returns it.</dd>
+	<dt><code>(list-buffers)</code>&nbsp;&rArr; <code>t</code> <u>f</u></dt>
 	<dd>Lists all the buffers in a buffer called <samp>*buffers*</samp>.</dd>
-	<dt><code>(get-buffer-count)</code></dt>
-	<dd>Returns the number of buffers, includes all special buffers and <samp>*buffers*</samp>.</dd>
-	<dt><code>(set-buffer <var>string</var>)</code></dt>
-	<dd>Makes the buffer named <var>string</var> the current buffer. <u>C</u></dd>
-	<dt><code>(set-buffer-name <var>string</var>)</code></dt>
-	<dd>Set the name of the current buffer to <var>string</var>. <u>S: rename-buffer</u></dd>
-	<dt><code>(set-visited-file-name <var>string</var>)</code></dt>
-	<dd>Set the filename of the current buffer to <var>string</var>.</dd>
+	<dt><code>(set-buffer <var>string</var>)</code>&nbsp;&rArr; <var>buffer</var></dt>
+	<dd>Makes the buffer named <var>string</var> the current buffer, returns <var>buffer</var>.</dd>
+	<dt><code>(set-buffer-name <var>string</var>)</code>&nbsp;&rArr; <var>string</var>&nbsp;<u>S: rename-buffer</u></dt>
+	<dd>Set the name of the current buffer to <var>string</var>. Returns <var>string</var>.</dd>
+	<dt><code>(set-visited-file-name <var>string</var></code><var>|</var><code>nil)</code>&nbsp;&rArr; <var>string</var>|<code>nil</code></dt>
+	<dd>Set the filename of the current buffer to <var>string</var>&nbsp;or <code>nil</code>&nbsp;- i.e. deletes it. Returns the argument.</dd>
 	<dt>&nbsp;</dt>
 </dl>
 
@@ -219,70 +217,74 @@
 <h5 id="windows">Window Handling</h5>
 
 <dl>
-	<dt><code>(delete-other-windows)</code></dt>
-	<dd>Make current window the only window. <u>C</u></dd>
-	<dt><code>(split-window)</code></dt>
-	<dd>Splits the current window. Creates a new window for the current buffer. <u>C</u></dd>
-	<dt><code>(other-window)</code></dt>
-	<dd>Moves the cursor to the next window down on the screen. Makes the buffer in that window the current buffer. <u>D</u></dd>
+	<dt><code>(delete-other-windows)</code>&nbsp;&rArr; <code>t</code></dt>
+	<dd>Make current window the only window.</dd>
+	<dt><code>(other-window)</code>&nbsp;&rArr; <code>t</code> <u>D</u></dt>
+	<dd>Moves the cursor to the next window down on the screen. Makes the buffer in that window the current buffer.</dd>
 	<dd>
 	<p>Note: Elisp <code>other-window</code> has a required parameter <var>count</var>, which specifies the number of windows to move down or up.</p>
 	</dd>
-	<dt><code>(update-display)</code></dt>
+	<dt><code>(split-window)</code>&nbsp;&rArr; <code>t</code>|<code>nil</code></dt>
+	<dd>Splits the current window. Creates a new window for the current buffer. Returns <code>t</code> on success, <code>nil</code> if the window cannot be split or memory allocation fails.</dd>
+	<dt><code>(update-display)</code>&nbsp;&rArr; <code>t</code> <u>f</u></dt>
 	<dd>Updates all modified windows.</dd>
-	<dt><code>(refresh)</code></dt>
+	<dt><code>(refresh)</code>&nbsp;&rArr; <code>t</code> <u>f</u></dt>
 	<dd>Calls the curses refresh() function.</dd>
 </dl>
 
 <h5 id="message_line">Message Line</h5>
 
 <dl>
-	<dt><code>(message <var>string</var>)</code></dt>
-	<dd>Displays <var>string</var> in the message line. <u>D</u></dd>
-	<dt><code>(clear-message-line)</code></dt>
-	<dd>Displays the empty string in the message line.</dd>
-	<dt><code>(prompt <var>prompt</var> <var>default</var>)</code></dt>
-	<dd>Displays <var>prompt</var> in the command line and sets <var>default</var> as initial value for the user response. The user can edit the response. When hitting return, the final response is returned.</dd>
-	<dt><code>(show-prompt <var>prompt</var> <var>default</var>)</code></dt>
-	<dd>Displays <var>prompt</var> and <var>default</var> in the command line, but does not allow editing. Returns <code>t</code>.</dd>
-	<dt><code>(prompt-filename <var>prompt</var>)</code></dt>
-	<dd>Displays <var>prompt</var> in the command line and allows to enter or search for a file name. Returns the relative path to the selected file name or the response typed by the user.</dd>
+	<dt><code>(clear-message-line)</code>&nbsp;&rArr; <code>t</code>&nbsp;<u>S: clear-minibuffer-message</u></dt>
+	<dd>Clears the message line.</dd>
+	<dt><code>(message <var>string</var>)</code>&nbsp;&rArr; <code>t</code> <u>D</u></dt>
+	<dd>Displays <var>string</var> in the message line.</dd>
+	<dt><code>(prompt <var>prompt</var> <var>default</var>)</code>&nbsp;&rArr; <var>string</var>|<code>ni</code>l&nbsp;<u>f</u></dt>
+	<dd>Displays <var>prompt</var> in the command line and sets <var>default</var> as initial value for the user response. The user can edit the response. When hitting return, the final response is returned. If C-g is pressed <code>nil</code> is returned.</dd>
+	<dt><code>(prompt-filename <var>prompt</var>)</code>&nbsp;&rArr; <var>string</var>|<code>ni</code>l&nbsp;<u>f</u></dt>
+	<dd>Displays <var>prompt</var> in the command line and allows to enter or search for a file name. Returns the relative path to the selected file name or the response typed by the user or <code>nil</code> if C-g is pressed.</dd>
 </dl>
 
 <h5 id="keyboard">Keyboard Handling</h5>
 
 <dl>
-	<dt><code>(describe-bindings)</code></dt>
-	<dd>Creates a listing of all current key bindings, in a buffer named <samp>*help*</samp> and displays it in a new window. <u>C</u></dd>
-	<dt><code>(describe-functions)</code></dt>
+	<dt><code>(describe-bindings)</code>&nbsp;&rArr; <code>t</code></dt>
+	<dd>Creates a listing of all current key bindings, in a buffer named <samp>*help*</samp> and displays it in a new window.</dd>
+	<dt><code>(describe-functions)</code>&nbsp;&rArr; <code>t</code> <u>f</u></dt>
 	<dd>Creates a listing of all functions bound to keys in a buffer named <samp>*help*</samp> and displays it in a new window.</dd>
-	<dt><code>(execute-key)</code></dt>
-	<dd>Executes the function of the last bound key. <mark>Tbd. bound or pressed?</mark></dd>
-	<dt><code>(getch)</code></dt>
+	<dt><code>(execute-key)</code>&nbsp;&rArr; <code>t</code> <u>f</u></dt>
+	<dd>Executes the function of the last pressed key.</dd>
+	<dt><code>(getch)</code>&nbsp;&rArr; <var>string</var> <u>f</u></dt>
 	<dd>Calls the curses getch() function: Waits for a key to be pressed and returns the key as string. If a function key is pressed, the ANSI terminal input sequence is sent;&nbsp;several calls to <code>getch</code> are required to decode this.</dd>
-	<dt><code>(get-key)</code></dt>
-	<dd>Records keystrokes until&nbsp;a registered key-sequence is gathered, then the key information is stored and an empty string is returned. If&nbsp;no match is found, the recorded key(s) is&nbsp;returned&nbsp;as string.</dd>
-	<dt><code>(get-key-funcname)</code></dt>
+	<dt><code>(get-key)</code>&nbsp;&rArr; <code>t</code> <u>f</u></dt>
+	<dd>Records keystrokes until&nbsp;a registered key-sequence is gathered, then the key information is stored and an empty string is returned. If&nbsp;no match is found, i.e. a normal character is input,&nbsp;the recorded key(s) is&nbsp;returned&nbsp;as string.</dd>
+	<dt><code>(get-key-funcname)</code>&nbsp;&rArr;&nbsp;<var>string</var> <u>f</u></dt>
 	<dd>Return the name of the <var>lisp-func</var>&nbsp;bound to the most recent recorded key-sequence.</dd>
-	<dt><code>(get-key-name)</code></dt>
+	<dt><code>(get-key-name)</code>&nbsp;&rArr;&nbsp;<var>string</var> <u>f</u></dt>
 	<dd>Returns the <var>key-name</var> of the most recenet recorded key-sequence, eg: <samp>c-k</samp> for control-k.</dd>
-	<dt><code>(set-key <var>key-name</var> <var>lisp-func</var>)</code></dt>
+	<dt><code>(set-key <var>key-name</var> <var>lisp-func</var>)</code>&nbsp;&rArr; <code>t</code> <u>f</u></dt>
 	<dd>Binds key key-name to the lisp function <var>lisp-func</var>.</dd>
 </dl>
 
 <h5 id="programming_system">Programming and System Interaction</h5>
 
 <dl>
-	<dt><code>(exit)</code></dt>
-	<dd>Exit Femto without saving modified buffers.</dd>
-	<dt><code>(eval-block)</code></dt>
+	<dt><code>(eval-block)</code>&nbsp;&rArr; <code>t</code>&nbsp;<u>S: eval-region</u></dt>
 	<dd>Evaluates the <var>region</var> in the current buffer, inserts the result at <var>point</var> and returns it. If <var>mark</var> in the current buffer is before <var>point</var> <code>eval-block</code> evaluates this <var>region</var> and inserts the result at <var>point</var>. If <var>point</var> is before <var>mark</var> <code>eval-block</code> does nothing but returning <samp>t</samp>.</dd>
-	<dt><code>(log-message <var>string</var>)</code></dt>
-	<dd>Logs <var>string</var> to the <samp>*messages*</samp> buffer.</dd>
-	<dt><code>(log-debug <var>string</var>)</code></dt>
-	<dd>Logs string to the file <code>debug.out</code>.</dd>
-	<dt><code>(get-version-string)</code></dt>
+	<dt><code>(exit)</code> <u>f</u></dt>
+	<dd>Exit Femto without saving modified buffers.</dd>
+	<dt><code>(get-temp-file)</code>&nbsp;&rArr; <code>t</code> <u>f</u></dt>
+	<dd>Create a file in <code>/tmp</code> with a unique name, return filename.</dd>
+	<dt><code>(get-version-string)</code>&nbsp;&rArr; <var>string</var>&nbsp;<u>f</u></dt>
 	<dd>Returns the complete version string of Femto, including the copyright.</dd>
+	<dt><code>(log-debug <var>string</var>)</code>&nbsp;&rArr; <code>t</code> <u>f</u></dt>
+	<dd>Logs string to the file <code>debug.out</code>.</dd>
+	<dt><code>(log-message <var>string</var>)</code>&nbsp;&rArr; <code>t</code> <u>f</u></dt>
+	<dd>Logs <var>string</var> to the <samp>*messages*</samp> buffer.</dd>
+	<dt><code>(suspend)</code>&nbsp;&rArr; <code>t</code>&nbsp;<u>S: suspend-emacs</u></dt>
+	<dd>Suspend Femto.</dd>
+	<dt>&nbsp;</dt>
+	<dt>&nbsp;</dt>
 </dl>
 
 <h3 id="libraries">Lisp Libraries</h3>

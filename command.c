@@ -639,9 +639,9 @@ Object *e_set_buffer_filename(Interpreter *interp, Object **args, Object **env)
 
 DEFINE_EDITOR_FUNC(delete_other_windows)
 
-Object *e_split_window(Interpreter *interp, Object **args, Object **env) { return (NULL == split_current_window()) ? nil : t; }
-
 DEFINE_EDITOR_FUNC(other_window)
+
+Object *e_split_window(Interpreter *interp, Object **args, Object **env) { return (NULL == split_current_window()) ? nil : t; }
 
 DEFINE_EDITOR_FUNC(update_display)
 
@@ -652,6 +652,8 @@ Object *e_refresh(Interpreter *interp, Object ** args, Object **env)
 }
 
 /* Message Line */
+DEFINE_EDITOR_FUNC(clear_message_line)
+
 Object *e_message(Interpreter *interp, Object **args, Object **env)
 {
     msg(FLISP_ARG_ONE->string);
@@ -659,8 +661,6 @@ Object *e_message(Interpreter *interp, Object **args, Object **env)
 }
 
 /** (prompt-filename prompt[ default]) */
-
-DEFINE_EDITOR_FUNC(clear_message_line)
 
 Object *e_prompt(Interpreter *interp, Object **args, Object **env)
 {
@@ -716,6 +716,7 @@ Object *e_get_key_funcname(Interpreter *interp, Object **args, Object **env) { r
 
 Object *e_get_key_name(Interpreter *interp, Object **args, Object **env) { return newString(interp, get_key_name()); }
 
+/* Note: set_key always returns 1, so we don't need to decide here either */
 Object *e_set_key(Interpreter *interp, Object **args, Object **env) { return (1 == set_key(FLISP_ARG_ONE->string, FLISP_ARG_TWO->string) ? t : nil); }
 
 
@@ -976,99 +977,6 @@ void user_func(void)
     free_lisp_output();
 }
 
-#if 0
-Primitive femto_primitives[] = {
-/* Text manipulation: read from, write to buffer text */
-
-    {"backspace",                 0, 0, 0,            e_backspace},
-    {"delete",                    0, 0, 0,            e_delete},
-    {"erase-buffer",              0, 0, 0,            e_zero_buffer},
-    {"get-char",                  0, 0, 0,            e_get_char},
-    {"insert-string",             1, 1, TYPE_STRING,  e_insert_string},
-    {"kill-region",               0, 0, 0,            e_kill_region},
-    {"yank",                      0, 0, 0,            e_yank},
-
-/* Selection */
-    {"copy-region",               0, 0, 0,            e_copy_region},
-    {"get-clipboard",             0, 0, 0,            e_get_clipboard},
-    {"get-mark",                  0, 0, 0,            e_get_mark},
-    {"set-clipboard",             1, 1, TYPE_STRING,  e_set_clipboard},
-    {"set-mark",                  0, 0, 0,            e_set_mark},
-
-/* Cursor Movement and information */
-    {"backward-char",             0, 0, 0,            e_left},
-    {"backward-word",             0, 0, 0,            e_backward_word},
-    {"beginning-of-buffer",       0, 0, 0,            e_beginning_of_buffer},
-    {"beginning-of-line",         0, 0, 0,            e_lnbegin},
-    {"end-of-buffer",             0, 0, 0,            e_end_of_buffer},
-    {"end-of-line",               0, 0, 0,            e_lnend},
-    {"forward-char",              0, 0, 0,            e_right},
-    {"forward-word",              0, 0, 0,            e_forward_word},
-    {"get-point",                 0, 0, 0,            e_get_point},
-    {"get-point-max",             0, 0, 0,            e_get_point_max},
-    {"goto-line",                 1, 1, TYPE_INTEGER, e_goto_line},
-    {"next-line",                 0, 0, 0,            e_down},
-    {"previous-line",             0, 0, 0,            e_up},
-    {"scroll-up",                 0, 0, 0,            e_scroll_up},
-    {"scroll-down",               0, 0, 0,            e_scroll_down},
-    {"search-forward",            1, 1, TYPE_STRING,  e_search_forward},
-    {"search-backward",           1, 1, TYPE_STRING,  e_search_backward},
-    {"set-point",                 1, 1, TYPE_INTEGER, e_set_point},
-
-/* Buffer Management and information */
-    {"find-buffer-visiting",      1, 1, TYPE_STRING,  e_find_buffer_by_fname},
-    {"buffer-filename",           0, 1, TYPE_STRING,  e_get_buffer_filename},
-    {"buffer-fread",              1, 2, 0,            e_buffer_fread},
-    {"buffer-fwrite",             1, 2, 0,            e_buffer_fwrite},
-    {"buffer-mode",               0, 2, 0,            e_buffer_mode},
-    {"buffer-modified-p",         0, 2, 0,            e_buffer_modified_p},
-    {"buffer-overwrite-p",        0, 2, 0,            e_buffer_overwrite_p},
-    {"buffer-readonly-p",         0, 2, 0,            e_buffer_readonly_p},
-    {"buffer-special-p",          0, 2, 0,            e_buffer_special_p},
-    {"buffer-undo-p",             0, 2, 0,            e_buffer_undo_p},
-    {"buffer-next",               0, 1, TYPE_STRING,  e_buffer_next},
-    {"buffer-show",               1, 1, TYPE_STRING,  e_buffer_show},
-    {"delete-buffer",             1, 1, TYPE_STRING,  e_delete_buffer},
-    {"get-buffer-create",         1, 1, TYPE_STRING,  e_get_buffer_create},
-    {"list-buffers",              0, 0, 0,            e_list_buffers},
-    {"set-buffer",                1, 1, TYPE_STRING,  e_set_buffer},
-    {"set-buffer-name",           1, 1, TYPE_STRING,  e_set_buffer_name},
-    {"set-visited-file-name",     1, 1, 0,            e_set_buffer_filename},
-
-/* Window Handling */
-    {"delete-other-windows",      0, 0, 0,            e_delete_other_windows},
-    {"split-window",              0, 0, 0,            e_split_window},
-    {"other-window",              0, 0, 0,            e_other_window},
-    {"update-display",            0, 0, 0,            e_update_display},
-    {"refresh",                   0, 0, 0,            e_refresh},
-
-/* Message Line */
-    {"clear-message-line",        0, 0, 0,            e_clear_message_line},
-    {"message",                   1, 1, TYPE_STRING,  e_message},
-    {"prompt",                    1, 2, TYPE_STRING,  e_prompt},
-    {"prompt-filename",           1, 2, TYPE_STRING,  e_prompt_filename},
-
-/* Keyboard Handling */
-    {"describe-bindings",         0, 0, 0,            e_describe_bindings},
-    {"describe-functions",        0, 0, 0,            e_describe_functions},
-    {"execute-key",               0, 0, 0,            e_execute_key},
-    {"getch",                     0, 0, 0,            e_getch},
-    {"get-key",                   0, 0, 0,            e_get_key},
-    {"get-key-funcname",          0, 0, 0,            e_get_key_funcname},
-    {"get-key-name",              0, 0, 0,            e_get_key_name},
-    {"set-key",                   2, 2, TYPE_STRING,  e_set_key},
-
-/* Programming and System Interaction */
-    {"eval-block",                0, 0, 0,            e_eval_block},
-    {"exit",                      0, 0, 0,            e_quit},
-    {"get-temp-file",             0, 0, 0,            e_get_temp_file},
-    {"get-version-string",        0, 0, 0,            e_get_version_string},
-    {"log-debug",                 1, 1, TYPE_STRING,  e_log_debug},
-    {"log-message",               1, 1, TYPE_STRING,  e_log_message},
-    {"suspend",                   0, 0, 0,            e_suspend}
-};
-#endif
-
 Object *femto_libs = &(Object) { .string = "femto_lib" };
 
 bool femto_register(Interpreter *interp)
@@ -1084,12 +992,8 @@ bool femto_register(Interpreter *interp)
     femto_script_dir= newString(interp, library_path);
     flisp_register_constant(interp, femto_libs, femto_script_dir);
 
-#if 0
-    for (i = 0; i < sizeof(femto_primitives) / sizeof(femto_primitives[0]); i++)
-        flisp_register_primitive(interp, &femto_primitives[i]);
-#endif
-
     return
+/* Text manipulation: read from, write to buffer text */
         flisp_register_primitive(   interp, "backspace",             0, 0, nil,         e_backspace)
         && flisp_register_primitive(interp, "delete",                0, 0, nil,         e_delete)
         && flisp_register_primitive(interp, "erase-buffer",          0, 0, nil,         e_zero_buffer)

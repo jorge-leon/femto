@@ -110,7 +110,7 @@ void repl(void)
         append_string(bp, output);
         (void)popup_window(bp->name);
     }
-    free_lisp_output();
+    free_lisp_output(output);
 }
 
 /* Keymap handling */

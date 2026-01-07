@@ -125,7 +125,7 @@ extern void msg(char *m, ...);
 
 
 extern char *eval_string(bool, char *, ...);
-extern void free_lisp_output(void);
+extern void free_lisp_output(char *);
 
 /*
  * Local Variables:

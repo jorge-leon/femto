@@ -744,7 +744,7 @@ void eval_block(void)
         return;
     // Note: femto used to insert error messages in the current buffer. Now we don't anymore.
     insert_string(output);
-    free_lisp_output();
+    free_lisp_output(output);
 }
 DEFINE_EDITOR_FUNC(eval_block)
 void quit(void)
@@ -972,9 +972,9 @@ void user_func(void)
         return;
     }
 
-    if (eval_string(true, "(%s)", key_return->k_funcname) == NULL)
-        return;
-    free_lisp_output();
+    char *output = eval_string(true, "(%s)", key_return->k_funcname);
+    if (output)
+        free_lisp_output(output);
 }
 
 Object *femto_libs = &(Object) { .string = "femto_lib" };

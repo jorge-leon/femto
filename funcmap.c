@@ -283,6 +283,7 @@ void execute_command(void)
     char command_name[STRBUF_M + 1];
     char prompt[] = "Execute command: ";
     char *shortest_match;
+    char *output;
 
     command_name[0] = '\0';
     bp = find_buffer(str_completions, true);
@@ -387,8 +388,8 @@ void execute_command(void)
 
         if (funct == NULL || funct == user_func) {
 
-            if (eval_string(true, "(%s)", command_name) != NULL)
-                free_lisp_output();
+            if ((output = eval_string(true, "(%s)", command_name)) != NULL)
+                free_lisp_output(output);
         } else {
             (funct)();
         }

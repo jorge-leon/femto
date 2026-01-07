@@ -1,5 +1,8 @@
 BUGS encountered while and since dynamic loading of symbols and primitives:
 
+- user-func keybindings sometimes access already free'd memory/segfault
+  - Record a keyboard macro, then run it C-X ( "abc" C-X ) , C-X e => boom
+  - when running under valgrind it shows what happens.
 - dired: still recursive calling
 - prompt-filename segfaults on Alpine Linux when pressing TAB then C-g
 
@@ -93,3 +96,40 @@ When using any non ASCII character in a buffer:
 ==244326==    by 0x11B70A: gui (main.c:141)
 ==244326==    by 0x10C6BE: main (main.c:63)
 =
+
+
+==4492== Invalid free() / delete / delete[] / realloc()
+==4492==    at 0x484787F: free (vg_replace_malloc.c:989)
+==4492==    by 0x495EF24: _IO_deallocate_file (libioP.h:969)
+==4492==    by 0x495EF24: fclose@@GLIBC_2.2.5 (iofclose.c:74)
+==4492==    by 0x10BC65: eval_string (femto.c:182)
+==4492==    by 0x10FCE9: user_func (command.c:975)
+==4492==    by 0x10BE05: gui (femto.c:226)
+==4492==    by 0x10BA23: main (femto.c:112)
+==4492==  Address 0x4d9f3e0 is 0 bytes inside a block of size 504 free'd
+==4492==    at 0x484787F: free (vg_replace_malloc.c:989)
+==4492==    by 0x495EF24: _IO_deallocate_file (libioP.h:969)
+==4492==    by 0x495EF24: fclose@@GLIBC_2.2.5 (iofclose.c:74)
+==4492==    by 0x10BC65: eval_string (femto.c:182)
+==4492==    by 0x10FCE9: user_func (command.c:975)
+==4492==    by 0x11457C: execute_key (key.c:418)
+==4492==    by 0x10EF5D: e_execute_key (command.c:703)
+==4492==    by 0x11E8AE: evalExpr (lisp.c:1659)
+==4492==    by 0x11CF3E: evalProgn (lisp.c:1408)
+==4492==    by 0x11CF58: evalProgn (lisp.c:1409)
+==4492==    by 0x11E2B5: evalExpr (lisp.c:1593)
+==4492==    by 0x11CF3E: evalProgn (lisp.c:1408)
+==4492==    by 0x11D33C: evalCond (lisp.c:1458)
+==4492==  Block was alloc'd at
+==4492==    at 0x4844818: malloc (vg_replace_malloc.c:446)
+==4492==    by 0x49684DC: open_memstream (memstream.c:48)
+==4492==    by 0x10BC0D: eval_string (femto.c:178)
+==4492==    by 0x10FCE9: user_func (command.c:975)
+==4492==    by 0x11457C: execute_key (key.c:418)
+==4492==    by 0x10EF5D: e_execute_key (command.c:703)
+==4492==    by 0x11E8AE: evalExpr (lisp.c:1659)
+==4492==    by 0x11CF3E: evalProgn (lisp.c:1408)
+==4492==    by 0x11CF58: evalProgn (lisp.c:1409)
+==4492==    by 0x11E2B5: evalExpr (lisp.c:1593)
+==4492==    by 0x11CF3E: evalProgn (lisp.c:1408)
+==4492==    by 0x11D33C: evalCond (lisp.c:1458)

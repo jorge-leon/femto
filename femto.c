@@ -33,8 +33,6 @@ void gui(void); /* The GUI loop used in interactive mode */
 static Interpreter *interp;
 char debug_file[] = "debug.out";
 FILE *prev, *debug_fp = NULL;
-char* output;
-size_t len;
 
 /** lisp_init() - initialize fLisp interpreter and load rc file
  *
@@ -157,6 +155,9 @@ void msg_lisp_err(Interpreter *interp)
 char *eval_string(bool do_format, char *format, ...)
 {
     char buf[INPUT_FMT_BUFSIZ], *input;
+    char* output = NULL;
+    size_t len;
+
     int size;
     va_list args;
 
@@ -175,9 +176,11 @@ char *eval_string(bool do_format, char *format, ...)
 
     prev = interp->output;  // Note: save for double invocation with user defined functions.
     interp->output = open_memstream(&output, &len);
+    if (interp->output == NULL)
+        fatal("failed to allocate lisp_eval() output buffer");
     flisp_eval(interp, input);
-    if (interp->output)
-        fflush(interp->output);
+    //fclose(interp->output);
+    interp->output = prev;
     if (FLISP_RESULT_CODE(interp) == nil)
         return output;
     msg_lisp_err(interp);
@@ -185,18 +188,15 @@ char *eval_string(bool do_format, char *format, ...)
         flisp_write_error(interp, debug_fp);
         debug("=> %s\n", output);
     }
+    free_lisp_output(output);
     if (FLISP_RESULT_CODE(interp) == out_of_memory)
         fatal("OOM, exiting..");
-    free_lisp_output();
     return NULL;
 }
-void free_lisp_output(void)
+void free_lisp_output(char *output)
 {
-    if (!interp->output)
-        return;
-    fclose(interp->output);
+    /* Note: simplify me where I'm called */
     free(output);
-    interp->output = prev;
 }
 
 void gui(void)

@@ -188,15 +188,15 @@ test/test.lsp: test/test.sht
 
 # Manually test femto invocation and review syntax highlighting
 ftest: femto FORCE
-	FEMTORC=femto.rc FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto
-	FEMTORC=femto.rc FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto _no_file_
-	FEMTORC=femto.rc FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto +3 test/five_lines.txt
-	FEMTORC=femto.rc FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto +6 test/circle.py
-	FEMTORC=femto.rc FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto +8 lisp.c
-	FEMTORC=femto.rc FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto +6 init.lsp
+	FEMTORC=init.lsp FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto
+	FEMTORC=init.lsp FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto _no_file_
+	FEMTORC=init.lsp FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto +3 test/five_lines.txt
+	FEMTORC=init.lsp FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto +6 test/circle.py
+	FEMTORC=init.lsp FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto +8 lisp.c
+	FEMTORC=init.lsp FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto +6 init.lsp
 
 val: femto FORCE
-	FEMTORC=femto.rc FEMTOLIB=lisp FEMTO_DEBUG=1 valgrind ./femto 2> val.log
+	FEMTORC=init.lsp FEMTOLIB=lisp FEMTO_DEBUG=1 valgrind ./femto 2> val.log
 
 # Install/package
 strip: $(BINARIES) FORCE

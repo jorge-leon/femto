@@ -50,16 +50,16 @@
 		</li>
 	</ol>
 	</li>
-	<li><a href="#libraries">Lisp Libraries</a>
+	<li><a href="#femto_lib">The femto Lisp library</a></li>
+	<li><a href="#libraries"><i>Femto</i> Lisp Applications</a>
 	<ol>
-		<li><a href="#femto_lib"><code>femto</code></a></li>
-		<li><a href="#bufmenu"><code>bufmenu</code></a> Buffer Selection Menu</li>
-		<li><a href="#defmacro"><code>defmacro</code></a> Editor Macros</li>
 		<li><a href="#dired"><code>dired</code></a> Directory Navigation</li>
-		<li><a href="#info"><code>info</code></a> Builtin Help</li>
-		<li><a href="#git"><code>git</code></a> Git Repo Helper</li>
+		<li><a href="#bufmenu"><code>bufmenu</code></a> Buffer Selection Menu</li>
 		<li><a href="#grep"><code>grep</code></a> File Content Search</li>
+		<li><a href="#git"><code>git</code></a> Git Repo Helper</li>
+		<li><a href="#info"><code>info</code></a> Builtin Help</li>
 		<li><a href="#oxo"><code>oxo</code></a> Tic-Tac-Toe Game</li>
+		<li><a href="#defmacro"><code>defmacro</code></a> Editor Macros</li>
 	</ol>
 	</li>
 </ol>
@@ -282,146 +282,165 @@
 	<dt><code>(log-message <var>string</var>)</code>&nbsp;&rArr; <code>t</code> <u>f</u></dt>
 	<dd>Logs <var>string</var> to the <samp>*messages*</samp> buffer.</dd>
 	<dt><code>(suspend)</code>&nbsp;&rArr; <code>t</code>&nbsp;<u>S: suspend-emacs</u></dt>
-	<dd>Suspend Femto.</dd>
-	<dt>&nbsp;</dt>
+	<dd>Suspend <i>Femto</i>.</dd>
 	<dt>&nbsp;</dt>
 </dl>
 
-<h3 id="libraries">Lisp Libraries</h3>
+<h3 id="femto_lib">The <code>femto</code> Lisp Library</h3>
 
-<p><mark>Tbd.: document the libraries.</mark></p>
+<p>This library provides standard editor functions, mostly tailored to Emacs compatibility and wrappers of the editor extension primitives.</p>
 
-<h4 id="femto_lib"><code>femto</code></h4>
+<p>Femto does not have the Emacs notion of interactive functions. We use the suffix <code>-interactive</code>&nbsp;if we want to emphasize that a function is the interactive version and <code>-noselect</code> to emphasize that it is the non-interactive version.</p>
 
-<p>Standard editor functions, mostly tailored to Emacs compatibility and wrappers of the editor extension primitives.</p>
-
-<p><i>Femto</i> editor&nbsp; functions.</p>
+<p>Two <q>normal</q> hooks are in use:&nbsp;</p>
 
 <dl>
-	<dt><code>(load-script&nbsp;<var>fn</var>)</code></dt>
-	<dd>deprecated, use <code>require</code>.</dd>
-	<dt><code>(insert-file-contents-literally <var>path</var>)</code></dt>
+	<dt><code>after-switch-to-buffer-hook</code> <u>f</u></dt>
+	<dd>Run after switching to a buffer. This is used e.g. by&nbsp;<code>dired</code>&nbsp;do start the command loop.</dd>
+	<dt><code>find-file-hook</code></dt>
+	<dd>Run after setting the major mode of a buffer in <code>(after-find-file)</code>.</dd>
+</dl>
+
+<h5><i>Femto</i>&nbsp;Edit and Navigation Functions</h5>
+
+<dl>
 	<dt><code>(insert-file)</code></dt>
 	<dd>Interactively insert file in current buffer.</dd>
 	<dt><code>(shell-command[ <var>command_line</var>])</code></dt>
 	<dd>Execute string <var>command_line</var>&nbsp;with the <code>system()</code> call. If not given prompt for commandline.</dd>
-	<dt><code>(shell-exec <var>command_line</var>)</code> <u>f</u></dt>
-	<dd>Helper function for <code>shell-command</code>.<code>&nbsp;</code></dd>
-	<dt><code>(shell-command-lines <var>command</var>[ <var>arg</var>..])</code>&nbsp;&rArr; <u>f</u></dt>
-	<dd>Join string&nbsp;<var>command</var> and all <var>arg</var>s with a space and execute the resulting command line with <code>popen()</code>. Read output and return it as list of lines without the trailing newlines.</dd>
-	<dt><code>(shell_strip_eol <i>line</i>)</code></dt>
-	<dd>Strip newline and carriage return characters from end of string <var>line</var>.</dd>
-	<dt>(repeat n func)</dt>
-	<dd>-</dd>
-	<dt>(string-restrict-chars-p rl s)</dt>
-	<dd>-</dd>
-	<dt>(posix-filename s)</dt>
-	<dd>-</dd>
-	<dt>(delete-next-word()</dt>
-	<dd>-</dd>
-	<dt>(delete-previous-word()</dt>
-	<dd>-</dd>
-	<dt>(kill-to-eol()</dt>
-	<dd>-</dd>
-	<dt>(is_ctl_g(k)</dt>
-	<dd>-</dd>
-	<dt>(is_escape(k)</dt>
+	<dt><code>(delete-next-word)</code></dt>
 	<dd>&nbsp;</dd>
-	<dt>(is_backspace(k)</dt>
+	<dt><code>(delete-previous-word)</code></dt>
 	<dd>&nbsp;</dd>
-	<dt>(is_ctl_s(k)</dt>
+	<dt><code>(kill-to-eol)</code></dt>
 	<dd>&nbsp;</dd>
-	<dt>(is_control_char(k)</dt>
+	<dt><code>(transpose-chars)</code></dt>
 	<dd>&nbsp;</dd>
-	<dt>(describe-key()</dt>
-	<dd>&nbsp;</dd>
-	<dt>(find_end_p()</dt>
-	<dd>&nbsp;</dd>
-	<dt>(find_start_p()</dt>
-	<dd>&nbsp;</dd>
-	<dt>(find_and_eval_sexp()</dt>
-	<dd>&nbsp;</dd>
-	<dt>(transpose-chars)</dt>
-	<dd>&nbsp;</dd>
-	<dt>(run-hook hookvar)</dt>
-	<dd>&nbsp;</dd>
-	<dt>(buffer-name arg)</dt>
-	<dd>&nbsp;</dd>
-	<dt>(current-buffer)</dt>
-	<dd>-</dd>
-	<dt>(switch-to-buffer name)</dt>
-	<dd>-</dd>
-	<dt>(restore-buffer-modified-p bool)</dt>
-	<dd>-</dd>
-	<dt>(set-buffer-modified-p bool)</dt>
-	<dd>&nbsp;</dd>
-	<dt>(buffer-list) (buffer-basename name)</dt>
-	<dd>&nbsp;</dd>
-	<dt>(buffer-list_filtered name)</dt>
-	<dd>&nbsp;</dd>
-	<dt>(buffer-name_split name)</dt>
-	<dd>&nbsp;</dd>
-	<dt>(buffer-name_index name)</dt>
-	<dd>&nbsp;</dd>
-	<dt>(generate-new-buffer-name name)</dt>
-	<dd>&nbsp;</dd>
-	<dt>(buffer-name_maxindex name)</dt>
-	<dd>&nbsp;</dd>
-	<dt>(create-file-buffer filename)</dt>
-	<dd>&nbsp;</dd>
-	<dt>(rename-buffer name . opts)</dt>
-	<dd>&nbsp;</dd>
-	<dt>(next-buffer)</dt>
-	<dd>-</dd>
-	<dt>(other-buffer)</dt>
-	<dd>-</dd>
-	<dt>(insert-buffer-substring-no-properties from-buffer-or-name . args)</dt>
-	<dd>-</dd>
-	<dt>(kill-buffer-interactive)</dt>
-	<dd>-</dd>
-	<dt>(kill-buffer args)</dt>
-	<dd>-</dd>
-	<dt>(kill-buffer_and_switch buffer current)</dt>
-	<dd>-</dd>
-	<dt>(find-file)</dt>
-	<dd>-</dd>
-	<dt>(find-file-noselect filename)</dt>
-	<dd>-</dd>
-	<dt>(find-file_load fd filename read-only)</dt>
-	<dd>-</dd>
-	<dt>(find-file_new filename)</dt>
-	<dd>&nbsp;</dd>
-	<dt>(after-find-file)</dt>
-	<dd>&nbsp;</dd>
-	<dt>(find-file_directory filename)</dt>
-	<dd>-</dd>
-	<dt>(save-buffer)</dt>
-	<dd>-</dd>
-	<dt>(write-file)</dt>
-	<dd>-</dd>
-	<dt>(write-file_check_path path)</dt>
-	<dd>-</dd>
-	<dt>(save-some-buffers)</dt>
-	<dd>-</dd>
-	<dt>(save-buffer_query buffer mode)</dt>
-	<dd>-</dd>
-	<dt>(save-buffers-kill-terminal)</dt>
-	<dd>-</dd>
+	<dt>(find_and_eval_sexp)</dt>
+	<dd>Editor commands for common key bindings.</dd>
+	<dt><code>(describe-key)</code>&nbsp;&rArr; <var>p</var>&nbsp;<u>S</u></dt>
+	<dd>Read&nbsp; a key (sequence)&nbsp;with (get-key) and print in the message area either the character, the key name or the function name bound to it.</dd>
+	<dt><code>(kill-buffer-interactive)</code></dt>
+	<dd>Prompt for the buffer to kill and kill it. Default is the current buffer.</dd>
+	<dt><code>(find-file)</code></dt>
+	<dd>Prompt for a filename. If the file is already in a buffer switch to that buffer, if not read it into a new buffer and switch to it.</dd>
+	<dt><code>(save-buffer)</code></dt>
+	<dd>Saves the current buffer into it&#39;s file, if one is associated and the buffer is modified. If the file does not exist it is created together will all missing parent directories.</dd>
+	<dt><code>(write-file)</code></dt>
+	<dd>Ask for a file name to save the current buffer into and then <code>save-buffer</code> it.</dd>
+	<dt><code>(save-some-buffers)</code></dt>
+	<dd>Interactively save modified file buffers.</dd>
+	<dt><code>(save-buffers-kill-terminal)</code></dt>
+	<dd><code>save-some-buffers</code> then exit <i>Femto</i>.</dd>
 </dl>
 
-<h4 id="bufmenu"><code>bufmenu</code> Buffer Selection Menu</h4>
+<h5>Femto Utility Functions</h5>
+
+<dl>
+	<dt><code>(load-script&nbsp;<var>fn</var>)</code>&nbsp;<u>f</u></dt>
+	<dd>deprecated, use <code>require</code>.</dd>
+	<dt><code>(insert-file-contents-literally <var>path</var>)</code></dt>
+	<dd>&nbsp;</dd>
+	<dt><code>(shell-exec <var>command_line</var>)</code> <u>f</u></dt>
+	<dd>Helper function for <code>shell-command</code>.<code>&nbsp;</code></dd>
+	<dt><code>(shell-command-lines <var>command</var>[ <var>arg</var>..])</code>&nbsp;&rArr;&nbsp;&nbsp;<u>f</u></dt>
+	<dd>Join string&nbsp;<var>command</var> and all <var>arg</var>s with a space and execute the resulting command line with <code>popen()</code>. Read output and return it as list of lines without the trailing newlines.</dd>
+	<dt><code>(shell_strip_eol <i>line</i>)</code>&nbsp;&rArr; <var>line&#39;</var>&nbsp;<u>f</u></dt>
+	<dd>Strip newline and carriage return characters from end of string <var>line</var>.</dd>
+	<dt><code>(repeat <var>n</var> <var>func</var>)</code>&nbsp;<u>f</u></dt>
+	<dd>Execute <var>func</var> <var>n</var> times.</dd>
+	<dt><code>(string-restrict-chars-p <var>rl</var> <var>s</var>)</code>&nbsp;&rArr; <var>p</var>&nbsp;<u>f</u></dt>
+	<dd>Returns <code>t</code> if all characters in string&nbsp;<var>s</var> are members of list of charachters <var>rl</var>.</dd>
+	<dt><code>(posix-filename <var>s</var>)</code>&nbsp;&rArr; <var>p</var>&nbsp;<u>f</u></dt>
+	<dt><code>(is_ctl_g <var>k</var>)</code>&nbsp;&rArr; <var>p</var>&nbsp;<u>f</u></dt>
+	<dd>&nbsp;</dd>
+	<dt><code>(is_escape <var>k</var>)</code>&nbsp;&rArr; <var>p</var>&nbsp;<u>f</u></dt>
+	<dd>&nbsp;</dd>
+	<dt><code>(is_backspace <var>k</var>)</code>&nbsp;&rArr; <var>p</var>&nbsp;<u>f</u></dt>
+	<dd>&nbsp;</dd>
+	<dt><code>(is_ctl_s <var>k</var>)</code>&nbsp;&rArr; <var>p</var>&nbsp;<u>f</u></dt>
+	<dd>&nbsp;</dd>
+	<dt><code>(is_control_char <var>k</var>)</code>&nbsp;&rArr; <var>p</var>&nbsp;<u>f</u></dt>
+	<dd>Keystroke checks, <var>k</var> is the ASCII character as returned by <code>(get-key)</code>.</dd>
+	<dd>Returns <code>t</code> is string <var>s</var> is a posix compliant path: does not start with a dash <code>-</code>, is only alphanumeric plus dot, underscore, dash and slash.</dd>
+	<dt><code>(run-hooks <var>hooks</var>)</code></dt>
+	<dd><var>hooks</var> is a variable name holding a list of function symbols which are run in order. This implements Emacs <q>normal</q> hooks.</dd>
+</dl>
+
+<h5>Femto Buffer functions</h5>
+
+<dl>
+	<dt><code>(buffer-name[ <var>buffer</var>])</code>&nbsp;&rArr; <var>name</var></dt>
+	<dd>Return the name of the given buffer of the current buffer if not given.</dd>
+	<dt><code>(current-buffer)</code>&nbsp;&rArr; <i>name</i></dt>
+	<dd>Return the current buffer.</dd>
+	<dt><code>(switch-to-buffer <var>name</var>)</code>&nbsp;&rArr; <i>name</i></dt>
+	<dd>Associate buffer <var>name</var>&nbsp;with the current window and run the Femto specific hook <code>after-switch-to-buffer-hook</code>.</dd>
+	<dt><code>(restore-buffer-modified-p <var>p</var>)</code>&nbsp;&rArr; <var>p</var></dt>
+	<dd>Set modified flag of the current buffer to predicate <var>p</var>.</dd>
+	<dt><code>(set-buffer-modified-p <var>p</var>)</code>&nbsp;&rArr; <var>p</var></dt>
+	<dd>Set modified flag of the current buffer to predicate <var>p</var> and refresh all windows.</dd>
+	<dt>(<code>buffer-list)</code>&nbsp;&rArr; <var>l</var></dt>
+	<dd>Return list of all buffers.</dd>
+	<dt><code>(generate-new-buffer-name <var>name</var>)</code>&nbsp;&rArr; <i>name&#39;</i></dt>
+	<dd>Starting with a given buffer name generate a unique buffer name by appending&nbsp;<code>/</code><var>n</var> where <var>n</var> is a decimal number.</dd>
+	<dt><code>(buffer-basename <var>name</var>)</code>&nbsp;&rArr; <i>name&#39;</i></dt>
+	<dd>Strips a trailing&nbsp;<code>/</code><var>n</var> of from a buffer name.</dd>
+	<dt><code>(create-file-buffer <var>filename</var>)</code>&nbsp;&rArr; <i>name</i></dt>
+	<dd>Gets or creates a file buffer and names it uniquely, given a filename. The base name is the file name without directory components.</dd>
+	<dt><code>(rename-buffer <var>name</var>[ <var>unique-p</var>])</code>&nbsp;&rArr; <i>name&#39;</i></dt>
+	<dd>Renames the current&nbsp;buffer to <var>name</var>. If <var>unique-p</var> is given and not null the buffer name is uniquified before renaming.</dd>
+	<dt><code>(other-buffer)</code>&nbsp;&rArr; <i>name</i></dt>
+	<dd>Return the next best buffer after the current buffer.</dd>
+	<dt><code>(insert-buffer-substring-no-properties from-buffer-or-name[ <var>start</var>[ <var>end</var>])</code>&nbsp;&rArr; <code>t</code></dt>
+	<dd>Insert the buffer contents of the given buffer&nbsp;<var>from-buffer-or-name</var> into the current buffer at point. <var>start</var> and <var>end</var> is the region to insert, <var>start</var> defaults to the&nbsp;beginning,&nbsp; <var>end</var> is the end of the from buffer.</dd>
+	<dt><code>(kill-buffer[ <var>buffer</var>])</code>&nbsp;&rArr; <i>name</i></dt>
+	<dd>Kills the given buffer or the current buffer if not given. Offers saving modified buffers, switches to <code>other-buffer</code> if the buffer to kill is the current buffer.</dd>
+	<dt><code>(find-file-noselect <var>filename</var>)</code></dt>
+	<dd>Read the given file into a buffer and return the buffer. If the file does not exist create an empty buffer for it and associate the filename. If <var>filename</var> is a directory open the directory editor for it.</dd>
+	<dt><code>(after-find-file)</code></dt>
+	<dd>Run after the buffer for a regular file is created or switched to. Sets the major mode of the buffer and runs the hook&nbsp;<code>find-file-hook</code>.</dd>
+</dl>
+
+<h3>Femto Lisp Applications</h3>
 
 <h4 id="defmacro"><code>defmacro</code> Editor Macros</h4>
 
-<h4 id="dired"><code>dired</code> Directory Navigation</h4>
+<p><mark>Note: currently not working</mark></p>
 
-<h4 id="info"><code>info</code> Builtin Help</h4>
+<p id="dired">This applications allows to record a keyboard macros and make it available in a buffer called *macro*.</p>
 
-<h4 id="git"><code>git</code> Git Repo Helper</h4>
+<p>Keybindings:</p>
 
-<h4 id="grep"><code>grep</code> File Content Search</h4>
+<dl>
+	<dt>c-x (</dt>
+	<dd>starts the recording</dd>
+	<dt>c-x )</dt>
+	<dd>stops the recording</dd>
+	<dt>c-x e</dt>
+	<dd>executes the macro</dd>
+	<dt>esc-e</dt>
+	<dd>executes the macro</dd>
+</dl>
 
-<h4 id="oxo"><code>oxo</code> Tic-Tac-Toe Game</h4>
+<p><mark>Tbd.: document the following libraries.</mark></p>
+
+<h4><code>dired</code> Directory Navigation</h4>
+
+<h4 id="bufmenu"><code>bufmenu</code> Buffer Selection Menu</h4>
+
+<h4><code>grep</code> File Content Search</h4>
+
+<h4><code>git</code> Git Repo Helper</h4>
+
+<h4><code>info</code> Builtin Help</h4>
+
+<h4><code>oxo</code> Tic-Tac-Toe Game</h4>
+
+<h4 id="defmacro">&nbsp;</h4>
+
+<dl>
+</dl>
 
 <nav><a href="#toc">^</a></nav>
 </body>

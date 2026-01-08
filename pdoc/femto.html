@@ -1,316 +1,296 @@
 <!DOCTYPE html>
-<html lang="en" xml:lang="en">
+<html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
-	<title>The Femto Editor</title>
-	<meta content="text/html; charset=utf-8" http-equiv="content-type" /><meta content="Editor, Emacs, tiny, manual" name="keywords" /><meta content="User manual for the Femto editor" name="description" /><meta content="Hugh Barney &lt;hughbarney@gmail.com&gt;" name="author" /><meta content="Georg Lehner &lt;jorge@magma-soft.at&gt;" name="author" /><meta content="2017" name="copyright" />
+  <meta name="generator" content="HTML Tidy for HTML5 for Linux version 5.8.0" />
+  <title>The Femto Editor</title>
+  <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+  <meta content="Editor, Emacs, tiny, manual" name="keywords" />
+  <meta content="User manual for the Femto editor" name="description" />
+  <meta content="Hugh Barney &lt;hughbarney@gmail.com&gt;" name="author" />
+  <meta content="Georg Lehner &lt;jorge@magma-soft.at&gt;" name="author" />
+  <meta content="2017" name="copyright" />
 </head>
 <body>
-<h1>The Femto Editor</h1>
-
-<blockquote>A designer knows he has achieved perfection not when there is nothing left to add, but when there is nothing left to take away. -- <cite>Antoine de Saint-Exupery</cite></blockquote>
-
-<p><i>Femto</i> is an Emacs like text editor for the console with a minimal memory footprint which can be customized with a Lisp extension language. This manual describes how to use and customize <i>Femto</i>. It refers to&nbsp;<i>Femto</i> version 2.25.</p>
-
-<p><i>Femto</i> is hosted on its <a href="https://github.com/jorge-leon/femto">Github repository</a>, it is released to the public domain by <a href="mailto:hughbarney@gmail.com">Hugh Barney</a>&nbsp; in 2017 and <a href="mailto:jorge@magma-soft.at">Georg Lehner</a> 2023</p>
-
-<p>The extension language of <i>Femto</i> is <i>fLisp</i>, it is documented in the <a href="https://github.com/jorge-leon/flisp/blob/main/doc/flisp.html">fLisp manual</a> (<a href="https://github.com/jorge-leon/flisp/blob/main/doc/flisp.md">Markdown</a>).</p>
-
-<p>Note: This is an unofficial release, all relevant links go to <a href="https://github.com/jorge-leon/">https://github.com/jorge-leon/</a>&nbsp;all credits go to the original author.</p>
-
-<h2>Femto Key Bindings</h2>
-
-<pre>
+  <h1>The Femto Editor</h1>
+  <blockquote>
+    A designer knows he has achieved perfection not when there is nothing left to add, but when there is nothing left
+    to take away. -- <cite>Antoine de Saint-Exupery</cite>
+  </blockquote>
+  <p><i>Femto</i> is an Emacs like text editor for the console with a minimal memory footprint which can be customized
+  with a Lisp extension language. This manual describes how to use and customize <i>Femto</i>. It refers
+  to&nbsp;<i>Femto</i> version 2.25.</p>
+  <p><i>Femto</i> is hosted on its <a href="https://github.com/jorge-leon/femto">Github repository</a>, it is released
+  to the public domain by <a href="mailto:hughbarney@gmail.com">Hugh Barney</a>&nbsp; in 2017 and <a href=
+  "mailto:jorge@magma-soft.at">Georg Lehner</a> 2023</p>
+  <p>The extension language of <i>Femto</i> is <i>fLisp</i>, it is documented in the <a href=
+  "https://github.com/jorge-leon/flisp/blob/main/doc/flisp.html">fLisp manual</a> (<a href=
+  "https://github.com/jorge-leon/flisp/blob/main/doc/flisp.md">Markdown</a>).</p>
+  <p>Note: This is an unofficial release, all relevant links go to <a href=
+  "https://github.com/jorge-leon/">https://github.com/jorge-leon/</a>&nbsp;all credits go to the original author.</p>
+  <h2>Femto Key Bindings</h2>
+  <pre>
 <code>
-	C-A   begining-of-line
-	C-B   backward-character
-	C-D   delete-char
-	C-E   end-of-line
-	C-F   forward Character
-	C-G   Abort (at prompts)
-	C-H   backspace
-	C-I   handle-tab
-	C-J   newline
-	C-K   kill-to-eol
-	C-L   refresh display
-	C-M   Carrage Return
-	C-N   next line
-	C-P   previous line
-	C-R   search-backwards
-	C-S   search-forwards
-	C-T   transpose-chars
-	C-U   Undo
-	C-V   Page Down
-	C-W   Kill Region (Cut)
-	C-X   CTRL-X command prefix
-	C-Y   Yank (Paste)
-	C-Z   suspend
+        C-A   begining-of-line
+        C-B   backward-character
+        C-D   delete-char
+        C-E   end-of-line
+        C-F   forward Character
+        C-G   Abort (at prompts)
+        C-H   backspace
+        C-I   handle-tab
+        C-J   newline
+        C-K   kill-to-eol
+        C-L   refresh display
+        C-M   Carrage Return
+        C-N   next line
+        C-P   previous line
+        C-R   search-backwards
+        C-S   search-forwards
+        C-T   transpose-chars
+        C-U   Undo
+        C-V   Page Down
+        C-W   Kill Region (Cut)
+        C-X   CTRL-X command prefix
+        C-Y   Yank (Paste)
+        C-Z   suspend
 
-	M-&lt;   Start of file
-	M-&gt;   End of file
-&nbsp;       M-!   shell-command (prompt for a command which is sent to the shell)
-	M-v   Page Up
-	M-f   Forward Word
-	M-b   Backwards Word
-	M-g   goto-line
-	M-r   Search and Replace
-	M-w   copy-region
+        M-&lt;   Start of file
+        M-&gt;   End of file
+        M-!   shell-command (prompt for a command which is sent to the shell)
+        M-v   Page Up
+        M-f   Forward Word
+        M-b   Backwards Word
+        M-g   goto-line
+        M-r   Search and Replace
+        M-w   copy-region
 
-	C-&lt;spacebar&gt; Set mark at current position.
+        C-spacebar Set mark at current position.
 
-	^X^B  List Buffers
-&nbsp;       ^Xb   List Buffers
-	^X^C  Exit. Any unsaved files will require confirmation.
-	^X^F  Find file; read into a new buffer created from filename.
-&nbsp;       ^X^G  git-menu
-&nbsp;       ^X^O  Run the OXO game
-	^X^S  Save current buffer to disk, using the filename associated with the buffer
-	^X^W  Write current buffer to disk. Type in a new filename at the prompt
-	^X@   shell-command
-&nbsp;       ^Xc   edit-config (edit personal init.lsp configuration file)
-&nbsp;       ^Xd   dired-interactive (directory editor)
-&nbsp;       ^Xg   grep-command
-&nbsp;       ^Xh   show-info (show a help buffer)
-	^Xi   Insert file at point
-	^X=   Show Character at position
-	^X^N  next-buffer
-	^Xn   next-buffer
-	^Xk   kill-buffer
-	^X1   delete-other-windows
-	^X2   split-window
-	^Xo   other-window
-&nbsp;       ^Xs   save-some-buffers
+        ^X^B  List Buffers
+        ^Xb   List Buffers
+        ^X^C  Exit. Any unsaved files will require confirmation.
+        ^X^F  Find file; read into a new buffer created from filename.
+        ^X^G  git-menu
+        ^X^O  Run the OXO game
+        ^X^S  Save current buffer to disk, using the filename associated with the buffer
+        ^X^W  Write current buffer to disk. Type in a new filename at the prompt
+        ^X@   shell-command
+        ^Xc   edit-config (edit personal init.lsp configuration file)
+        ^Xd   dired-interactive (directory editor)
+        ^Xg   grep-command
+        ^Xh   show-info (show a help buffer)
+        ^Xi   Insert file at point
+        ^X=   Show Character at position
+        ^X^N  next-buffer
+        ^Xn   next-buffer
+        ^Xk   kill-buffer
+        ^X1   delete-other-windows
+        ^X2   split-window
+        ^Xo   other-window
+        ^Xs   save-some-buffers
 
-	Home  Beginning-of-line
-	End   End-of-line
-	Del   Delete character under cursor
-	Ins   Toggle Overwrite Mode
-	Left  Move left
-	Right Move point right
-	Up    Move to the previous line
-	Down  Move to the next line
-	Backspace delete caharacter on the left
-	Ctrl+Up      beginning of file
-	Ctrl+Down    end of file
-	Ctrk+Left    Page Down
-	Ctrl+Right   Page Up</code></pre>
-
-<h3>Copying and moving</h3>
-
-<pre>
+        Home  Beginning-of-line
+        End   End-of-line
+        Del   Delete character under cursor
+        Ins   Toggle Overwrite Mode
+        Left  Move left
+        Right Move point right
+        Up    Move to the previous line
+        Down  Move to the next line
+        Backspace delete caharacter on the left
+        Ctrl+Up      beginning of file
+        Ctrl+Down    end of file
+        Ctrk+Left    Page Down
+        Ctrl+Right   Page Up</code></pre>
+  <h3>Copying and moving</h3>
+  <pre>
 <code>
-	C-&lt;spacebar&gt; Set mark at current position
-	^W   Delete region
-	^Y   Yank back kill buffer at cursor
-	M-w  Copy Region</code></pre>
-
-<p>A region is defined as the area between this mark and the current cursor position. The kill buffer is the text which has been most recently deleted or copied.</p>
-
-<p>Generally, the procedure for copying or moving text is:</p>
-
-<ol>
-	<li>Mark out region using M-<spacebar> at the beginning and move the cursor to the end.</spacebar></li>
-	<li>Delete it (with ^W) or copy it (with M-W) into the kill buffer.</li>
-	<li>Move the cursor to the desired location and yank it back (with ^Y).</li>
-</ol>
-
-<h3>Searching</h3>
-
-<pre>
+        C-spacebar Set mark at current position
+        ^W   Delete region
+        ^Y   Yank back kill buffer at cursor
+        M-w  Copy Region</code></pre>
+  <p>A region is defined as the area between this mark and the current cursor position. The kill buffer is the text
+  which has been most recently deleted or copied.</p>
+  <p>Generally, the procedure for copying or moving text is:</p>
+  <ol>
+    <li>Mark out region using M-&lt;spacebar&gt; at the beginning and move the cursor to the end.</li>
+    <li>Delete it (with ^W) or copy it (with M-W) into the kill buffer.</li>
+    <li>Move the cursor to the desired location and yank it back (with ^Y).</li>
+  </ol>
+  <h3>Searching</h3>
+  <pre>
 <code>
-	C-S or C-R enters the search prompt, where you type the search string
-	BACKSPACE - will reduce the search string, any other character will extend it
-	C-S at the search prompt will search forward, will wrap at end of the buffer
-	C-R at the search prompt will search backwards, will wrap at start of the buffer
-	ESC will escape from the search prompt and return to the point of the match
-	C-G abort the search and return to point before the search started</code></pre>
-
-<h2>Lisp Interaction</h2>
-
-<p>There are two ways to interact with fLisp within Femto.</p>
-
-<ul>
-	<li>You can use C-] to find the last s-expression above the cursor and send it to be evaluated.</li>
-	<li>You can mark a region and send the whole region to be evaluated with ESC-].</li>
-</ul>
-
-<h3>Lisp Interaction - finding and evaluating the last s-expression</h3>
-
-<p>This works in almost the same way as GNU Emacs in the scratch buffer.</p>
-
-<h3>Lisp Interaction - mark and evaluating a region</h3>
-
-<p>Type a lisp function into the editor, for example:</p>
-
-<pre>
+        C-S or C-R enters the search prompt, where you type the search string
+        BACKSPACE - will reduce the search string, any other character will extend it
+        C-S at the search prompt will search forward, will wrap at end of the buffer
+        C-R at the search prompt will search backwards, will wrap at start of the buffer
+        ESC will escape from the search prompt and return to the point of the match
+        C-G abort the search and return to point before the search started</code></pre>
+  <h2>Lisp Interaction</h2>
+  <p>There are two ways to interact with fLisp within Femto.</p>
+  <ul>
+    <li>You can use C-] to find the last s-expression above the cursor and send it to be evaluated.</li>
+    <li>You can mark a region and send the whole region to be evaluated with ESC-].</li>
+  </ul>
+  <h3>Lisp Interaction - finding and evaluating the last s-expression</h3>
+  <p>This works in almost the same way as GNU Emacs in the scratch buffer.</p>
+  <h3>Lisp Interaction - mark and evaluating a region</h3>
+  <p>Type a lisp function into the editor, for example:</p>
+  <pre>
 <code>
-	1: --------------
-	2: (defun factorial (n)
-	3:   (cond ((= n 0) 1)
-	4:     (t (* n (factorial (- n 1))))))
-	5:--------------</code></pre>
-
-<p>Place the cursor at the beginning of line 1 and set a mark (hit control-spacebar).</p>
-
-<p>Now move the cursot to line 5 and evaluate the block of code (hit escape followed by ])</p>
-
-<p>Femto will pass the code to lisp for it to be evaluated.</p>
-
-<pre>
+        1: --------------
+        2: (defun factorial (n)
+        3:   (cond ((= n 0) 1)
+        4:     (t (* n (factorial (- n 1))))))
+        5:--------------</code></pre>
+  <p>Place the cursor at the beginning of line 1 and set a mark (hit control-spacebar).</p>
+  <p>Now move the cursot to line 5 and evaluate the block of code (hit escape followed by ])</p>
+  <p>Femto will pass the code to lisp for it to be evaluated.</p>
+  <pre>
 <code>&lt;Lambda (n)&gt;</code></pre>
-
-<p>Now call factorial in the same way (mark the start of the code, move to the end of the code and hit escape-])</p>
-
-<pre>
+  <p>Now call factorial in the same way (mark the start of the code, move to the end of the code and hit escape-])</p>
+  <pre>
 <code>(factorial 6)
 
-	720</code></pre>
+        720</code></pre>
+  <p><img alt="Screenshot of Femto editor showing Lisp evaluation." src=
+  "https://github.com/hughbarney/femto/blob/master/screenshots/femto-lisp.jpg" /></p>
+  <h2>Femto Startup</h2>
+  <p>The Femto editor itself provides only basic buffer movement and edit functions, everything else is done by
+  extending the user interface using the Lisp extension language which is bootstrapped in the following way:</p>
+  <ol>
+    <li>The <i>fLisp</i> core library and Femto initialization code is loaded from the file
+    <code>/usr/local/share/femto/init.lsp</code>.
+      <ul>
+        <li>This path can vary according to the installation method and operating sytem and can be changed at runtime
+        with the environment variable <code>FEMTORC</code>.</li>
+      </ul>
+    </li>
+    <li>The <i>flisp</i>, <i>string</i> and <i>file</i> Lisp libraries&nbsp;are loaded from the
+    directory&nbsp;<code>/usr/local/share/flisp</code>.
+      <ul>
+        <li>This path can also vary and can be changed at runtime with <code>FLISPLIB</code>.</li>
+      </ul>
+    </li>
+    <li>The <i>fLisp</i> library load path <code>script_dir</code> is changed to <code>/usr/local/share/femto</code>
+    and <code>startup.lsp</code> is loaded from there.
+      <ul>
+        <li>This path can also vary and can be changed at runtime with <code>FEMTOLIB</code>.</li>
+      </ul>
+    </li>
+    <li>
+      <code>startup.lsp:</code>
+      <ul>
+        <li><code>​​​</code>Loads the <i>defmacro</i>, <i>bufmenu</i>, <i>dired</i>, <i>grep</i> and <i>git</i>
+        libraries.</li>
+        <li>Creates all related key bindings.</li>
+        <li>shows a startup message in the <i>*scratch*</i> buffer.</li>
+        <li>Tries to load the users <code>init.lsp</code> file&nbsp;from the directory
+        <code>$HOME/.config/femto</code>.</li>
+        <li>Parses the command line arguments, i.e. loads all given files into buffers and optionally jumps to the
+        given lines.</li>
+      </ul>
+    </li>
+  </ol>
+  <h2>Modes</h2>
+  <p>Modes control the behaviour of the editor and the syntax highligher</p>
+  <dl>
+    <dt>cmode,&nbsp;python</dt>
+    <dd>Highlights single and double quoted strings, block comments and line comments.</dd>
+    <dt>lisp</dt>
+    <dd>Highlights Lisp commands which start with semicolons.</dd>
+  </dl>
+  <h2>Debugging</h2><!-- Batch mode is currently not available and might be deprecated in --><!-- future versions -->
+  <!--
+        ## Batch Mode
 
-<p><img alt="Screenshot of Femto editor showing Lisp evaluation." src="https://github.com/hughbarney/femto/blob/master/screenshots/femto-lisp.jpg" /></p>
-
-<h2>Femto Startup</h2>
-
-<p>The Femto editor itself provides only basic buffer movement and edit functions, everything else is done by extending the user interface using the Lisp extension language which is bootstrapped in the following way:</p>
-
-<ol>
-	<li>The <i>fLisp</i> core library and Femto initialization code is loaded from the file <code>/usr/local/share/femto/init.lsp</code>.
-
-	<ul>
-		<li>This path can vary according to the installation method and operating sytem and can be changed at runtime with the environment variable <code>FEMTORC</code>.</li>
-	</ul>
-	</li>
-	<li>The <i>flisp</i>, <i>string</i> and <i>file</i> Lisp libraries&nbsp;are loaded from the directory&nbsp;<code>/usr/local/share/flisp</code>.
-	<ul>
-		<li>This path can also vary and can be changed at runtime with <code>FLISPLIB</code>.</li>
-	</ul>
-	</li>
-	<li>The <i>fLisp</i> library load path <code>script_dir</code> is changed to <code>/usr/local/share/femto</code> and <code>startup.lsp</code> is loaded from there.
-	<ul>
-		<li>This path can also vary and can be changed at runtime with <code>FEMTOLIB</code>.</li>
-	</ul>
-	</li>
-	<li><code>startup.lsp:</code>
-	<ul>
-		<li><code>​​​</code>Loads the <i>defmacro</i>, <i>bufmenu</i>, <i>dired</i>, <i>grep</i> and <i>git</i> libraries.</li>
-		<li>Creates all related key bindings.</li>
-		<li>shows a startup message in the <i>*scratch*</i> buffer.</li>
-		<li>Tries to load the users <code>init.lsp</code> file&nbsp;from the directory <code>$HOME/.config/femto</code>.</li>
-		<li>Parses the command line arguments, i.e. loads all given files into buffers and optionally jumps to the given lines.</li>
-	</ul>
-	</li>
-</ol>
-
-<h2>Modes</h2>
-
-<p>Modes control the behaviour of the editor and the syntax highligher</p>
-
-<dl>
-	<dt>cmode,&nbsp;python</dt>
-	<dd>Highlights single and double quoted strings, block comments and line comments.</dd>
-	<dt>lisp</dt>
-	<dd>Highlights Lisp commands which start with semicolons.</dd>
-</dl>
-
-<h2>Debugging</h2>
-<!-- Batch mode is currently not available and might be deprecated in --><!-- future versions --><!--
-	## Batch Mode
-
-	If the environment variable FEMTO_BATCH exists and is not set to `0`
-	batch mode is enabled.  In batch mode the GUI is not started up and
-	all Lisp output is sent to `stdout`.
+        If the environment variable FEMTO_BATCH exists and is not set to `0`
+        batch mode is enabled.  In batch mode the GUI is not started up and
+        all Lisp output is sent to `stdout`.
       -->
-
-<p>If the environment variable <code>FEMTO_DEBUG</code> exists and is not set to <code>0</code> debug mode is enabled. In debug mode, some internal workings are logged to the file <code>debug.out</code>, as well as the arguments of the invocations of the <code>log-debug</code> Lisp primitive.</p>
-
-<h2>Basic Femto Extension</h2>
-
-<p>The fLisp libraries are described in its own <a href="https://github.com/jorge-leon/flisp/doc">project</a>.</p>
-
-<p><code>femto.lsp</code>&nbsp;provide basic editor functionality. The user visible functions are:</p>
-
-<ul>
-	<li><code>(load-script</code> <var><code>file)</code></var> - load file from script directory&nbsp;(obsolete, use&nbsp;<code>require</code>).</li>
-	<li>For Emacs like key bindings:
-	<ul>
-		<li><code>shell-command</code>, <code>insert-file</code>, <code>delete-next-word</code>, <code>delete-previous-word</code>, <code>kill-to-eol</code>,&nbsp;<code>describe-key</code>,&nbsp;<code>find_and_eval_sexp</code>,&nbsp;<code>transpose-chars</code></li>
-	</ul>
-	</li>
-</ul>
-
-<h2>Femto Extensions</h2>
-
-<p>Additional extensions loaded by <code>femto.rc</code></p>
-
-<ul>
-	<li>
-	<p><strong>dired</strong> - enbles directory editing (Emacs style filemanager)</p>
-
-	<ul>
-		<li><strong>C-x C-d</strong> to invoke, then single character keystrokes provide menu options</li>
-		<li><strong>f/Ret</strong> load file or dired directory on&nbsp;current line</li>
-		<li><b>q</b> exit dired</li>
-		<li><strong>g</strong> reload dired buffer</li>
-		<li><strong>^</strong> dired parent directory</li>
-		<li><strong>+</strong> create directory</li>
-		<li>On current line:
-		<ul>
-			<li><strong>C</strong> copy</li>
-			<li><strong>D</strong> delete&nbsp;</li>
-			<li><strong>G</strong> change group</li>
-			<li><strong>M</strong> change mode</li>
-			<li><strong>O</strong> change owner</li>
-			<li><strong>R</strong> rename/move</li>
-			<li><strong>S</strong> symlink</li>
-			<li><strong>T</strong> touch (change timestamp)</li>
-		</ul>
-		</li>
-	</ul>
-	</li>
-	<li>
-	<p><strong>grep</strong> - enables searching for text in files and loading of the files at the location of the match into the editor.</p>
-
-	<ul>
-		<li><strong>C-x g</strong> to invoke, will request a search string and files to search</li>
-		<li><strong>C-x `</strong> to load the next matching file</li>
-	</ul>
-	</li>
-	<li>
-	<p><strong>bufmenu</strong> - the classic Emacs buffer menu</p>
-
-	<ul>
-		<li><strong>C-x C-b</strong> to invoke, then single character keystrokes provide menu options</li>
-		<li><strong>1</strong> loads the file on the current line in one window</li>
-		<li><strong>2</strong> loads the file on the current line in a split window</li>
-		<li><strong>s</strong> saves the file on the current line to disk</li>
-		<li><strong>k</strong> unloads the file without saving</li>
-		<li><strong>x</strong> exits bufmenu</li>
-	</ul>
-	</li>
-	<li>
-	<p><strong>git</strong> - a simple interface to the git version control tool (similar to GNU Emacs magit).</p>
-
-	<ul>
-		<li><strong>C-x g</strong> to invoke, then single character keystrokes menu options</li>
-	</ul>
-	</li>
-	<li>
-	<p><strong>oxo</strong> - a basic implementation of tick-tack-toe that runs in the Editor.</p>
-
-	<ul>
-		<li><strong>C-x C-o</strong> to invoke</li>
-	</ul>
-	</li>
-</ul>
-
-<p><img alt="Femto screenshot" src="https://github.com/hughbarney/femto/blob/master/screenshots/femto-oxo.jpg" /></p>
-
-<h2>Known Issues</h2>
-
-<p><code>goto-line</code> will fail to go to the very last line. This is a special case that could easily be fixed.</p>
-
-<p>Adding a line at the bottom of a window will hide the line until the cursor moves up and down again or the screen is refreshed.</p>
-
-<p>prompt-filename misbehaves and segfaults on Alpine Linux</p>
-
-<p>dired eventually enters the key query loop recursively: one has to <strong>q</strong> out of it when already in a file buffer.</p>
+  <p>If the environment variable <code>FEMTO_DEBUG</code> exists and is not set to <code>0</code> debug mode is
+  enabled. In debug mode, some internal workings are logged to the file <code>debug.out</code>, as well as the
+  arguments of the invocations of the <code>log-debug</code> Lisp primitive.</p>
+  <h2>Basic Femto Extension</h2>
+  <p>The fLisp libraries are described in its own <a href="https://github.com/jorge-leon/flisp/doc">project</a>.</p>
+  <p><code>femto.lsp</code>&nbsp;provide basic editor functionality. The user visible functions are:</p>
+  <ul>
+    <li><code>(load-script</code> <var><code>file)</code></var> - load file from script directory&nbsp;(obsolete,
+    use&nbsp;<code>require</code>).</li>
+    <li>For Emacs like key bindings:
+      <ul>
+        <li><code>shell-command</code>, <code>insert-file</code>, <code>delete-next-word</code>,
+        <code>delete-previous-word</code>,
+        <code>kill-to-eol</code>,&nbsp;<code>describe-key</code>,&nbsp;<code>find_and_eval_sexp</code>,&nbsp;<code>transpose-chars</code></li>
+      </ul>
+    </li>
+  </ul>
+  <h2>Femto Extensions</h2>
+  <p>Additional extensions loaded by <code>femto.rc</code></p>
+  <ul>
+    <li>
+      <p><strong>dired</strong> - enbles directory editing (Emacs style filemanager)</p>
+      <ul>
+        <li><strong>C-x C-d</strong> to invoke, then single character keystrokes provide menu options</li>
+        <li><strong>f/Ret</strong> load file or dired directory on&nbsp;current line</li>
+        <li><b>q</b> exit dired</li>
+        <li><strong>g</strong> reload dired buffer</li>
+        <li><strong>^</strong> dired parent directory</li>
+        <li><strong>+</strong> create directory</li>
+        <li>On current line:
+          <ul>
+            <li><strong>C</strong> copy</li>
+            <li><strong>D</strong> delete&nbsp;</li>
+            <li><strong>G</strong> change group</li>
+            <li><strong>M</strong> change mode</li>
+            <li><strong>O</strong> change owner</li>
+            <li><strong>R</strong> rename/move</li>
+            <li><strong>S</strong> symlink</li>
+            <li><strong>T</strong> touch (change timestamp)</li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <p><strong>grep</strong> - enables searching for text in files and loading of the files at the location of the
+      match into the editor.</p>
+      <ul>
+        <li><strong>C-x g</strong> to invoke, will request a search string and files to search</li>
+        <li><strong>C-x `</strong> to load the next matching file</li>
+      </ul>
+    </li>
+    <li>
+      <p><strong>bufmenu</strong> - the classic Emacs buffer menu</p>
+      <ul>
+        <li><strong>C-x C-b</strong> to invoke, then single character keystrokes provide menu options</li>
+        <li><strong>1</strong> loads the file on the current line in one window</li>
+        <li><strong>2</strong> loads the file on the current line in a split window</li>
+        <li><strong>s</strong> saves the file on the current line to disk</li>
+        <li><strong>k</strong> unloads the file without saving</li>
+        <li><strong>x</strong> exits bufmenu</li>
+      </ul>
+    </li>
+    <li>
+      <p><strong>git</strong> - a simple interface to the git version control tool (similar to GNU Emacs magit).</p>
+      <ul>
+        <li><strong>C-x g</strong> to invoke, then single character keystrokes menu options</li>
+      </ul>
+    </li>
+    <li>
+      <p><strong>oxo</strong> - a basic implementation of tick-tack-toe that runs in the Editor.</p>
+      <ul>
+        <li><strong>C-x C-o</strong> to invoke</li>
+      </ul>
+    </li>
+  </ul>
+  <p><img alt="Femto screenshot" src="https://github.com/hughbarney/femto/blob/master/screenshots/femto-oxo.jpg" /></p>
+  <h2>Known Issues</h2>
+  <p><code>goto-line</code> will fail to go to the very last line. This is a special case that could easily be
+  fixed.</p>
+  <p>Adding a line at the bottom of a window will hide the line until the cursor moves up and down again or the screen
+  is refreshed.</p>
+  <p>prompt-filename misbehaves and segfaults on Alpine Linux</p>
+  <p>dired eventually enters the key query loop recursively: one has to <strong>q</strong> out of it when already in a
+  file buffer.</p>
 </body>
 </html>

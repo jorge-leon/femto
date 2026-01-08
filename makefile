@@ -130,9 +130,11 @@ window.o: window.c femto.h
 doc: $(MOREDOCS)
 
 docs/editor.md: pdoc/editor.html pdoc/h2m.lua
+	tidy -m -config tidyrc $<
 	pandoc -o $@ -t gfm -L pdoc/h2m.lua $<
 
 docs/femto.md: pdoc/femto.html pdoc/h2m.lua
+	tidy -m -config tidyrc $<
 	pandoc -o $@ -t gfm -L pdoc/h2m.lua $<
 
 
@@ -192,7 +194,7 @@ ftest: femto FORCE
 	FEMTORC=init.lsp FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto _no_file_
 	FEMTORC=init.lsp FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto +3 test/five_lines.txt
 	FEMTORC=init.lsp FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto +6 test/circle.py
-	FEMTORC=init.lsp FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto +8 lisp.c
+	FEMTORC=init.lsp FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto +8 femto.c
 	FEMTORC=init.lsp FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto +6 init.lsp
 
 val: femto FORCE

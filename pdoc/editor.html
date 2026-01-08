@@ -1,447 +1,587 @@
 <!DOCTYPE html>
 <html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
-<head><meta name="generator" content="HTML Tidy for HTML5 for Linux version 5.8.0" />
-	<title>fLisp Femto Editor Extension</title>
-	<meta content="text/html; charset=utf-8" http-equiv="content-type" /><meta content="Emacs, editor, Lisp, tiny, reference, manual" name="keywords" /><meta content="Manual for the Femto editor extension" name="description" /><meta content="Georg Lehner &lt;jorge@magma-soft.at&gt;" name="author" /><meta content="2023" name="copyright" />
+<head>
+  <meta name="generator" content="HTML Tidy for HTML5 for Linux version 5.8.0" />
+  <title>fLisp Femto Editor Extension and Libraries</title>
+  <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+  <meta content="Emacs, editor, Lisp, tiny, reference, manual" name="keywords" />
+  <meta content="Manual for the Femto editor extension" name="description" />
+  <meta content="Georg Lehner &lt;jorge@magma-soft.at&gt;" name="author" />
+  <meta content="2023" name="copyright" />
 </head>
 <body>
-<h1>fLisp Femto Editor Extension</h1>
-
-<h3>Overview</h3>
-
-<p>This is the documentation of the <i>fLisp</i> Femto Editor Extension and the Femto Lisp libraries and applications.</p>
-
-<p>For information on how fLisp extensions are created see the <a href="https://github.com/jorge-leon/flisp/doc"><i>fLisp</i> project documention</a>.</p>
-
-<p>The <a href="#primitives">editor extension</a> introduces several types of objects:</p>
-
-<ul>
-	<li><dfn>Buffers</dfn> hold text</li>
-	<li><dfn>Windows</dfn> display buffer contents to the user</li>
-	<li><dfn>Keyboard Input</dfn> allows the user to interact with buffers and windows</li>
-	<li>The <dfn>Message Line</dfn> gives feedback to the user</li>
-	<li>Several other function for operating system or user interaction</li>
-</ul>
-
-<p>Several <a href="#libraries">Lisp libraries</a> make use of the extensions primitives to provide advanced functionality.</p>
-
-<h3 id="toc">Table of Contents</h3>
-
-<ol>
-	<li><a href="#overview">Overview</a></li>
-	<li>Table of Contents</li>
-	<li><a href="#primitives">Editor Extension</a>
-	<ol>
-		<li><a href="#buffers">Buffers</a>
-		<ol>
-			<li><a href="#text">Text manipulation</a></li>
-			<li><a href="#selection">Selection</a></li>
-			<li><a href="#cursor">Cursor Movement</a></li>
-			<li><a href="#buffer_management">Buffer management</a></li>
-		</ol>
-		</li>
-		<li><a href="#ui">User Interaction</a>
-		<ol>
-			<li><a href="#windows">Window Handling&quot;</a></li>
-			<li><a href="#message_line">Message Line</a></li>
-			<li><a href="#keyboard">Keyboard Handling</a></li>
-			<li><a href="#programming_system">Programming and System Interaction</a></li>
-		</ol>
-		</li>
-	</ol>
-	</li>
-	<li><a href="#femto_lib">The femto Lisp library</a></li>
-	<li><a href="#libraries"><i>Femto</i> Lisp Applications</a>
-	<ol>
-		<li><a href="#dired"><code>dired</code></a> Directory Navigation</li>
-		<li><a href="#bufmenu"><code>bufmenu</code></a> Buffer Selection Menu</li>
-		<li><a href="#grep"><code>grep</code></a> File Content Search</li>
-		<li><a href="#git"><code>git</code></a> Git Repo Helper</li>
-		<li><a href="#info"><code>info</code></a> Builtin Help</li>
-		<li><a href="#oxo"><code>oxo</code></a> Tic-Tac-Toe Game</li>
-		<li><a href="#defmacro"><code>defmacro</code></a> Editor Macros</li>
-	</ol>
-	</li>
-</ol>
-
-<h3 id="editor">Editor Extension</h3>
-
-<h4 id="buffers">Buffers</h4>
-
-<p>This section describes the buffer related functions added by Femto to fLisp. The description is separated in function related to buffer management and text manipulation. Text manipulation always operates on the <dfn>current buffer</dfn>. Buffer management creates, deletes buffers, or selects one of the existing buffers as the current buffer.</p>
-
-<p>Buffers store text and allow to manipulate it. A buffer has the following properties:</p>
-
-<dl>
-	<dt><var>name</var></dt>
-	<dd>Buffers are identified by their name. If a buffer name is enclosed in <samp>*</samp>asterisks<samp>*</samp> the buffer receives special treatment.</dd>
-	<dt><var>text</var></dt>
-	<dd>zero or more characters.</dd>
-	<dt><var>point</var></dt>
-	<dd>The position in the text where text manipulation takes place. The first position in the text is 0. Note: in Emacs the first position is 1.</dd>
-	<dt><var>mark</var></dt>
-	<dd>An optional second position in the text. If the <var>mark</var> is set, the text between <var>point</var> and <var>mark</var> is called the <dfn>selection</dfn> or <dfn>region</dfn>.</dd>
-	<dt><var>filename</var></dt>
-	<dd>If set the buffer is associated with the respective file.</dd>
-	<dt><var>flags</var></dt>
-	<dd>Different flags determine the behavior of the buffer: <code>special</code>, readonly,&nbsp;<code>modified,</code>&nbsp;<code>overwrite</code>&nbsp;and <code>undo</code>.</dd>
-	<dt>mode</dt>
-	<dd>Determine the syntax highlighter mode: <code>cmode</code> <code>python</code> and <code>lisp</code> are available. If none is set <code>text</code> mode is used for syntax hightlighting.</dd>
-</dl>
-
-<p>In the following, any mention to one of them refers to the respective current buffers property.</p>
-
-<h5 id="text">Text manipulation</h5>
-
-<dl>
-	<dt><code>(backspace)</code>&nbsp;&rArr; <code>t</code></dt>
-	<dd>Deletes the character to the left of <var>point</var>. <u>S: delete-backward-char</u></dd>
-	<dt><code>(delete)</code>&nbsp;&rArr; <code>t</code></dt>
-	<dd>Deletes the character after <var>point</var>. <u>S: delete-char</u></dd>
-	<dt><code>(erase-buffer)</code>&nbsp;&rArr; <code>t</code></dt>
-	<dd>Erases all text in the current buffer. <u>C</u></dd>
-	<dt><code>(get-char)</code>&nbsp;&rArr; <code><var><font face="monospace">string</font></var></code></dt>
-	<dd>Returns the character at <var>point</var>. <u>S: get-byte</u></dd>
-	<dt><code>(insert-string <var>string</var>)</code>&nbsp;&rArr; <code>t</code></dt>
-	<dd>Inserts <var>string</var> before <var>point</var>. <u>S: insert</u>.</dd>
-	<dt><code>(kill-region)</code>&nbsp;&rArr; <code>t</code></dt>
-	<dd>Deletes the text in the <var>region</var> and copies it to the <var>clipboard</var>. <u>D</u></dd>
-	<dt><code>(yank)</code>&nbsp;&rArr; <code>t</code></dt>
-	<dd>Pastes the <var>clipboard</var> before <var>point</var>. <u>C</u></dd>
-</dl>
-
-<h5 id="selection">Selection</h5>
-
-<dl>
-	<dt><code>(copy-region)</code>&nbsp;&rArr; <code>t</code></dt>
-	<dd>Copies <var>region</var> to the <var>clipboard</var>. <u>S: copy-region-as-kill</u></dd>
-	<dt><code>(get-clipboard)</code>&nbsp;&rArr; <var><font face="monospace">string</font></var></dt>
-	<dd>Returns the <var>clipboard</var> contents or the empty string if none. <u>S: gui-get-selection</u></dd>
-	<dt><code>(get-mark)</code>&nbsp;&rArr; <var><font face="monospace">integer</font></var></dt>
-	<dd>Returns the position of <var>mark</var>, -1 if <var>mark</var> is unset. <u>S: mark</u></dd>
-	<dt><code>(set-clipboard <var>string</var>)</code>&nbsp;&rArr; <code>t</code>|<code>nil</code></dt>
-	<dd>Sets <var>clipboard</var> to the contents of <var>string</var>. Returns <code>t</code> on success, <code>nil</code> if memory allocation fails.&nbsp;<u>S: gui-set-selection</u></dd>
-	<dt><code>(set-mark)</code>&nbsp;&rArr; <code>t</code></dt>
-	<dd>Sets <var>mark</var> to <var>point</var>. <u>D</u></dd>
-	<dt>&nbsp;</dt>
-	<dt>&nbsp;</dt>
-</dl>
-
-<h5 id="cursor">Cursor Movement and Information</h5>
-
-<dl>
-	<dt><code>(backward-char)</code>&nbsp;&rArr; <code>t</code></dt>
-	<dd>Moves the point in the current buffer one character backward, but not before the end of the buffer. <u>C</u></dd>
-	<dt><code>(backward-word)</code>&nbsp;&rArr; <code>t</code></dt>
-	<dd>Moves the point in the current buffer backward after the last char of the previous word. If there is no word left the point is set to the beginning of the buffer. If the point is already at the end or within a word, the current word is skipped. <u>D</u>: <b>Note</b>: Elisp moves to the <em>beginning</em> of the previous word.</dd>
-	<dt><code>(beginning-of-buffer)</code>&nbsp;&rArr; <code>t</code></dt>
-	<dd>Sets the point in the current buffer to the first buffer position, leaving mark in its current position. <u>C</u></dd>
-	<dt><code>(beginning-of-line)</code>&nbsp;&rArr; <code>t</code></dt>
-	<dd>Sets point before the first character of the current line, leaving mark in its current position. <u>S: move-beginning-of-line</u></dd>
-	<dt><code>(end-of-buffer)</code>&nbsp;&rArr; <code>t</code></dt>
-	<dd>Sets the point in the current buffer to the last buffer position, leaving mark in its current position. <u>C</u></dd>
-	<dt><code>(end-of-line)</code>&nbsp;&rArr; <code>t</code></dt>
-	<dd>Sets point after the last character of the current line, i.e. before the end-of-line character sequence, leaving mark in its current position. <u>S: move-end-of-line</u></dd>
-	<dt><code>(forward-char)</code>&nbsp;&rArr; <code>t</code></dt>
-	<dd>Moves the point in the current buffer one character forward, but not past the end of the buffer. <u>C</u></dd>
-	<dt><code>(forward-word)</code>&nbsp;&rArr; <code>t</code></dt>
-	<dd>Moves the point in the current buffer forward before the first char of the next word. If there is no word left the point is set to the end of the buffer. If the point is already at the start or within a word, the current word is skipped. <u>D</u>: <b>Note</b>: Elisp moves to the <em>end</em> of the the next word.</dd>
-	<dt><code>(get-point)</code>&nbsp;&rArr; <var>integer</var></dt>
-	<dd>Returns the position of <var>point</var>. <u>S: point</u></dd>
-	<dt><code>(get-point-max)</code>&nbsp;&rArr; <var>integer</var></dt>
-	<dd>Returns the maximum accessible value of point in the current buffer. <u>S: point-max</u></dd>
-	<dt><code>(goto-line <var>number</var>)</code>&nbsp;&rArr; <code>t</code>|<code>nil</code></dt>
-	<dd>Sets the point in the current buffer to the first character on line <var>number</var>. Returns <code>t</code> on success, <code>nil</code> when line is not found.&nbsp;<u>S: goto-line</u>, not an Elisp function.</dd>
-	<dt><code>(next-line)</code>&nbsp;&rArr; <code>t</code></dt>
-	<dd>Moves the point in the current buffer to the same character position in the next line, or to the end of the next line if there are not enough characters. In the last line of the buffer moves the point to the end of the buffer. <u>C</u></dd>
-	<dt><code>(previous-line)</code>&nbsp;&rArr; <code>t</code></dt>
-	<dd>Moves the point in the current buffer to the same character position in the previous line, or to the end of the previous line if there are not enough characters. In the first line of the buffer the point is not moved. <u>C</u></dd>
-	<dt><code>(scroll-up)</code>&nbsp;&rArr; <code>t</code></dt>
-	<dd>Moves the point of the current buffer to the beginning of the last visible line of the associated screen and scrolls the screen up to show it as the first line. <u>C</u></dd>
-	<dt><code>(scroll-down)</code>&nbsp;&rArr; <code>t</code></dt>
-	<dd>Moves the point of the current buffer to the beginning of the first visible line of the associated screen and scrolls the screen down to show it as the last line. <u>C</u></dd>
-	<dt><code>(search-forward <var>string</var>)</code>&nbsp;&rArr; <code>t</code>|<code>nil</code></dt>
-	<dd>Searches for <var>string</var> in the current buffer, starting from point forward. If string is found, sets the point after the first occurrence of <var>string</var> and returns <samp>t</samp>, otherwise leaves point alone and returns <samp>nil</samp>. <u>D</u></dd>
-	<dt><code>(search-backward <var>string</var>)</code>&nbsp;&rArr; <code>t</code>|<code>nil</code></dt>
-	<dd>Searches for <var>string</var> in the current buffer, starting from point backwards. If string is found, sets the point before the first occurrence of <var>string</var> and returns <samp>t</samp>, otherwise leaves point alone and returns <samp>nil</samp>. <u>D</u></dd>
-	<dt><code>(set-point <var>number</var>)</code>&nbsp;&rArr; <code>t</code></dt>
-	<dd>Sets the point&nbsp;in the current buffer to the position <var>number</var>. <u>S: goto-char</u></dd>
-	<dt>&nbsp;</dt>
-	<dt>&nbsp;</dt>
-</dl>
-
-<h5 id="buffer_management">Buffer Management and Information</h5>
-
-<p>All buffers are registered in a circular list. The current buffer is the first buffer. If a buffer is selected to be shown it is put in front of the other buffers. This orders the buffer list by most recently used.</p>
-
-<dl>
-	<dt><code>(find-buffer-visiting <var>path</var>)</code>&nbsp;&rArr; <var>buffer</var>|<code>nil</code></dt>
-	<dd>Returns the buffer name of the buffer associated with the file or directory <var>path</var>.</dd>
-	<dt><code>(buffer-filename[ <var>string</var>)</code>&nbsp;&rArr; <var>buffer</var>|<code>nil</code></dt>
-	<dd>Return the file name associated with buffer <var>string</var> or the current buffer if not given. If no file is associated returns <code>nil</code>.&nbsp;<u>C</u></dd>
-	<dt><code>(buffer-fread <var>stream[</var>&nbsp;<var>size]</var>)</code>&nbsp;&rArr; <var>integer</var><font face="monospace">&nbsp;</font><u>f</u></dt>
-	<dd>Inserts <var>size</var> bytes from <var>stream</var> into the current buffer, starting at point. If <var>size</var> is not given, <var>stream</var> is read in until end-of-line. Returns number of bytes read.</dd>
-	<dt><code>(buffer-fwrite <var>stream</var>[ <var>size</var>])</code>&nbsp;&rArr; <var>integer </var><u>f</u></dt>
-	<dd>Write <var>size</var> bytes from the current buffer, starting at point. If <var>size</var> is not given or greater then the rest of the buffer the rest of the buffer is written. Returns number of bytes written.</dd>
-	<dt><code>(buffer-mode[ <var>buffer</var>[ <var>mode</var>])</code>&nbsp;&rArr; <font face="monospace"><var>mode</var> <u>f</u></font></dt>
-	<dd>Return and optionally&nbsp;set the mode of given <var>buffer</var> or&nbsp;current buffer if <var>buffer</var> is not given or <code>nil</code>.</dd>
-	<dt><code>(buffer-modified-p[ <var>buffer</var> [ <var>p</var>])</code>&nbsp;&rArr; <code>p</code></dt>
-	<dt><code>(buffer-overwrite-p[ <var>buffer</var> [ <var>p</var>])</code>&nbsp;&rArr; <code>p</code></dt>
-	<dt><code>(buffer-readonly-p[ <var>buffer</var> [ <var>p</var>])</code>&nbsp;&rArr; <code>p</code></dt>
-	<dt><code>(buffer-special-p[ <var>buffer</var> [ <var>p</var>])</code>&nbsp;&rArr; <code>p</code></dt>
-	<dt><code>(buffer-undo-p[ <var>buffer</var> [ <var>p</var>])</code>&nbsp;&rArr; <code>p</code></dt>
-	<dd>Return and optionally set the respective flag of <var>buffer</var>, or the current buffer if <var>buffer</var> is not given or <code>nil</code>.</dd>
-	<dt><code>(buffer-next[ <var>buffer</var>])</code>&nbsp;&rArr; <var>buffer&#39;</var></dt>
-	<dd>Return the next buffer after <var>buffer</var> in the list, or the current buffer if none given.</dd>
-	<dt><code>(buffer-show&nbsp;<var>buffer</var>)</code>&nbsp;&rArr; <var>buffer</var></dt>
-	<dd>Associate&nbsp;<var>buffer</var> with the current window and put it first in the buffer list. Returns <var>buffer</var>.</dd>
-	<dt><code>(delete-buffer <var>buffer</var>)</code>&nbsp;&rArr; <var>buffer</var> <u>f</u></dt>
-	<dd>Kill the buffer named <var>string</var>. Unsaved changes are discarded. Throws an&nbsp;exception if the buffer does not exist or when trying to delete the scratch buffer or the current buffer. Returns the buffer name.</dd>
-	<dt><code>(get-buffer-create <var>name</var>)</code>&nbsp;&rArr; <var>buffer</var></dt>
-	<dd>If buffer <var>name</var>&nbsp;exists return it, otherwise create&nbsp;a new, empty buffer with that name and returns it.</dd>
-	<dt><code>(list-buffers)</code>&nbsp;&rArr; <code>t</code> <u>f</u></dt>
-	<dd>Lists all the buffers in a buffer called <samp>*buffers*</samp>.</dd>
-	<dt><code>(set-buffer <var>string</var>)</code>&nbsp;&rArr; <var>buffer</var></dt>
-	<dd>Makes the buffer named <var>string</var> the current buffer, returns <var>buffer</var>.</dd>
-	<dt><code>(set-buffer-name <var>string</var>)</code>&nbsp;&rArr; <var>string</var>&nbsp;<u>S: rename-buffer</u></dt>
-	<dd>Set the name of the current buffer to <var>string</var>. Returns <var>string</var>.</dd>
-	<dt><code>(set-visited-file-name <var>string</var></code><var>|</var><code>nil)</code>&nbsp;&rArr; <var>string</var>|<code>nil</code></dt>
-	<dd>Set the filename of the current buffer to <var>string</var>&nbsp;or <code>nil</code>&nbsp;- i.e. deletes it. Returns the argument.</dd>
-	<dt>&nbsp;</dt>
-</dl>
-
-<h4 id="ui">User Interaction</h4>
-
-<p>This section lists function related to window and message line manipulation, keyboard input and system interaction.</p>
-
-<h5 id="windows">Window Handling</h5>
-
-<dl>
-	<dt><code>(delete-other-windows)</code>&nbsp;&rArr; <code>t</code></dt>
-	<dd>Make current window the only window.</dd>
-	<dt><code>(other-window)</code>&nbsp;&rArr; <code>t</code> <u>D</u></dt>
-	<dd>Moves the cursor to the next window down on the screen. Makes the buffer in that window the current buffer.</dd>
-	<dd>
-	<p>Note: Elisp <code>other-window</code> has a required parameter <var>count</var>, which specifies the number of windows to move down or up.</p>
-	</dd>
-	<dt><code>(split-window)</code>&nbsp;&rArr; <code>t</code>|<code>nil</code></dt>
-	<dd>Splits the current window. Creates a new window for the current buffer. Returns <code>t</code> on success, <code>nil</code> if the window cannot be split or memory allocation fails.</dd>
-	<dt><code>(update-display)</code>&nbsp;&rArr; <code>t</code> <u>f</u></dt>
-	<dd>Updates all modified windows.</dd>
-	<dt><code>(refresh)</code>&nbsp;&rArr; <code>t</code> <u>f</u></dt>
-	<dd>Calls the curses refresh() function.</dd>
-</dl>
-
-<h5 id="message_line">Message Line</h5>
-
-<dl>
-	<dt><code>(clear-message-line)</code>&nbsp;&rArr; <code>t</code>&nbsp;<u>S: clear-minibuffer-message</u></dt>
-	<dd>Clears the message line.</dd>
-	<dt><code>(message <var>string</var>)</code>&nbsp;&rArr; <code>t</code> <u>D</u></dt>
-	<dd>Displays <var>string</var> in the message line.</dd>
-	<dt><code>(prompt <var>prompt</var> <var>default</var>)</code>&nbsp;&rArr; <var>string</var>|<code>ni</code>l&nbsp;<u>f</u></dt>
-	<dd>Displays <var>prompt</var> in the command line and sets <var>default</var> as initial value for the user response. The user can edit the response. When hitting return, the final response is returned. If C-g is pressed <code>nil</code> is returned.</dd>
-	<dt><code>(prompt-filename <var>prompt</var>)</code>&nbsp;&rArr; <var>string</var>|<code>ni</code>l&nbsp;<u>f</u></dt>
-	<dd>Displays <var>prompt</var> in the command line and allows to enter or search for a file name. Returns the relative path to the selected file name or the response typed by the user or <code>nil</code> if C-g is pressed.</dd>
-</dl>
-
-<h5 id="keyboard">Keyboard Handling</h5>
-
-<dl>
-	<dt><code>(describe-bindings)</code>&nbsp;&rArr; <code>t</code></dt>
-	<dd>Creates a listing of all current key bindings, in a buffer named <samp>*help*</samp> and displays it in a new window.</dd>
-	<dt><code>(describe-functions)</code>&nbsp;&rArr; <code>t</code> <u>f</u></dt>
-	<dd>Creates a listing of all functions bound to keys in a buffer named <samp>*help*</samp> and displays it in a new window.</dd>
-	<dt><code>(execute-key)</code>&nbsp;&rArr; <code>t</code> <u>f</u></dt>
-	<dd>Executes the function of the last pressed key.</dd>
-	<dt><code>(getch)</code>&nbsp;&rArr; <var>string</var> <u>f</u></dt>
-	<dd>Calls the curses getch() function: Waits for a key to be pressed and returns the key as string. If a function key is pressed, the ANSI terminal input sequence is sent;&nbsp;several calls to <code>getch</code> are required to decode this.</dd>
-	<dt><code>(get-key)</code>&nbsp;&rArr; <code>t</code> <u>f</u></dt>
-	<dd>Records keystrokes until&nbsp;a registered key-sequence is gathered, then the key information is stored and an empty string is returned. If&nbsp;no match is found, i.e. a normal character is input,&nbsp;the recorded key(s) is&nbsp;returned&nbsp;as string.</dd>
-	<dt><code>(get-key-funcname)</code>&nbsp;&rArr;&nbsp;<var>string</var> <u>f</u></dt>
-	<dd>Return the name of the <var>lisp-func</var>&nbsp;bound to the most recent recorded key-sequence.</dd>
-	<dt><code>(get-key-name)</code>&nbsp;&rArr;&nbsp;<var>string</var> <u>f</u></dt>
-	<dd>Returns the <var>key-name</var> of the most recenet recorded key-sequence, eg: <samp>c-k</samp> for control-k.</dd>
-	<dt><code>(set-key <var>key-name</var> <var>lisp-func</var>)</code>&nbsp;&rArr; <code>t</code> <u>f</u></dt>
-	<dd>Binds key key-name to the lisp function <var>lisp-func</var>.</dd>
-</dl>
-
-<h5 id="programming_system">Programming and System Interaction</h5>
-
-<dl>
-	<dt><code>(eval-block)</code>&nbsp;&rArr; <code>t</code>&nbsp;<u>S: eval-region</u></dt>
-	<dd>Evaluates the <var>region</var> in the current buffer, inserts the result at <var>point</var> and returns it. If <var>mark</var> in the current buffer is before <var>point</var> <code>eval-block</code> evaluates this <var>region</var> and inserts the result at <var>point</var>. If <var>point</var> is before <var>mark</var> <code>eval-block</code> does nothing but returning <samp>t</samp>.</dd>
-	<dt><code>(exit)</code> <u>f</u></dt>
-	<dd>Exit Femto without saving modified buffers.</dd>
-	<dt><code>(get-temp-file)</code>&nbsp;&rArr; <code>t</code> <u>f</u></dt>
-	<dd>Create a file in <code>/tmp</code> with a unique name, return filename.</dd>
-	<dt><code>(get-version-string)</code>&nbsp;&rArr; <var>string</var>&nbsp;<u>f</u></dt>
-	<dd>Returns the complete version string of Femto, including the copyright.</dd>
-	<dt><code>(log-debug <var>string</var>)</code>&nbsp;&rArr; <code>t</code> <u>f</u></dt>
-	<dd>Logs string to the file <code>debug.out</code>.</dd>
-	<dt><code>(log-message <var>string</var>)</code>&nbsp;&rArr; <code>t</code> <u>f</u></dt>
-	<dd>Logs <var>string</var> to the <samp>*messages*</samp> buffer.</dd>
-	<dt><code>(suspend)</code>&nbsp;&rArr; <code>t</code>&nbsp;<u>S: suspend-emacs</u></dt>
-	<dd>Suspend <i>Femto</i>.</dd>
-	<dt>&nbsp;</dt>
-</dl>
-
-<h3 id="femto_lib">The <code>femto</code> Lisp Library</h3>
-
-<p>This library provides standard editor functions, mostly tailored to Emacs compatibility and wrappers of the editor extension primitives.</p>
-
-<p>Femto does not have the Emacs notion of interactive functions. We use the suffix <code>-interactive</code>&nbsp;if we want to emphasize that a function is the interactive version and <code>-noselect</code> to emphasize that it is the non-interactive version.</p>
-
-<p>Two <q>normal</q> hooks are in use:&nbsp;</p>
-
-<dl>
-	<dt><code>after-switch-to-buffer-hook</code> <u>f</u></dt>
-	<dd>Run after switching to a buffer. This is used e.g. by&nbsp;<code>dired</code>&nbsp;do start the command loop.</dd>
-	<dt><code>find-file-hook</code></dt>
-	<dd>Run after setting the major mode of a buffer in <code>(after-find-file)</code>.</dd>
-</dl>
-
-<h5><i>Femto</i>&nbsp;Edit and Navigation Functions</h5>
-
-<dl>
-	<dt><code>(insert-file)</code></dt>
-	<dd>Interactively insert file in current buffer.</dd>
-	<dt><code>(shell-command[ <var>command_line</var>])</code></dt>
-	<dd>Execute string <var>command_line</var>&nbsp;with the <code>system()</code> call. If not given prompt for commandline.</dd>
-	<dt><code>(delete-next-word)</code></dt>
-	<dd>&nbsp;</dd>
-	<dt><code>(delete-previous-word)</code></dt>
-	<dd>&nbsp;</dd>
-	<dt><code>(kill-to-eol)</code></dt>
-	<dd>&nbsp;</dd>
-	<dt><code>(transpose-chars)</code></dt>
-	<dd>&nbsp;</dd>
-	<dt>(find_and_eval_sexp)</dt>
-	<dd>Editor commands for common key bindings.</dd>
-	<dt><code>(describe-key)</code>&nbsp;&rArr; <var>p</var>&nbsp;<u>S</u></dt>
-	<dd>Read&nbsp; a key (sequence)&nbsp;with (get-key) and print in the message area either the character, the key name or the function name bound to it.</dd>
-	<dt><code>(kill-buffer-interactive)</code></dt>
-	<dd>Prompt for the buffer to kill and kill it. Default is the current buffer.</dd>
-	<dt><code>(find-file)</code></dt>
-	<dd>Prompt for a filename. If the file is already in a buffer switch to that buffer, if not read it into a new buffer and switch to it.</dd>
-	<dt><code>(save-buffer)</code></dt>
-	<dd>Saves the current buffer into it&#39;s file, if one is associated and the buffer is modified. If the file does not exist it is created together will all missing parent directories.</dd>
-	<dt><code>(write-file)</code></dt>
-	<dd>Ask for a file name to save the current buffer into and then <code>save-buffer</code> it.</dd>
-	<dt><code>(save-some-buffers)</code></dt>
-	<dd>Interactively save modified file buffers.</dd>
-	<dt><code>(save-buffers-kill-terminal)</code></dt>
-	<dd><code>save-some-buffers</code> then exit <i>Femto</i>.</dd>
-</dl>
-
-<h5>Femto Utility Functions</h5>
-
-<dl>
-	<dt><code>(load-script&nbsp;<var>fn</var>)</code>&nbsp;<u>f</u></dt>
-	<dd>deprecated, use <code>require</code>.</dd>
-	<dt><code>(insert-file-contents-literally <var>path</var>)</code></dt>
-	<dd>&nbsp;</dd>
-	<dt><code>(shell-exec <var>command_line</var>)</code> <u>f</u></dt>
-	<dd>Helper function for <code>shell-command</code>.<code>&nbsp;</code></dd>
-	<dt><code>(shell-command-lines <var>command</var>[ <var>arg</var>..])</code>&nbsp;&rArr;&nbsp;&nbsp;<u>f</u></dt>
-	<dd>Join string&nbsp;<var>command</var> and all <var>arg</var>s with a space and execute the resulting command line with <code>popen()</code>. Read output and return it as list of lines without the trailing newlines.</dd>
-	<dt><code>(shell_strip_eol <i>line</i>)</code>&nbsp;&rArr; <var>line&#39;</var>&nbsp;<u>f</u></dt>
-	<dd>Strip newline and carriage return characters from end of string <var>line</var>.</dd>
-	<dt><code>(repeat <var>n</var> <var>func</var>)</code>&nbsp;<u>f</u></dt>
-	<dd>Execute <var>func</var> <var>n</var> times.</dd>
-	<dt><code>(string-restrict-chars-p <var>rl</var> <var>s</var>)</code>&nbsp;&rArr; <var>p</var>&nbsp;<u>f</u></dt>
-	<dd>Returns <code>t</code> if all characters in string&nbsp;<var>s</var> are members of list of charachters <var>rl</var>.</dd>
-	<dt><code>(posix-filename <var>s</var>)</code>&nbsp;&rArr; <var>p</var>&nbsp;<u>f</u></dt>
-	<dt><code>(is_ctl_g <var>k</var>)</code>&nbsp;&rArr; <var>p</var>&nbsp;<u>f</u></dt>
-	<dd>&nbsp;</dd>
-	<dt><code>(is_escape <var>k</var>)</code>&nbsp;&rArr; <var>p</var>&nbsp;<u>f</u></dt>
-	<dd>&nbsp;</dd>
-	<dt><code>(is_backspace <var>k</var>)</code>&nbsp;&rArr; <var>p</var>&nbsp;<u>f</u></dt>
-	<dd>&nbsp;</dd>
-	<dt><code>(is_ctl_s <var>k</var>)</code>&nbsp;&rArr; <var>p</var>&nbsp;<u>f</u></dt>
-	<dd>&nbsp;</dd>
-	<dt><code>(is_control_char <var>k</var>)</code>&nbsp;&rArr; <var>p</var>&nbsp;<u>f</u></dt>
-	<dd>Keystroke checks, <var>k</var> is the ASCII character as returned by <code>(get-key)</code>.</dd>
-	<dd>Returns <code>t</code> is string <var>s</var> is a posix compliant path: does not start with a dash <code>-</code>, is only alphanumeric plus dot, underscore, dash and slash.</dd>
-	<dt><code>(run-hooks <var>hooks</var>)</code></dt>
-	<dd><var>hooks</var> is a variable name holding a list of function symbols which are run in order. This implements Emacs <q>normal</q> hooks.</dd>
-</dl>
-
-<h5>Femto Buffer functions</h5>
-
-<dl>
-	<dt><code>(buffer-name[ <var>buffer</var>])</code>&nbsp;&rArr; <var>name</var></dt>
-	<dd>Return the name of the given buffer of the current buffer if not given.</dd>
-	<dt><code>(current-buffer)</code>&nbsp;&rArr; <i>name</i></dt>
-	<dd>Return the current buffer.</dd>
-	<dt><code>(switch-to-buffer <var>name</var>)</code>&nbsp;&rArr; <i>name</i></dt>
-	<dd>Associate buffer <var>name</var>&nbsp;with the current window and run the Femto specific hook <code>after-switch-to-buffer-hook</code>.</dd>
-	<dt><code>(restore-buffer-modified-p <var>p</var>)</code>&nbsp;&rArr; <var>p</var></dt>
-	<dd>Set modified flag of the current buffer to predicate <var>p</var>.</dd>
-	<dt><code>(set-buffer-modified-p <var>p</var>)</code>&nbsp;&rArr; <var>p</var></dt>
-	<dd>Set modified flag of the current buffer to predicate <var>p</var> and refresh all windows.</dd>
-	<dt>(<code>buffer-list)</code>&nbsp;&rArr; <var>l</var></dt>
-	<dd>Return list of all buffers.</dd>
-	<dt><code>(generate-new-buffer-name <var>name</var>)</code>&nbsp;&rArr; <i>name&#39;</i></dt>
-	<dd>Starting with a given buffer name generate a unique buffer name by appending&nbsp;<code>/</code><var>n</var> where <var>n</var> is a decimal number.</dd>
-	<dt><code>(buffer-basename <var>name</var>)</code>&nbsp;&rArr; <i>name&#39;</i></dt>
-	<dd>Strips a trailing&nbsp;<code>/</code><var>n</var> of from a buffer name.</dd>
-	<dt><code>(create-file-buffer <var>filename</var>)</code>&nbsp;&rArr; <i>name</i></dt>
-	<dd>Gets or creates a file buffer and names it uniquely, given a filename. The base name is the file name without directory components.</dd>
-	<dt><code>(rename-buffer <var>name</var>[ <var>unique-p</var>])</code>&nbsp;&rArr; <i>name&#39;</i></dt>
-	<dd>Renames the current&nbsp;buffer to <var>name</var>. If <var>unique-p</var> is given and not null the buffer name is uniquified before renaming.</dd>
-	<dt><code>(other-buffer)</code>&nbsp;&rArr; <i>name</i></dt>
-	<dd>Return the next best buffer after the current buffer.</dd>
-	<dt><code>(insert-buffer-substring-no-properties from-buffer-or-name[ <var>start</var>[ <var>end</var>])</code>&nbsp;&rArr; <code>t</code></dt>
-	<dd>Insert the buffer contents of the given buffer&nbsp;<var>from-buffer-or-name</var> into the current buffer at point. <var>start</var> and <var>end</var> is the region to insert, <var>start</var> defaults to the&nbsp;beginning,&nbsp; <var>end</var> is the end of the from buffer.</dd>
-	<dt><code>(kill-buffer[ <var>buffer</var>])</code>&nbsp;&rArr; <i>name</i></dt>
-	<dd>Kills the given buffer or the current buffer if not given. Offers saving modified buffers, switches to <code>other-buffer</code> if the buffer to kill is the current buffer.</dd>
-	<dt><code>(find-file-noselect <var>filename</var>)</code></dt>
-	<dd>Read the given file into a buffer and return the buffer. If the file does not exist create an empty buffer for it and associate the filename. If <var>filename</var> is a directory open the directory editor for it.</dd>
-	<dt><code>(after-find-file)</code></dt>
-	<dd>Run after the buffer for a regular file is created or switched to. Sets the major mode of the buffer and runs the hook&nbsp;<code>find-file-hook</code>.</dd>
-</dl>
-
-<h3>Femto Lisp Applications</h3>
-
-<h4 id="defmacro"><code>defmacro</code> Editor Macros</h4>
-
-<p><mark>Note: currently not working</mark></p>
-
-<p id="dired">This applications allows to record a keyboard macros and make it available in a buffer called *macro*.</p>
-
-<p>Keybindings:</p>
-
-<dl>
-	<dt>c-x (</dt>
-	<dd>starts the recording</dd>
-	<dt>c-x )</dt>
-	<dd>stops the recording</dd>
-	<dt>c-x e</dt>
-	<dd>executes the macro</dd>
-	<dt>esc-e</dt>
-	<dd>executes the macro</dd>
-</dl>
-
-<p><mark>Tbd.: document the following libraries.</mark></p>
-
-<h4><code>dired</code> Directory Navigation</h4>
-
-<h4 id="bufmenu"><code>bufmenu</code> Buffer Selection Menu</h4>
-
-<h4><code>grep</code> File Content Search</h4>
-
-<h4><code>git</code> Git Repo Helper</h4>
-
-<h4><code>info</code> Builtin Help</h4>
-
-<h4><code>oxo</code> Tic-Tac-Toe Game</h4>
-
-<h4 id="defmacro">&nbsp;</h4>
-
-<dl>
-</dl>
-
-<nav><a href="#toc">^</a></nav>
+  <h1>fLisp Femto Editor Extension and Libraries</h1>
+  <h3 id="overview">Overview</h3>
+  <p>This is the documentation of the <i>fLisp</i> Femto Editor Extension and the Femto Lisp libraries and
+  applications.</p>
+  <p>For information on how fLisp extensions are created see the <a href=
+  "https://github.com/jorge-leon/flisp/doc"><i>fLisp</i> project documention</a>.</p>
+  <p>The <a href="#primitives">editor extension</a> introduces several types of objects:</p>
+  <ul>
+    <li><dfn>Buffers</dfn> hold text</li>
+    <li><dfn>Windows</dfn> display buffer contents to the user</li>
+    <li><dfn>Keyboard Input</dfn> allows the user to interact with buffers and windows</li>
+    <li>The <dfn>Message Line</dfn> gives feedback to the user</li>
+    <li>Several other function for user interaction</li>
+  </ul>
+  <p>Several <a href="#libraries">Lisp libraries</a> make use of the extensions primitives to provide advanced
+  functionality.</p>
+  <h3 id="toc">Table of Contents</h3>
+  <ol>
+    <li>
+      <a href="#overview">Overview</a>
+    </li>
+    <li>Table of Contents</li>
+    <li>
+      <a href="#primitives">Editor Extension</a>
+      <ol>
+        <li>
+          <a href="#buffers">Buffers</a>
+          <ol>
+            <li>
+              <a href="#text">Text manipulation</a>
+            </li>
+            <li>
+              <a href="#selection">Selection</a>
+            </li>
+            <li>
+              <a href="#cursor">Cursor Movement</a>
+            </li>
+            <li>
+              <a href="#buffer_management">Buffer management</a>
+            </li>
+          </ol>
+        </li>
+        <li>
+          <a href="#ui">User Interaction</a>
+          <ol>
+            <li>
+              <a href="#windows">Window Handling</a>
+            </li>
+            <li>
+              <a href="#message_line">Message Line</a>
+            </li>
+            <li>
+              <a href="#keyboard">Keyboard Handling</a>
+            </li>
+            <li>
+              <a href="#programming_system">Programming and System Interaction</a>
+            </li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li>
+      <a href="#femto_lib">The femto Lisp library</a>
+      <ol>
+        <li>
+          <a href="#lib_edit"><i>Femto</i> Edit and Naviagtiona Functions</a>
+        </li>
+        <li>
+          <a href="#lib_util"><i>Femto</i> Utility Functions</a>
+        </li>
+        <li>
+          <a href="#lib_buffer"><i>Femto</i> Buffer Functions</a>
+        </li>
+      </ol>
+    </li>
+    <li>
+      <a href="#femto_apps"><i>Femto</i> Lisp Applications</a>
+      <ol>
+        <li>
+          <a href="#defmacro"><code>defmacro</code></a> Editor Macros
+        </li>
+        <li>
+          <a href="#dired"><code>dired</code></a> Directory Navigation
+        </li>
+        <li>
+          <a href="#bufmenu"><code>bufmenu</code></a> Buffer Selection Menu
+        </li>
+        <li>
+          <a href="#grep"><code>grep</code></a> File Content Search
+        </li>
+        <li>
+          <a href="#git"><code>git</code></a> Git Repo Helper
+        </li>
+        <li>
+          <a href="#info"><code>info</code></a> Builtin Help
+        </li>
+        <li>
+          <a href="#oxo"><code>oxo</code></a> Tic-Tac-Toe Game
+        </li>
+      </ol>
+    </li>
+  </ol>
+  <h3 id="primitives">Editor Extension</h3>
+  <h4 id="buffers">Buffers</h4>
+  <p>This section describes the buffer related functions added by Femto to fLisp. The description is separated in
+  function related to buffer management and text manipulation. Text manipulation always operates on the <dfn>current
+  buffer</dfn>. Buffer management creates, deletes buffers, or selects one of the existing buffers as the current
+  buffer.</p>
+  <p>Buffers store text and allow to manipulate it. A buffer has the following properties:</p>
+  <dl>
+    <dt><var>name</var></dt>
+    <dd>Buffers are identified by their name. If a buffer name is enclosed in <samp>*</samp>asterisks<samp>*</samp> the
+    buffer receives special treatment.</dd>
+    <dt><var>text</var></dt>
+    <dd>zero or more characters.</dd>
+    <dt><var>point</var></dt>
+    <dd>The position in the text where text manipulation takes place. The first position in the text is 0. Note: in
+    Emacs the first position is 1.</dd>
+    <dt><var>mark</var></dt>
+    <dd>An optional second position in the text. If the <var>mark</var> is set, the text between <var>point</var> and
+    <var>mark</var> is called the <dfn>selection</dfn> or <dfn>region</dfn>.</dd>
+    <dt><var>filename</var></dt>
+    <dd>If set the buffer is associated with the respective file.</dd>
+    <dt><var>flags</var></dt>
+    <dd>Different flags determine the behavior of the buffer: <code>special</code>, readonly, <code>modified,</code>
+    <code>overwrite</code> and <code>undo</code>.</dd>
+    <dt>mode</dt>
+    <dd>Determine the syntax highlighter mode: <code>cmode</code> <code>python</code> and <code>lisp</code> are
+    available. If none is set <code>text</code> mode is used for syntax hightlighting.</dd>
+  </dl>
+  <p>In the following, any mention to one of them refers to the respective current buffers property.</p>
+  <nav>
+    <a href="#toc">^</a>
+  </nav>
+  <h5 id="text">Text manipulation</h5>
+  <dl>
+    <dt><code>(backspace)</code> ⇒ <code>t</code></dt>
+    <dd>Deletes the character to the left of <var>point</var>. <u>S: delete-backward-char</u></dd>
+    <dt><code>(delete)</code> ⇒ <code>t</code></dt>
+    <dd>Deletes the character after <var>point</var>. <u>S: delete-char</u></dd>
+    <dt><code>(erase-buffer)</code> ⇒ <code>t</code></dt>
+    <dd>Erases all text in the current buffer. <u>C</u></dd>
+    <dt><code>(get-char)</code> ⇒ <code><var>string</var></code></dt>
+    <dd>Returns the character at <var>point</var>. <u>S: get-byte</u></dd>
+    <dt><code>(insert-string <var>string</var>)</code> ⇒ <code>t</code></dt>
+    <dd>Inserts <var>string</var> before <var>point</var>. <u>S: insert</u>.</dd>
+    <dt><code>(kill-region)</code> ⇒ <code>t</code></dt>
+    <dd>Deletes the text in the <var>region</var> and copies it to the <var>clipboard</var>. <u>D</u></dd>
+    <dt><code>(yank)</code> ⇒ <code>t</code></dt>
+    <dd>Pastes the <var>clipboard</var> before <var>point</var>. <u>C</u></dd>
+  </dl>
+  <nav>
+    <a href="#toc">^</a>
+  </nav>
+  <h5 id="selection">Selection</h5>
+  <dl>
+    <dt><code>(copy-region)</code> ⇒ <code>t</code></dt>
+    <dd>Copies <var>region</var> to the <var>clipboard</var>. <u>S: copy-region-as-kill</u></dd>
+    <dt><code>(get-clipboard)</code> ⇒ <var>string</var></dt>
+    <dd>Returns the <var>clipboard</var> contents or the empty string if none. <u>S: gui-get-selection</u></dd>
+    <dt><code>(get-mark)</code> ⇒ <var>integer</var></dt>
+    <dd>Returns the position of <var>mark</var>, -1 if <var>mark</var> is unset. <u>S: mark</u></dd>
+    <dt><code>(set-clipboard <var>string</var>)</code> ⇒ <code>t</code>|<code>nil</code></dt>
+    <dd>Sets <var>clipboard</var> to the contents of <var>string</var>. Returns <code>t</code> on success,
+    <code>nil</code> if memory allocation fails. <u>S: gui-set-selection</u></dd>
+    <dt><code>(set-mark)</code> ⇒ <code>t</code></dt>
+    <dd>Sets <var>mark</var> to <var>point</var>. <u>D</u></dd>
+  </dl>
+  <nav>
+    <a href="#toc">^</a>
+  </nav>
+  <h5 id="cursor">Cursor Movement and Information</h5>
+  <dl>
+    <dt><code>(backward-char)</code> ⇒ <code>t</code></dt>
+    <dd>Moves the point in the current buffer one character backward, but not before the end of the buffer.
+    <u>C</u></dd>
+    <dt><code>(backward-word)</code> ⇒ <code>t</code></dt>
+    <dd>Moves the point in the current buffer backward after the last char of the previous word. If there is no word
+    left the point is set to the beginning of the buffer. If the point is already at the end or within a word, the
+    current word is skipped. <u>D</u>: <b>Note</b>: Elisp moves to the <em>beginning</em> of the previous word.</dd>
+    <dt><code>(beginning-of-buffer)</code> ⇒ <code>t</code></dt>
+    <dd>Sets the point in the current buffer to the first buffer position, leaving mark in its current position.
+    <u>C</u></dd>
+    <dt><code>(beginning-of-line)</code> ⇒ <code>t</code></dt>
+    <dd>Sets point before the first character of the current line, leaving mark in its current position. <u>S:
+    move-beginning-of-line</u></dd>
+    <dt><code>(end-of-buffer)</code> ⇒ <code>t</code></dt>
+    <dd>Sets the point in the current buffer to the last buffer position, leaving mark in its current position.
+    <u>C</u></dd>
+    <dt><code>(end-of-line)</code> ⇒ <code>t</code></dt>
+    <dd>Sets point after the last character of the current line, i.e. before the end-of-line character sequence,
+    leaving mark in its current position. <u>S: move-end-of-line</u></dd>
+    <dt><code>(forward-char)</code> ⇒ <code>t</code></dt>
+    <dd>Moves the point in the current buffer one character forward, but not past the end of the buffer. <u>C</u></dd>
+    <dt><code>(forward-word)</code> ⇒ <code>t</code></dt>
+    <dd>Moves the point in the current buffer forward before the first char of the next word. If there is no word left
+    the point is set to the end of the buffer. If the point is already at the start or within a word, the current word
+    is skipped. <u>D</u>: <b>Note</b>: Elisp moves to the <em>end</em> of the the next word.</dd>
+    <dt><code>(get-point)</code> ⇒ <var>integer</var></dt>
+    <dd>Returns the position of <var>point</var>. <u>S: point</u></dd>
+    <dt><code>(get-point-max)</code> ⇒ <var>integer</var></dt>
+    <dd>Returns the maximum accessible value of point in the current buffer. <u>S: point-max</u></dd>
+    <dt><code>(goto-line <var>number</var>)</code> ⇒ <code>t</code>|<code>nil</code></dt>
+    <dd>Sets the point in the current buffer to the first character on line <var>number</var>. Returns <code>t</code>
+    on success, <code>nil</code> when line is not found. <u>S: goto-line</u>, not an Elisp function.</dd>
+    <dt><code>(next-line)</code> ⇒ <code>t</code></dt>
+    <dd>Moves the point in the current buffer to the same character position in the next line, or to the end of the
+    next line if there are not enough characters. In the last line of the buffer moves the point to the end of the
+    buffer. <u>C</u></dd>
+    <dt><code>(previous-line)</code> ⇒ <code>t</code></dt>
+    <dd>Moves the point in the current buffer to the same character position in the previous line, or to the end of the
+    previous line if there are not enough characters. In the first line of the buffer the point is not moved.
+    <u>C</u></dd>
+    <dt><code>(scroll-up)</code> ⇒ <code>t</code></dt>
+    <dd>Moves the point of the current buffer to the beginning of the last visible line of the associated screen and
+    scrolls the screen up to show it as the first line. <u>C</u></dd>
+    <dt><code>(scroll-down)</code> ⇒ <code>t</code></dt>
+    <dd>Moves the point of the current buffer to the beginning of the first visible line of the associated screen and
+    scrolls the screen down to show it as the last line. <u>C</u></dd>
+    <dt><code>(search-forward <var>string</var>)</code> ⇒ <code>t</code>|<code>nil</code></dt>
+    <dd>Searches for <var>string</var> in the current buffer, starting from point forward. If string is found, sets the
+    point after the first occurrence of <var>string</var> and returns <samp>t</samp>, otherwise leaves point alone and
+    returns <samp>nil</samp>. <u>D</u></dd>
+    <dt><code>(search-backward <var>string</var>)</code> ⇒ <code>t</code>|<code>nil</code></dt>
+    <dd>Searches for <var>string</var> in the current buffer, starting from point backwards. If string is found, sets
+    the point before the first occurrence of <var>string</var> and returns <samp>t</samp>, otherwise leaves point alone
+    and returns <samp>nil</samp>. <u>D</u></dd>
+    <dt><code>(set-point <var>number</var>)</code> ⇒ <code>t</code></dt>
+    <dd>Sets the point in the current buffer to the position <var>number</var>. <u>S: goto-char</u></dd>
+  </dl>
+  <nav>
+    <a href="#toc">^</a>
+  </nav>
+  <h5 id="buffer_management">Buffer Management and Information</h5>
+  <p>All buffers are registered in a circular list. The current buffer is the first buffer. If a buffer is selected to
+  be shown it is put in front of the other buffers. This orders the buffer list by most recently used.</p>
+  <dl>
+    <dt><code>(find-buffer-visiting <var>path</var>)</code> ⇒ <var>buffer</var>|<code>nil</code></dt>
+    <dd>Returns the buffer name of the buffer associated with the file or directory <var>path</var>.</dd>
+    <dt><code>(buffer-filename[ <var>string</var>)</code> ⇒ <var>buffer</var>|<code>nil</code></dt>
+    <dd>Return the file name associated with buffer <var>string</var> or the current buffer if not given. If no file is
+    associated returns <code>nil</code>. <u>C</u></dd>
+    <dt><code>(buffer-fread <var>stream[</var> <var>size]</var>)</code> ⇒ <var>integer</var><u>f</u></dt>
+    <dd>Inserts <var>size</var> bytes from <var>stream</var> into the current buffer, starting at point. If
+    <var>size</var> is not given, <var>stream</var> is read in until end-of-line. Returns number of bytes read.</dd>
+    <dt><code>(buffer-fwrite <var>stream</var>[ <var>size</var>])</code> ⇒ <var>integer</var> <u>f</u></dt>
+    <dd>Write <var>size</var> bytes from the current buffer, starting at point. If <var>size</var> is not given or
+    greater then the rest of the buffer the rest of the buffer is written. Returns number of bytes written.</dd>
+    <dt><code>(buffer-mode[ <var>buffer</var>[ <var>mode</var>])</code> ⇒ <var>mode</var> <u>f</u></dt>
+    <dd>Return and optionally set the mode of given <var>buffer</var> or current buffer if <var>buffer</var> is not
+    given or <code>nil</code>.</dd>
+    <dt><code>(buffer-modified-p[ <var>buffer</var> [ <var>p</var>])</code> ⇒ <code>p</code></dt>
+    <dt><code>(buffer-overwrite-p[ <var>buffer</var> [ <var>p</var>])</code> ⇒ <code>p</code></dt>
+    <dt><code>(buffer-readonly-p[ <var>buffer</var> [ <var>p</var>])</code> ⇒ <code>p</code></dt>
+    <dt><code>(buffer-special-p[ <var>buffer</var> [ <var>p</var>])</code> ⇒ <code>p</code></dt>
+    <dt><code>(buffer-undo-p[ <var>buffer</var> [ <var>p</var>])</code> ⇒ <code>p</code></dt>
+    <dd>Return and optionally set the respective flag of <var>buffer</var>, or the current buffer if <var>buffer</var>
+    is not given or <code>nil</code>.</dd>
+    <dt><code>(buffer-next[ <var>buffer</var>])</code> ⇒ <var>buffer'</var></dt>
+    <dd>Return the next buffer after <var>buffer</var> in the list, or the current buffer if none given.</dd>
+    <dt><code>(buffer-show <var>buffer</var>)</code> ⇒ <var>buffer</var></dt>
+    <dd>Associate <var>buffer</var> with the current window and put it first in the buffer list. Returns
+    <var>buffer</var>.</dd>
+    <dt><code>(delete-buffer <var>buffer</var>)</code> ⇒ <var>buffer</var> <u>f</u></dt>
+    <dd>Kill the buffer named <var>string</var>. Unsaved changes are discarded. Throws an exception if the buffer does
+    not exist or when trying to delete the scratch buffer or the current buffer. Returns the buffer name.</dd>
+    <dt><code>(get-buffer-create <var>name</var>)</code> ⇒ <var>buffer</var></dt>
+    <dd>If buffer <var>name</var> exists return it, otherwise create a new, empty buffer with that name and returns
+    it.</dd>
+    <dt><code>(list-buffers)</code> ⇒ <code>t</code> <u>f</u></dt>
+    <dd>Lists all the buffers in a buffer called <samp>*buffers*</samp>.</dd>
+    <dt><code>(set-buffer <var>string</var>)</code> ⇒ <var>buffer</var></dt>
+    <dd>Makes the buffer named <var>string</var> the current buffer, returns <var>buffer</var>.</dd>
+    <dt><code>(set-buffer-name <var>string</var>)</code> ⇒ <var>string</var> <u>S: rename-buffer</u></dt>
+    <dd>Set the name of the current buffer to <var>string</var>. Returns <var>string</var>.</dd>
+    <dt><code>(set-visited-file-name <var>string</var></code><var>|</var><code>nil)</code> ⇒
+    <var>string</var>|<code>nil</code></dt>
+    <dd>Set the filename of the current buffer to <var>string</var> or <code>nil</code> - i.e. deletes it. Returns the
+    argument.</dd>
+  </dl>
+  <nav>
+    <a href="#toc">^</a>
+  </nav>
+  <h4 id="ui">User Interaction</h4>
+  <p>This section lists function related to window and message line manipulation, keyboard input and system
+  interaction.</p>
+  <h5 id="windows">Window Handling</h5>
+  <dl>
+    <dt><code>(delete-other-windows)</code> ⇒ <code>t</code></dt>
+    <dd>Make current window the only window.</dd>
+    <dt><code>(other-window)</code> ⇒ <code>t</code> <u>D</u></dt>
+    <dd>Moves the cursor to the next window down on the screen. Makes the buffer in that window the current
+    buffer.</dd>
+    <dd>
+      <p>Note: Elisp <code>other-window</code> has a required parameter <var>count</var>, which specifies the number of
+      windows to move down or up.</p>
+    </dd>
+    <dt><code>(split-window)</code> ⇒ <code>t</code>|<code>nil</code></dt>
+    <dd>Splits the current window. Creates a new window for the current buffer. Returns <code>t</code> on success,
+    <code>nil</code> if the window cannot be split or memory allocation fails.</dd>
+    <dt><code>(update-display)</code> ⇒ <code>t</code> <u>f</u></dt>
+    <dd>Updates all modified windows.</dd>
+    <dt><code>(refresh)</code> ⇒ <code>t</code> <u>f</u></dt>
+    <dd>Calls the curses refresh() function.</dd>
+  </dl>
+  <nav>
+    <a href="#toc">^</a>
+  </nav>
+  <h5 id="message_line">Message Line</h5>
+  <dl>
+    <dt><code>(clear-message-line)</code> ⇒ <code>t</code> <u>S: clear-minibuffer-message</u></dt>
+    <dd>Clears the message line.</dd>
+    <dt><code>(message <var>string</var>)</code> ⇒ <code>t</code> <u>D</u></dt>
+    <dd>Displays <var>string</var> in the message line.</dd>
+    <dt><code>(prompt <var>prompt</var> <var>default</var>)</code> ⇒ <var>string</var>|<code>ni</code>l <u>f</u></dt>
+    <dd>Displays <var>prompt</var> in the command line and sets <var>default</var> as initial value for the user
+    response. The user can edit the response. When hitting return, the final response is returned. If C-g is pressed
+    <code>nil</code> is returned.</dd>
+    <dt><code>(prompt-filename <var>prompt</var>)</code> ⇒ <var>string</var>|<code>ni</code>l <u>f</u></dt>
+    <dd>Displays <var>prompt</var> in the command line and allows to enter or search for a file name. Returns the
+    relative path to the selected file name or the response typed by the user or <code>nil</code> if C-g is
+    pressed.</dd>
+  </dl>
+  <nav>
+    <a href="#toc">^</a>
+  </nav>
+  <h5 id="keyboard">Keyboard Handling</h5>
+  <dl>
+    <dt><code>(describe-bindings)</code> ⇒ <code>t</code></dt>
+    <dd>Creates a listing of all current key bindings, in a buffer named <samp>*help*</samp> and displays it in a new
+    window.</dd>
+    <dt><code>(describe-functions)</code> ⇒ <code>t</code> <u>f</u></dt>
+    <dd>Creates a listing of all functions bound to keys in a buffer named <samp>*help*</samp> and displays it in a new
+    window.</dd>
+    <dt><code>(execute-key)</code> ⇒ <code>t</code> <u>f</u></dt>
+    <dd>Executes the function of the last pressed key.</dd>
+    <dt><code>(getch)</code> ⇒ <var>string</var> <u>f</u></dt>
+    <dd>Calls the curses getch() function: Waits for a key to be pressed and returns the key as string. If a function
+    key is pressed, the ANSI terminal input sequence is sent; several calls to <code>getch</code> are required to
+    decode this.</dd>
+    <dt><code>(get-key)</code> ⇒ <code>t</code> <u>f</u></dt>
+    <dd>Records keystrokes until a registered key-sequence is gathered, then the key information is stored and an empty
+    string is returned. If no match is found, i.e. a normal character is input, the recorded key(s) is returned as
+    string.</dd>
+    <dt><code>(get-key-funcname)</code> ⇒ <var>string</var> <u>f</u></dt>
+    <dd>Return the name of the <var>lisp-func</var> bound to the most recent recorded key-sequence.</dd>
+    <dt><code>(get-key-name)</code> ⇒ <var>string</var> <u>f</u></dt>
+    <dd>Returns the <var>key-name</var> of the most recenet recorded key-sequence, eg: <samp>c-k</samp> for
+    control-k.</dd>
+    <dt><code>(set-key <var>key-name</var> <var>lisp-func</var>)</code> ⇒ <code>t</code> <u>f</u></dt>
+    <dd>Binds key key-name to the lisp function <var>lisp-func</var>.</dd>
+  </dl>
+  <nav>
+    <a href="#toc">^</a>
+  </nav>
+  <h5 id="programming_system">Programming and System Interaction</h5>
+  <dl>
+    <dt><code>(eval-block)</code> ⇒ <code>t</code> <u>S: eval-region</u></dt>
+    <dd>Evaluates the <var>region</var> in the current buffer, inserts the result at <var>point</var> and returns it.
+    If <var>mark</var> in the current buffer is before <var>point</var> <code>eval-block</code> evaluates this
+    <var>region</var> and inserts the result at <var>point</var>. If <var>point</var> is before <var>mark</var>
+    <code>eval-block</code> does nothing but returning <samp>t</samp>.</dd>
+    <dt><code>(exit)</code> <u>f</u></dt>
+    <dd>Exit Femto without saving modified buffers.</dd>
+    <dt><code>(get-temp-file)</code> ⇒ <code>t</code> <u>f</u></dt>
+    <dd>Create a file in <code>/tmp</code> with a unique name, return filename.</dd>
+    <dt><code>(get-version-string)</code> ⇒ <var>string</var> <u>f</u></dt>
+    <dd>Returns the complete version string of Femto, including the copyright.</dd>
+    <dt><code>(log-debug <var>string</var>)</code> ⇒ <code>t</code> <u>f</u></dt>
+    <dd>Logs string to the file <code>debug.out</code>.</dd>
+    <dt><code>(log-message <var>string</var>)</code> ⇒ <code>t</code> <u>f</u></dt>
+    <dd>Logs <var>string</var> to the <samp>*messages*</samp> buffer.</dd>
+    <dt><code>(suspend)</code> ⇒ <code>t</code> <u>S: suspend-emacs</u></dt>
+    <dd>Suspend <i>Femto</i>.</dd>
+  </dl>
+  <nav>
+    <a href="#toc">^</a>
+  </nav>
+  <h3 id="femto_lib">The <code>femto</code> Lisp Library</h3>
+  <p>This library provides standard editor functions, mostly tailored to Emacs compatibility and wrappers of the editor
+  extension primitives.</p>
+  <p>Femto does not have the Emacs notion of interactive functions. We use the suffix <code>-interactive</code> if we
+  want to emphasize that a function is the interactive version and <code>-noselect</code> to emphasize that it is the
+  non-interactive version.</p>
+  <p>Two <q>normal</q> hooks are in use:</p>
+  <dl>
+    <dt><code>after-switch-to-buffer-hook</code> <u>f</u></dt>
+    <dd>Run after switching to a buffer. This is used e.g. by <code>dired</code> do start the command loop.</dd>
+    <dt><code>find-file-hook</code></dt>
+    <dd>Run after setting the major mode of a buffer in <code>(after-find-file)</code>.</dd>
+  </dl>
+  <nav>
+    <a href="#toc">^</a>
+  </nav>
+  <h5 id="lib_edit"><i>Femto</i> Edit and Navigation Functions</h5>
+  <dl>
+    <dt><code>(insert-file)</code></dt>
+    <dd>Interactively insert file in current buffer.</dd>
+    <dt><code>(shell-command[ <var>command_line</var>])</code></dt>
+    <dd>Execute string <var>command_line</var> with the <code>system()</code> call. If not given prompt for
+    commandline.</dd>
+    <dt><code>(delete-next-word)</code></dt>
+    <dt><code>(delete-previous-word)</code></dt>
+    <dt><code>(kill-to-eol)</code></dt>
+    <dt><code>(transpose-chars)</code></dt>
+    <dt>(find_and_eval_sexp)</dt>
+    <dd>Editor commands for common key bindings.</dd>
+    <dt><code>(describe-key)</code> ⇒ <var>p</var> <u>S</u></dt>
+    <dd>Read a key (sequence) with (get-key) and print in the message area either the character, the key name or the
+    function name bound to it.</dd>
+    <dt><code>(kill-buffer-interactive)</code></dt>
+    <dd>Prompt for the buffer to kill and kill it. Default is the current buffer.</dd>
+    <dt><code>(find-file)</code></dt>
+    <dd>Prompt for a filename. If the file is already in a buffer switch to that buffer, if not read it into a new
+    buffer and switch to it.</dd>
+    <dt><code>(save-buffer)</code></dt>
+    <dd>Saves the current buffer into it's file, if one is associated and the buffer is modified. If the file does not
+    exist it is created together will all missing parent directories.</dd>
+    <dt><code>(write-file)</code></dt>
+    <dd>Ask for a file name to save the current buffer into and then <code>save-buffer</code> it.</dd>
+    <dt><code>(save-some-buffers)</code></dt>
+    <dd>Interactively save modified file buffers.</dd>
+    <dt><code>(save-buffers-kill-terminal)</code></dt>
+    <dd><code>save-some-buffers</code> then exit <i>Femto</i>.</dd>
+  </dl>
+  <nav>
+    <a href="#toc">^</a>
+  </nav>
+  <h5 id="lib_util"><i>Femto</i> Utility Functions</h5>
+  <dl>
+    <dt><code>(load-script <var>fn</var>)</code> <u>f</u></dt>
+    <dd>deprecated, use <code>require</code>.</dd>
+    <dt><code>(insert-file-contents-literally <var>path</var>)</code></dt>
+    <dd></dd>
+    <dt><code>(shell-exec <var>command_line</var>)</code> <u>f</u></dt>
+    <dd>Helper function for <code>shell-command</code>.</dd>
+    <dt><code>(shell-command-lines <var>command</var>[ <var>arg</var>..])</code> ⇒ <u>f</u></dt>
+    <dd>Join string <var>command</var> and all <var>arg</var>s with a space and execute the resulting command line with
+    <code>popen()</code>. Read output and return it as list of lines without the trailing newlines.</dd>
+    <dt><code>(shell_strip_eol <i>line</i>)</code> ⇒ <var>line'</var> <u>f</u></dt>
+    <dd>Strip newline and carriage return characters from end of string <var>line</var>.</dd>
+    <dt><code>(repeat <var>n</var> <var>func</var>)</code> <u>f</u></dt>
+    <dd>Execute <var>func</var> <var>n</var> times.</dd>
+    <dt><code>(string-restrict-chars-p <var>rl</var> <var>s</var>)</code> ⇒ <var>p</var> <u>f</u></dt>
+    <dd>Returns <code>t</code> if all characters in string <var>s</var> are members of list of charachters
+    <var>rl</var>.</dd>
+    <dt><code>(posix-filename <var>s</var>)</code> ⇒ <var>p</var> <u>f</u></dt>
+    <dt><code>(is_ctl_g <var>k</var>)</code> ⇒ <var>p</var> <u>f</u></dt>
+    <dt><code>(is_escape <var>k</var>)</code> ⇒ <var>p</var> <u>f</u></dt>
+    <dt><code>(is_backspace <var>k</var>)</code> ⇒ <var>p</var> <u>f</u></dt>
+    <dt><code>(is_ctl_s <var>k</var>)</code> ⇒ <var>p</var> <u>f</u></dt>
+    <dt><code>(is_control_char <var>k</var>)</code> ⇒ <var>p</var> <u>f</u></dt>
+    <dd>Keystroke checks, <var>k</var> is the ASCII character as returned by <code>(get-key)</code>.</dd>
+    <dd>Returns <code>t</code> is string <var>s</var> is a posix compliant path: does not start with a dash
+    <code>-</code>, is only alphanumeric plus dot, underscore, dash and slash.</dd>
+    <dt><code>(run-hooks <var>hooks</var>)</code></dt>
+    <dd><var>hooks</var> is a variable name holding a list of function symbols which are run in order. This implements
+    Emacs <q>normal</q> hooks.</dd>
+  </dl>
+  <nav>
+    <a href="#toc">^</a>
+  </nav>
+  <h5 id="lib_buffer"><i>Femto</i> Buffer Functions</h5>
+  <dl>
+    <dt><code>(buffer-name[ <var>buffer</var>])</code> ⇒ <var>name</var></dt>
+    <dd>Return the name of the given buffer of the current buffer if not given.</dd>
+    <dt><code>(current-buffer)</code> ⇒ <i>name</i></dt>
+    <dd>Return the current buffer.</dd>
+    <dt><code>(switch-to-buffer <var>name</var>)</code> ⇒ <i>name</i></dt>
+    <dd>Associate buffer <var>name</var> with the current window and run the Femto specific hook
+    <code>after-switch-to-buffer-hook</code>.</dd>
+    <dt><code>(restore-buffer-modified-p <var>p</var>)</code> ⇒ <var>p</var></dt>
+    <dd>Set modified flag of the current buffer to predicate <var>p</var>.</dd>
+    <dt><code>(set-buffer-modified-p <var>p</var>)</code> ⇒ <var>p</var></dt>
+    <dd>Set modified flag of the current buffer to predicate <var>p</var> and refresh all windows.</dd>
+    <dt>(<code>buffer-list)</code> ⇒ <var>l</var></dt>
+    <dd>Return list of all buffers.</dd>
+    <dt><code>(generate-new-buffer-name <var>name</var>)</code> ⇒ <i>name'</i></dt>
+    <dd>Starting with a given buffer name generate a unique buffer name by appending <code>/</code><var>n</var> where
+    <var>n</var> is a decimal number.</dd>
+    <dt><code>(buffer-basename <var>name</var>)</code> ⇒ <i>name'</i></dt>
+    <dd>Strips a trailing <code>/</code><var>n</var> of from a buffer name.</dd>
+    <dt><code>(create-file-buffer <var>filename</var>)</code> ⇒ <i>name</i></dt>
+    <dd>Gets or creates a file buffer and names it uniquely, given a filename. The base name is the file name without
+    directory components.</dd>
+    <dt><code>(rename-buffer <var>name</var>[ <var>unique-p</var>])</code> ⇒ <i>name'</i></dt>
+    <dd>Renames the current buffer to <var>name</var>. If <var>unique-p</var> is given and not null the buffer name is
+    uniquified before renaming.</dd>
+    <dt><code>(other-buffer)</code> ⇒ <i>name</i></dt>
+    <dd>Return the next best buffer after the current buffer.</dd>
+    <dt><code>(insert-buffer-substring-no-properties from-buffer-or-name[ <var>start</var>[ <var>end</var>])</code> ⇒
+    <code>t</code></dt>
+    <dd>Insert the buffer contents of the given buffer <var>from-buffer-or-name</var> into the current buffer at point.
+    <var>start</var> and <var>end</var> is the region to insert, <var>start</var> defaults to the beginning,
+    <var>end</var> is the end of the from buffer.</dd>
+    <dt><code>(kill-buffer[ <var>buffer</var>])</code> ⇒ <i>name</i></dt>
+    <dd>Kills the given buffer or the current buffer if not given. Offers saving modified buffers, switches to
+    <code>other-buffer</code> if the buffer to kill is the current buffer.</dd>
+    <dt><code>(find-file-noselect <var>filename</var>)</code></dt>
+    <dd>Read the given file into a buffer and return the buffer. If the file does not exist create an empty buffer for
+    it and associate the filename. If <var>filename</var> is a directory open the directory editor for it.</dd>
+    <dt><code>(after-find-file)</code></dt>
+    <dd>Run after the buffer for a regular file is created or switched to. Sets the major mode of the buffer and runs
+    the hook <code>find-file-hook</code>.</dd>
+  </dl>
+  <nav>
+    <a href="#toc">^</a>
+  </nav>
+  <h3 id="femto_apps">Femto Lisp Applications</h3>
+  <h4 id="defmacro"><code>defmacro</code> Editor Macros</h4>
+  <p><mark>Note: currently not working because of segfault in lisp_eval(), supposedly double free/segfault</mark></p>
+  <p id="dired">This applications allows to record a keyboard macros and make it available in a buffer called
+  *macro*.</p>
+  <p>Keybindings:</p>
+  <dl>
+    <dt>c-x (</dt>
+    <dd>starts the recording</dd>
+    <dt>c-x )</dt>
+    <dd>stops the recording</dd>
+    <dt>c-x e</dt>
+    <dd>executes the macro</dd>
+    <dt>esc-e</dt>
+    <dd>executes the macro</dd>
+  </dl>
+  <nav>
+    <a href="#toc">^</a>
+  </nav>
+  <h4><code>dired</code> Directory Navigation</h4>
+  <dl>
+    <dt><code>(dired-interactive)</code></dt>
+    <dd>Prompt for directory and open the directory editor on it.</dd>
+    <dt><code>(dired <var>directory</var>)</code></dt>
+    <dd>Open the directory editor on path directory.</dd>
+    <dt><code>(dired-after-switch-to-buffer-function )</code> <u>f</u></dt>
+    <dd>Hook run to (re-)start the directory editor.</dd>
+    <dt><code>(dired-reload)</code> <u>f</u></dt>
+    <dd>Reload the current dired buffer.</dd>
+    <dt><code>(dired-loop <var>ops</var>)</code> <u>f</u></dt>
+    <dd>Directory editor command loop. <var>ops</var> is the safeguard count: <code>dired-loop</code> exists after
+    <var>ops</var> commands.</dd>
+    <dt><code>(dired-get-info)</code> ⇒ <code>(<var>type</var> . <var>name</var>)</code> <u>f</u></dt>
+    <dd>Retrrieve information from current line: file <var>type</var> and <var>name</var>.</dd>
+    <dt><code>(dired-create-directory-interactive)</code></dt>
+    <dd>Interactively create a directory, bound to <kbd>+</kbd>.</dd>
+    <dt><code>(dired-do-copy-interactive)</code></dt>
+    <dd>bound to <kbd>C</kbd>.</dd>
+    <dt><code>(dired-do-delete)</code></dt>
+    <dd>bound to <kbd>D</kbd>.</dd>
+    <dt><code>(dired-do-chgrp)</code></dt>
+    <dd>bound to <kbd>G</kbd>.</dd>
+    <dt><code>(dired-do-chmod)</code></dt>
+    <dd>bound to <kbd>M</kbd>.</dd>
+    <dt><code>(dired-do-chown)</code></dt>
+    <dd>bound to <kbd>O</kbd>.</dd>
+    <dt><code>(dired-do-rename)</code></dt>
+    <dd>Rename or move, bound to <kbd>R</kbd>.</dd>
+    <dt><code>(dired-do-symlink)</code></dt>
+    <dd>bound to <kbd>S</kbd>.</dd>
+    <dt><code>(dired-do-touch)</code></dt>
+    <dd>bound to <kbd>T</kbd>.</dd>
+  </dl>
+  <nav>
+    <a href="#toc">^</a>
+  </nav>
+  <h4 id="bufmenu"><code>bufmenu</code> Buffer Selection Menu</h4>
+  <p><mark>Tbd.: document this and the following applications.</mark></p>
+  <h4 id="grep"><code>grep</code> File Content Search</h4>
+  <h4 id="git"><code>git</code> Git Repo Helper</h4>
+  <h4 id="info"><code>info</code> Builtin Help</h4>
+  <h4 id="oxo"><code>oxo</code> Tic-Tac-Toe Game</h4>
+  <nav>
+    <a href="#toc">^</a>
+  </nav>
 </body>
 </html>

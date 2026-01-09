@@ -320,6 +320,10 @@ in that window the current buffer.
 Note: Elisp `other-window` has a required parameter *count*, which
 specifies the number of windows to move down or up.
 
+`(pop-to-buffer «buffer»)` ⇒ *buffer* D<u>:</u>  
+Split the window if not already split. Show *buffer* in the other window
+and make it current. Throws exception if buffer does not exist.
+
 `(split-window)` ⇒ `t`\|`nil`  
 Splits the current window. Creates a new window for the current buffer.
 Returns `t` on success, `nil` if the window cannot be split or memory
@@ -394,13 +398,6 @@ Binds key key-name to the lisp function *lisp-func*.
 
 ##### Programming and System Interaction
 
-`(eval-block)` ⇒ `t` <u>S: eval-region</u>  
-Evaluates the *region* in the current buffer, inserts the result at
-*point* and returns it. If *mark* in the current buffer is before
-*point* `eval-block` evaluates this *region* and inserts the result at
-*point*. If *point* is before *mark* `eval-block` does nothing but
-returning `t`.
-
 `(exit)` <u>f</u>  
 Exit Femto without saving modified buffers.
 
@@ -427,9 +424,9 @@ This library provides standard editor functions, mostly tailored to
 Emacs compatibility and wrappers of the editor extension primitives.
 
 Femto does not have the Emacs notion of interactive functions. We use
-the suffix `-interactive` if we want to emphasize that a function is the
-interactive version and `-noselect` to emphasize that it is the
-non-interactive version.
+the suffix `-interactive` or `-i` if we want to emphasize that a
+function is the interactive version and `-noselect` to emphasize that it
+is the non-interactive version.
 
 Two “normal” hooks are in use:
 
@@ -443,6 +440,19 @@ Run after setting the major mode of a buffer in `(after-find-file)`.
 [^](#toc)
 
 ##### *Femto* Edit and Navigation Functions
+
+`(eval-expression «expr»)`  
+Evaluates the string *expr* as Lisp code and returns the result.
+
+`(eval-expression-i)`  
+Prompts for a string to evaluate and shows the result in the message
+buffer.
+
+`(eval-block)` ⇒ `t` <u>S: eval-region</u>  
+Evaluates the *region* in the current buffer, inserts the result at
+*point*. If *mark* in the current buffer is before *point* `eval-block`
+evaluates this *region* and inserts the result at *point*. If *point* is
+before *mark* `eval-block` does nothing but returning `t`.
 
 `(insert-file)`  
 Interactively insert file in current buffer.
@@ -493,6 +503,7 @@ Interactively save modified file buffers.
 deprecated, use `require`.
 
 `(insert-file-contents-literally «path»)`  
+ 
 
 `(shell-exec «command_line»)` <u>f</u>  
 Helper function for `shell-command`.

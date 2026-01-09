@@ -145,7 +145,9 @@ window_t *find_window(char *bname)
  * If such a window already exists do nothing
  * If there are no other windows split the screen and select the other window
  * if the screen is already split select the next window from the top that is not
- * the current buffer.
+ * the current window.
+ *
+ * Note: changed: if buffer is not found we return NULL instead of asserting.
  */
 
 window_t *popup_window(char *bname)
@@ -160,7 +162,8 @@ window_t *popup_window(char *bname)
         return wp;
 
     bp = find_buffer(bname, false);
-    assert(bp != NULL);
+    if (bp == NULL)
+        return NULL;
 
     if (count_windows() == 1) {
         /* returns the top window pointer */
@@ -170,7 +173,7 @@ window_t *popup_window(char *bname)
         other_window();
     } else {
 
-        /* find first window from the top that is not the current buffer */
+        /* find first window from the top that is not the current window */
         for (wp = wheadp; wp != NULL; wp = wp->w_next)
             if (wp != curwp)
                 break;
@@ -249,6 +252,15 @@ void disassociate_b(window_t *wp)
     assert(wp->w_bufp != NULL);
     wp->w_bufp->b_cnt--;
 }
+
+
+void switch_to_buffer(buffer_t *buffer)
+{
+    disassociate_b(curwp);
+    pull_buffer(buffer);
+    associate_b2w(curbp,curwp);
+}
+
 
 /*
  * Local Variables:

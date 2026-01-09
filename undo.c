@@ -499,9 +499,7 @@ void list_undo_stats(void)
     list_bp = find_buffer("*undos*", true);
     list_bp->special = true;
 
-    disassociate_b(curwp); /* we are leaving the old buffer for a new one */
-    pull_buffer(list_bp);
-    associate_b2w(curbp, curwp);
+    switch_to_buffer(list_bp);/* we are leaving the old buffer for a new one */
     zero_buffer(curbp); /* throw away previous content */
 
     /*             1234567890123456 1234 123456789 */

@@ -35,6 +35,7 @@ extern window_t *find_window(char *);
 extern window_t* new_window(void);
 extern window_t *popup_window(char *);
 extern window_t *split_current_window(void);
+extern void switch_to_buffer(buffer_t *);
 extern void split_window(void);
 extern void redraw(void);
 

@@ -253,6 +253,7 @@ void pull_buffer(buffer_t *bp)
     curbp = bp;
 }
 
+
 /*
  * Local Variables:
  * c-file-style: "k&r"

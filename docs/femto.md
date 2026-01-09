@@ -25,7 +25,6 @@ Note: This is an unofficial release, all relevant links go to
 ## Femto Key Bindings
 
 
-
             C-A   begining-of-line
             C-B   backward-character
             C-D   delete-char
@@ -102,7 +101,6 @@ Note: This is an unofficial release, all relevant links go to
 ### Copying and moving
 
 
-
             C-spacebar Set mark at current position
             ^W   Delete region
             ^Y   Yank back kill buffer at cursor
@@ -120,7 +118,6 @@ Generally, the procedure for copying or moving text is:
 3.  Move the cursor to the desired location and yank it back (with ^Y).
 
 ### Searching
-
 
 
             C-S or C-R enters the search prompt, where you type the search string
@@ -148,7 +145,6 @@ This works in almost the same way as GNU Emacs in the scratch buffer.
 Type a lisp function into the editor, for example:
 
 
-
             1: --------------
             2: (defun factorial (n)
             3:   (cond ((= n 0) 1)
@@ -163,12 +159,10 @@ followed by \])
 
 Femto will pass the code to lisp for it to be evaluated.
 
-
     <Lambda (n)>
 
 Now call factorial in the same way (mark the start of the code, move to
 the end of the code and hit escape-\])
-
 
     (factorial 6)
 

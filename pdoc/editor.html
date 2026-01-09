@@ -303,10 +303,11 @@
     <dt><code>(other-window)</code> ⇒ <code>t</code> <u>D</u></dt>
     <dd>Moves the cursor to the next window down on the screen. Makes the buffer in that window the current
     buffer.</dd>
-    <dd>
-      <p>Note: Elisp <code>other-window</code> has a required parameter <var>count</var>, which specifies the number of
-      windows to move down or up.</p>
-    </dd>
+    <dd>Note: Elisp <code>other-window</code> has a required parameter <var>count</var>, which specifies the number of
+    windows to move down or up.</dd>
+    <dt><code>(pop-to-buffer <var>buffer</var>)</code> ⇒ <var>buffer</var>&nbsp;D<u>:</u></dt>
+    <dd>Split the window if not already split. Show <var>buffer</var> in the other window and make it current. Throws
+    exception if buffer does not exist.</dd>
     <dt><code>(split-window)</code> ⇒ <code>t</code>|<code>nil</code></dt>
     <dd>Splits the current window. Creates a new window for the current buffer. Returns <code>t</code> on success,
     <code>nil</code> if the window cannot be split or memory allocation fails.</dd>
@@ -367,11 +368,6 @@
   </nav>
   <h5 id="programming_system">Programming and System Interaction</h5>
   <dl>
-    <dt><code>(eval-block)</code> ⇒ <code>t</code> <u>S: eval-region</u></dt>
-    <dd>Evaluates the <var>region</var> in the current buffer, inserts the result at <var>point</var> and returns it.
-    If <var>mark</var> in the current buffer is before <var>point</var> <code>eval-block</code> evaluates this
-    <var>region</var> and inserts the result at <var>point</var>. If <var>point</var> is before <var>mark</var>
-    <code>eval-block</code> does nothing but returning <samp>t</samp>.</dd>
     <dt><code>(exit)</code> <u>f</u></dt>
     <dd>Exit Femto without saving modified buffers.</dd>
     <dt><code>(get-temp-file)</code> ⇒ <code>t</code> <u>f</u></dt>
@@ -391,9 +387,9 @@
   <h3 id="femto_lib">The <code>femto</code> Lisp Library</h3>
   <p>This library provides standard editor functions, mostly tailored to Emacs compatibility and wrappers of the editor
   extension primitives.</p>
-  <p>Femto does not have the Emacs notion of interactive functions. We use the suffix <code>-interactive</code> if we
-  want to emphasize that a function is the interactive version and <code>-noselect</code> to emphasize that it is the
-  non-interactive version.</p>
+  <p>Femto does not have the Emacs notion of interactive functions. We use the suffix <code>-interactive</code>&nbsp;or
+  <code>-i</code> if we want to emphasize that a function is the interactive version and <code>-noselect</code> to
+  emphasize that it is the non-interactive version.</p>
   <p>Two <q>normal</q> hooks are in use:</p>
   <dl>
     <dt><code>after-switch-to-buffer-hook</code> <u>f</u></dt>
@@ -406,6 +402,15 @@
   </nav>
   <h5 id="lib_edit"><i>Femto</i> Edit and Navigation Functions</h5>
   <dl>
+    <dt><code>(eval-expression <var>expr</var>)</code></dt>
+    <dd>Evaluates the string <var>expr</var> as Lisp code and returns the result.</dd>
+    <dt><code>(eval-expression-i)</code></dt>
+    <dd>Prompts for a string to evaluate&nbsp;and shows the result in the message buffer.</dd>
+    <dt><code>(eval-block)</code> ⇒ <code>t</code> <u>S: eval-region</u></dt>
+    <dd>Evaluates the <var>region</var> in the current buffer, inserts the result at <var>point</var>. If
+    <var>mark</var> in the current buffer is before <var>point</var> <code>eval-block</code> evaluates this
+    <var>region</var> and inserts the result at <var>point</var>. If <var>point</var> is before <var>mark</var>
+    <code>eval-block</code> does nothing but returning <samp>t</samp>.</dd>
     <dt><code>(insert-file)</code></dt>
     <dd>Interactively insert file in current buffer.</dd>
     <dt><code>(shell-command[ <var>command_line</var>])</code></dt>
@@ -443,7 +448,7 @@
     <dt><code>(load-script <var>fn</var>)</code> <u>f</u></dt>
     <dd>deprecated, use <code>require</code>.</dd>
     <dt><code>(insert-file-contents-literally <var>path</var>)</code></dt>
-    <dd></dd>
+    <dd>&nbsp;</dd>
     <dt><code>(shell-exec <var>command_line</var>)</code> <u>f</u></dt>
     <dd>Helper function for <code>shell-command</code>.</dd>
     <dt><code>(shell-command-lines <var>command</var>[ <var>arg</var>..])</code> ⇒ <u>f</u></dt>

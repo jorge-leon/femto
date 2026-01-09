@@ -29,7 +29,7 @@ The documentation is prebuilt in this repository and can be found in
 
 * To be an extendable version of the Atto Emacs editor using a Tiny
   Lisp extension language
-* Provide a number of useful extension packages written in Tiny Lisp
+* Provide a number of useful extension packages written in fLisp
   (these include an interface to **git** (similar to GNU Emacs Magit),
   a small version of **dired**, a buffer management menu (**buffer
   menu**), **defmacro** allows for a macro to be recorded and invoked
@@ -78,7 +78,7 @@ searching, a replace function and basic syntax hilighting. The proviso
 being that all this will fit in less than 2000 lines of C.
 
 Femto is an extended version of Atto Emacs with its own extension
-language and less then 12.000 lines of C and Lisp.
+language fLisp and less then 12.000 lines of C and Lisp.
 
 
 ## History
@@ -104,11 +104,11 @@ language and less then 12.000 lines of C and Lisp.
 * In late 2017 Hugh Barney decided to return to the **Femto** editor
   and extend it using Tiny-Lisp.
 * In 2023-2026 Georg Lehner refactored the Lisp infrastructure and
-  started to add additional Emacs functionality.
+  started to fix and add additional Emacs functionality.
 
 For a full version history please refer to the file
 [CHANGE.LOG.md](./CHANGE.LOG.md) for past and future plans
-see the [Femto](./misc/ROADMAP.femto.md)
+see the [Femto](./misc/ROADMAP.md)
 
 ## Comparisons with Other Emacs Implementations
 
@@ -121,8 +121,8 @@ codebase less then half of the size.
 	atto           atto       33002     1.9k      10
 	pEmacs         pe         59465     5.7K      16
 	Esatz-Emacs    ee         59050     5.7K      14
+	femto          femto     157904     7.3k/4.3k 36/12 **
 	GNOME          GNOME      55922     9.8k      13
-	femto          femto     169608    11.7k/8  k 36/48 **
 	Zile           zile      257360    11.7k      48
 	Mg             mg        585313    16.5K      50
 	uEmacs/Pk      em        147546    17.5K      34
@@ -133,10 +133,10 @@ codebase less then half of the size.
 	ue3.10         uemacs    171664    52.4K      16 ++
 	GNUEmacs       emacs   14632920   358.0k     186
 
-Since femto 2.12 C code has been moved out to Lisp. The first number
-in the KLOC column is the line count, the second the sloccount. The
-first number in the files count are the C-files, the second number
-includes the required Lisp files.
+Since Femto 2.12 C code is being moved out to Lisp, since Femto 2.25
+fLisp has been moved out of the Femto source tree. The first number in
+the KLOC/files column is the Femto count, the second the fLisp count.
+
 
 ## Building
 
@@ -238,7 +238,6 @@ graphs.
 Usefull build targets:
 
 - `femto`: build femto binary
-- `flisp`: build fLisp binary
 - `doc`: build some markdown files from Poshdoc and some html files from markdown
 - `doxygen`: build the Doxygen source code documentation
 - `measure`: count # of files and code lines

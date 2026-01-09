@@ -533,11 +533,7 @@ Object *e_buffer_show(Interpreter *interp, Object **args, Object **env)
     buffer_t *bp = find_buffer(FLISP_ARG_ONE->string, true);
     if (!bp)
         exceptionWithObject(interp, FLISP_ARG_ONE, out_of_memory, "(generate-new-buffer name) failed, out of memory");
-
-    disassociate_b(curwp);
-    pull_buffer(bp);
-    associate_b2w(curbp,curwp);
-
+    switch_to_buffer(bp);
     return FLISP_ARG_ONE;
 }
 
@@ -574,9 +570,7 @@ void list_buffers(void)
     list_bp->special = 1;
 
     /* Notes: should'n we use popup-buffer here? */
-    disassociate_b(curwp); /* we are leaving the old buffer for a new one */
-    pull_buffer(list_bp);
-    associate_b2w(curbp, curwp);
+    switch_to_buffer(list_bp); /* we are leaving the old buffer for a new one */
     zero_buffer(curbp); /* throw away previous content */
 
     /*             12 1234567 12345678901234567 */
@@ -640,6 +634,21 @@ Object *e_set_buffer_filename(Interpreter *interp, Object **args, Object **env)
 DEFINE_EDITOR_FUNC(delete_other_windows)
 
 DEFINE_EDITOR_FUNC(other_window)
+
+/* (pop-to-buffer buffer) */
+Object *e_pop_to_buffer(Interpreter *interp, Object **args, Object **env)
+{
+    window_t *wp = popup_window(FLISP_ARG_ONE->string);
+    if (wp == NULL)
+        exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(pop-to-buffer buffer) - buffer does not exist");
+    /* See other_window() */
+    curwp->w_update = true;
+    curwp = wp;
+    pull_buffer(wp->w_bufp);
+    /* Note: bug: first time the cursor does not jump to new window */
+    update_display();
+    return newString(interp, wp->w_bufp->name);
+}
 
 Object *e_split_window(Interpreter *interp, Object **args, Object **env) { return (NULL == split_current_window()) ? nil : t; }
 
@@ -1018,12 +1027,13 @@ bool femto_register(Interpreter *interp)
         && flisp_register_primitive(interp, "list-buffers",          0, 0, nil,         e_list_buffers)
         && flisp_register_primitive(interp, "set-buffer",            1, 1, type_string, e_set_buffer)
         && flisp_register_primitive(interp, "set-buffer-name",       1, 1, type_string, e_set_buffer_name)
-        && flisp_register_primitive(interp, "set-visited-file-name",  1, 1, nil,         e_set_buffer_filename)
+        && flisp_register_primitive(interp, "set-visited-file-name",  1, 1, nil,        e_set_buffer_filename)
 
 /* Window Handling */
         && flisp_register_primitive(interp, "delete-other-windows",  0, 0, nil,         e_delete_other_windows)
         && flisp_register_primitive(interp, "split-window",          0, 0, nil,         e_split_window)
         && flisp_register_primitive(interp, "other-window",          0, 0, nil,         e_other_window)
+        && flisp_register_primitive(interp, "pop-to-buffer",         1, 1, type_string, e_pop_to_buffer)
         && flisp_register_primitive(interp, "update-display",        0, 0, nil,         e_update_display)
         && flisp_register_primitive(interp, "refresh",               0, 0, nil,         e_refresh)
 

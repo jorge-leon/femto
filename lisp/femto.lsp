@@ -26,8 +26,10 @@
     (if-not exp (message "Canceled")
 	    (let ((result (string (eval-expression exp))))
 	      (if (< (string-length result) 60) (message result)
-		  ;; Note: tbd. append result to *lisp_output* buffer
-		  ;; and pop it up in a window.
+		  (buffer-special-p (pop-to-buffer (get-buffer-create "*lisp-output*")) t)
+		  (end-of-buffer)
+		  (insert-string (string-append result "\n"))
+		  (end-of-buffer)
 		  (message (concat (substring result 0 56) "..")) )))))
 
 (defun eval-block ()

@@ -17,7 +17,7 @@
  ;
  ;
  ; C-x h       for help
- ; Esc x exit  emergency exit
+ ; C-z         suspend Femto
  ;
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n\n\n\n
   Tiny Emacs clone with tiny Lisp extension language\n  ")
@@ -83,16 +83,15 @@
 ;;  Key Bindings, setkey is used to bind keys to user defined functions in lisp
 ;;
 
+;;; Note: Bindings correctly defined in key.c need not be repeated here
+;;;   tbd.: review each.
+
 (set-key "c-x c-f" "find-file")
 
 (set-key "c-t" "transpose-chars")
 (set-key "c-x @" "shell-command") ;; femto
 (set-key "esc !" "shell-command")
 (set-key "c-x i" "insert-file")
-
-(set-key "esc-right" "delete-next-word")
-(set-key "esc-left" "delete-previous-word")
-(set-key "c-k" "kill-to-eol")
 (set-key "c-x ?" "describe-key")
 (set-key "c-]" "find_and_eval_sexp")
 (set-key "c-x c-o" "oxo")

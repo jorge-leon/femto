@@ -134,13 +134,6 @@
     (if-not (eq key "")  (dired_handle-command-key (intern key))
 	    (dired_handle-arrow-key (intern (get-key-funcname))) )))
 
-(defun dired_run_func_sym (func)
-  (let* ((input   (open (symbol-name func) "<"))
-	 (result  (catch (eval (read input)))) )
-    (close input)
-    (if-not (car result)  (apply (caddr result))
-	(log 'DEBUG result "dired: arrow-key") )))
-
 (defun dired_handle-arrow-key (func)
   (log 'DEBUG nil "dired: arrow key: "func)
   (when (memq func ; list of allowed "arrow" keys
@@ -148,7 +141,7 @@
 		forward-word forward-char  backward-word backward-char
 		beginning-of-line end-of-line  beginning-of-buffer end-of-buffer
 		next-buffer save-buffers-kill-terminal))
-    (dired_run_func_sym func) )
+    (eval-expression (concat "("func")")) )
   (cond
     ((eq func 'save-buffers-kill-terminal) :exit)
     ((memq func '(previous-line next-line))

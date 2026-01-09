@@ -74,47 +74,6 @@ void resize_terminal(void)
     one_window(curwp);
 }
 
-/*
- * execute a lisp command typed in at the command prompt >
- * send any output to the message line.  This avoids text
- * being sent to the current buffer which means the file
- * contents could get corrupted if you are running commands
- * on the buffers etc.
- *
- * If the output is too big for the message line then send it to
- * a temp buffer called *lisp_output* and popup the window
- *
- */
-void repl(void)
-{
-    buffer_t *bp;
-    char *output;
-
-    response_buf[0] = '\0';
-    if (!getinput("> ", response_buf, TEMPBUF))
-        return;
-
-    if ((output = eval_string(false, response_buf)) == NULL)
-        return;
-
-    // Note: Emacs puts errors and output always into the *Messages*
-    //       buffer, plus errors are shown in the message line.
-    //       Decision about whether to insert the result into the
-    //       buffer or show it in the message line is done based on
-    //       key pressed/function invoked
-
-    if (strlen(output) < 60) {
-        msg(output);
-    } else {
-        bp = find_buffer("*lisp_output*", true);
-        append_string(bp, output);
-        (void)popup_window(bp->name);
-    }
-    free_lisp_output(output);
-}
-
-/* Keymap handling */
-
 keymap_t *new_key(char *name, char *bytes)
 {
     keymap_t *kp = (keymap_t *)malloc(sizeof(keymap_t));
@@ -280,16 +239,22 @@ void setup_keys(void)
 
     set_key_internal("esc-up",    "beginning-of-buffer" , "\x1B\x1B\x5B\x41", beginning_of_buffer);
     set_key_internal("esc-down",  "end-of-buffer"       , "\x1B\x1B\x5B\x42", end_of_buffer);
-    set_key_internal("esc-right", "user-func"           , "\x1B\x1B\x5B\x43", user_func);
-    set_key_internal("esc-left",  "user-func"           , "\x1B\x1B\x5B\x44", user_func);
+    /* Note: Emacs binds the following
+       set_key_internal("esc-right", "forward-word"           , "\x1B\x1B\x5B\x43", user_func);
+       set_key_internal("esc-left",  "backward-word"          , "\x1B\x1B\x5B\x44", user_func);
+       * But Femto (uEmacs?) binds this: */
+    set_key_internal("esc-right", "delete-next-word"    , "\x1B\x1B\x5B\x43", user_func);
+    set_key_internal("esc-left",  "delete-previous-word", "\x1B\x1B\x5B\x44", user_func);
+    /* Note: which are not Emacs functions, Emacs calls them kill-word and backward-kill-word */
+    
     set_key_internal("esc-end",   "end-of-buffer"       , "\x1B\x1B\x4F\x46", end_of_buffer);
     set_key_internal("esc-home",  "beginning-of-buffer" , "\x1B\x1B\x4F\x48", beginning_of_buffer);
     set_key_internal("esc-@",     "set-mark"            , "\x1B\x40", i_set_mark);
     set_key_internal("esc-<",     "beginning-of-buffer" , "\x1B\x3C", beginning_of_buffer);
     set_key_internal("esc->",     "end-of-buffer"       , "\x1B\x3E", end_of_buffer);
-    set_key_internal("esc-]",     "eval-block"          , "\x1B\x5D", eval_block);
-    set_key_internal("esc-:",     "exec-lisp-command"   , "\x1B\x3A", repl);
-    set_key_internal("esc-;",     "exec-lisp-command"   , "\x1B\x3B", repl); // femto
+    set_key_internal("esc-]",     "eval-block"          , "\x1B\x5D", user_func);
+    set_key_internal("esc-:",     "eval-expression-i"   , "\x1B\x3A", user_func);
+    set_key_internal("esc-;",     "eval-expression-i"   , "\x1B\x3B", user_func); // femto
     set_key_internal("esc-.",     "user-func"           , "\x1B\x2E", user_func);
 
     // rmkx mode

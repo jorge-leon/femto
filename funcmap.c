@@ -283,7 +283,6 @@ void execute_command(void)
     char command_name[STRBUF_M + 1];
     char prompt[] = "Execute command: ";
     char *shortest_match;
-    char *output;
 
     command_name[0] = '\0';
     bp = find_buffer(str_completions, true);
@@ -386,13 +385,10 @@ void execute_command(void)
     if (strlen(command_name) > 0) {
         funct = name_to_function(command_name);
 
-        if (funct == NULL || funct == user_func) {
-
-            if ((output = eval_string(true, "(%s)", command_name)) != NULL)
-                free_lisp_output(output);
-        } else {
+        if (funct == NULL || funct == user_func)
+            eval_string(true, "(%s)", command_name);
+        else
             (funct)();
-        }
     }
 
     mark_all_windows(); /* a lot has gone on, mark every window for update */

@@ -13,6 +13,27 @@
 (setq command-line-args argv)
 (setq invocation-name argv0)
 
+(defun eval-expression (string)
+  (let* ((input   (open string "<"))
+	 (result (catch (eval (read input)))) )
+    (close input)
+    (if (car result) (apply throw result)
+	(caddr result) )))
+
+;;; M-: M-;
+(defun eval-expression-i ()
+  (let ((exp (prompt "Eval: ")))
+    (if-not exp (message "Canceled")
+	    (let ((result (string (eval-expression exp))))
+	      (if (< (string-length result) 60) (message result)
+		  ;; Note: tbd. append result to *lisp_output* buffer
+		  ;; and pop it up in a window.
+		  (message (concat (substring result 0 56) "..")) )))))
+
+(defun eval-block ()
+  (copy-region)
+  (insert-string (concat "\n"(eval-expression (get-clipboard))"\n")) )
+
 (defun load-script(fn)
   (load (concat script_dir "/" fn)))
 

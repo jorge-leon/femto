@@ -721,32 +721,6 @@ Object *e_set_key(Interpreter *interp, Object **args, Object **env) { return (1 
 
 
 /* Programming and System Interaction */
-
-/*
- * evaluate a block between mark and point
- */
-void eval_block(void)
-{
-    char *output;
-
-    if (curbp->b_mark == NOMARK || curbp->b_mark >= curbp->b_point) {
-        msg("no block defined");
-        return;
-    }
-
-    copy_region();
-    assert(scrap != NULL);
-    assert(strlen((char *)scrap) > 0);
-
-    insert_string("\n");
-
-    if ((output = eval_string(false, (char *)scrap)) == NULL)
-        return;
-    // Note: femto used to insert error messages in the current buffer. Now we don't anymore.
-    insert_string(output);
-    free_lisp_output(output);
-}
-DEFINE_EDITOR_FUNC(eval_block)
 void quit(void)
 {
     done = 1;
@@ -971,10 +945,7 @@ void user_func(void)
         msg(E_NOT_BOUND);
         return;
     }
-
-    char *output = eval_string(true, "(%s)", key_return->k_funcname);
-    if (output)
-        free_lisp_output(output);
+    eval_string(true, "(%s)", key_return->k_funcname);
 }
 
 Object *femto_libs = &(Object) { .string = "femto_lib" };
@@ -1073,7 +1044,6 @@ bool femto_register(Interpreter *interp)
         && flisp_register_primitive(interp, "set-key",               2, 2, type_string, e_set_key)
 
 /* Programming and System Interaction */
-        && flisp_register_primitive(interp, "eval-block",            0, 0, nil,         e_eval_block)
         && flisp_register_primitive(interp, "exit",                  0, 0, nil,         e_quit)
         && flisp_register_primitive(interp, "get-temp-file",         0, 0, nil,         e_get_temp_file)
         && flisp_register_primitive(interp, "get-version-string",    0, 0, nil,         e_get_version_string)

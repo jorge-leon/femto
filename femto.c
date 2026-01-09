@@ -146,17 +146,10 @@ void msg_lisp_err(Interpreter *interp)
  *                   printf style formatting, otherwise it is used directly.
  * @param format     Input string for the interpreter.
  *
- * @returns
- * - NULL  if an error occured formatting the input string or
- *         evaluating it.
- * - A pointer to a string buffer with the fLisp interpreter output.
- *   After use this buffer has to be freed with free_lisp_output().
  */
-char *eval_string(bool do_format, char *format, ...)
+void eval_string(bool do_format, char *format, ...)
 {
     char buf[INPUT_FMT_BUFSIZ], *input;
-    char* output = NULL;
-    size_t len;
 
     int size;
     va_list args;
@@ -167,36 +160,21 @@ char *eval_string(bool do_format, char *format, ...)
         va_end(args);
         if (size > INPUT_FMT_BUFSIZ) {
             msg("input string larger then %d", INPUT_FMT_BUFSIZ);
-            return NULL;
+            return;
         }
         input = buf;
     } else {
         input = format;
     }
-
-    prev = interp->output;  // Note: save for double invocation with user defined functions.
-    interp->output = open_memstream(&output, &len);
-    if (interp->output == NULL)
-        fatal("failed to allocate lisp_eval() output buffer");
     flisp_eval(interp, input);
-    //fclose(interp->output);
-    interp->output = prev;
     if (FLISP_RESULT_CODE(interp) == nil)
-        return output;
+        return;
     msg_lisp_err(interp);
-    if (debug_mode) {
+    if (debug_mode)
         flisp_write_error(interp, debug_fp);
-        debug("=> %s\n", output);
-    }
-    free_lisp_output(output);
     if (FLISP_RESULT_CODE(interp) == out_of_memory)
         fatal("OOM, exiting..");
-    return NULL;
-}
-void free_lisp_output(char *output)
-{
-    /* Note: simplify me where I'm called */
-    free(output);
+    return;
 }
 
 void gui(void)

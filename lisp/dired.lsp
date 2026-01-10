@@ -102,7 +102,9 @@
   ;;;   - :update   .. reload the buffer, then :continue
   ;;;   - :cancel   .. show cancel command message, then :continue
   ;;;   - :no-deletions .. show no deletions message, then :continue
-  ;;; - a cons (:switch buffer) to quit and switch to buffer
+  ;;; - a cons
+  ;;;   - (:switch buffer) to quit and switch to buffer
+  ;;;    -(:dired buffer) to dired other buffer
   (update-display)
   (let* ((other (other-buffer))
 	 (result (catch (dired_process-key)))
@@ -111,10 +113,19 @@
     (log 'DEBUG result "dired: result "ops)
     (if (cond
 	  ((i= ops 0) nil)
-	  ((memq code '(quit exit)) nil)
-	  ((and (consp code) (eq (car code) :switch))
-	   (setq other (cdr code))
-	   nil )
+	  ((memq code '(quit exit))
+	   (log 'DEBUG nil "want to leave: "code)
+	   nil)
+	  ((consp code)
+	   (cond
+	     ((eq (car code) :switch)
+	      (setq other (cdr code))
+	      nil )
+	     ((eq (car code) :dired)
+	      (setq other (cdr code))
+	      (buffer-show other)
+	      (dired-reload)
+	      :continue )))
 	  ((car result) (message (join "\n" code)) :continue)
 	  ((eq code :cancel) (message "Canceled") :continue)
 	  ((eq code :update) (dired-reload) :continue)
@@ -125,6 +136,10 @@
 	(cond
 	  ((eq code :exit) save-buffers-kill-terminal)
 	  (t
+	   (log 'DEBUG nil
+		"still want to leave: "code" current: "(current-buffer)" other: "other
+		" other other: "(other-buffer)
+		" buffer list: "(buffer-list))
 	   (restore-buffer-modified-p nil)
 	   (switch-to-buffer other)
 	   (clear-message-line) )))))
@@ -146,15 +161,14 @@
     ((eq func 'save-buffers-kill-terminal) :exit)
     ((memq func '(previous-line next-line))
      (beginning-of-line)
-     (repeat 8 forward-word)))
-  
-  :continue )
+     (repeat 8 forward-word))
+    (:continue) ))
 
 (defun dired_handle-command-key (key)
   (cond
     ((eq key 'q)  :quit)
     ((eq key 'g)  :update)
-    ((eq key '^)  (cons :switch (dired_init-up-directory)))
+    ((eq key '^)  (cons :dired (dired_init-up-directory)))
     ((eq key '+)  (dired-create-directory-interactive))
     ((eq key 'C)  (dired-do-copy-interactive))
     ((eq key 'D)  (dired-do-delete))
@@ -171,7 +185,7 @@
 	    (path  (if (string-equal type "d")  (concat (buffer-filename) name "/")
 		       (string-append (buffer-filename) name)) ))
        (log 'DEBUG nil "dired: info "info", path "path)
-       (cond ((string-equal type "d") (cons :switch (dired_init path)))
+       (cond ((string-equal type "d") (cons :dired (dired_init path)))
 	     ;; Note: 
 	     ((memq type '("-" "l")) (cons :switch (find-file-noselect path)))
 	     (t (message (concat "Error: cannot open file of type: " type)) :continue) )))

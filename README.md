@@ -193,8 +193,6 @@ https://github.com/jorge-leon/flisp/releases and install it with
 
 ### Build, Test and Installation
 
-TBD branch
-
 	$ git clone https://github.com/jorge-leon/femto.git
 	$ cd femto
 	$ git switch femto-fixes

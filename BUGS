@@ -1,9 +1,5 @@
 BUGS encountered while and since dynamic loading of symbols and primitives:
 
-- user-func keybindings sometimes access already free'd memory/segfault
-  - Record a keyboard macro, then run it C-X ( "abc" C-X ) , C-X e => boom
-  - when running under valgrind it shows what happens.
-- dired: still recursive calling
 - prompt-filename segfaults on Alpine Linux when pressing TAB then C-g
 
 BUGS encountered since fLisp refactoring and batch mode

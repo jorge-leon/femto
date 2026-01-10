@@ -225,21 +225,19 @@
        ((eq -1 end_p) (message "could not find end of s-expression"))) )))
 
 (defun transpose-chars ()
-  (cond
-    ((= (get-point) 0) (message "Beginning of buffer"))
-    (t
+  (if (= (get-point) 0) (message "Beginning of buffer")
       (cond
 	((eq (get-char) "\n")
-	  (setq p (get-point))
-	  (backward-char)
-	  (transpose-chars)
-	  (set-point p))
+	 (let (( (get-point)))
+	   (backward-char)
+	   (transpose-chars)
+	   (set-point p)) )
 	(t
-	  (backward-char)
-	  (setq c (get-char))
-	  (delete)
-	  (forward-char)
-	  (insert-string c))))))
+	 (backward-char)
+	 (let ((c (get-char)))
+	   (delete)
+	   (forward-char)
+	   (insert-string c) )))))
 
 ;;; Hooks
 (defun run-hook (hookvar)
@@ -324,9 +322,10 @@
 
 (defun next-buffer ()  (switch-to-buffer (buffer-next (current-buffer))))
 (defun other-buffer ()
-  (let ((visible (remove buffer-special-p (buffer-list))))
+  (let* ((others (remove (lambda (buffer) (eq buffer (current-buffer))) (buffer-list)))
+	 (visible (remove buffer-special-p others)) )
     (if visible (car visible)
-	(car (filter buffer-special-p (buffer-list))) )))
+	(car (filter buffer-special-p others)) )))
 
 ;;; args: start end, default beginning, end
 (defun insert-buffer-substring-no-properties (from-buffer-or-name . args)

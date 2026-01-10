@@ -1,8 +1,9 @@
 -*- mode: markdown; fill-column: 80 -*-
 
 # Next
-- Bug: femto segfaults w/o femtorc, batch-mode
+- Use posix-filename on save-buffer.
 - Move prompt-filename to Lisp.
+- Bug: femto segfaults w/o femtorc, batch-mode
 - Consider implementing bury-buffer.
 - Make buffer mode a Lisp Object, register default symbols for it as self
   evaluating constants.
@@ -18,9 +19,8 @@
   (set var val).
 - Pipe a buffer through a shell command and read the output back into a
   "*Shell Command Output*" special buffer.
-- Change eval_block to eval_region.
+- Change eval_block to eval_region (n.a.: eval_region does a different thing).
 - dired: delete/rename buffers of deleted/renamed files/directories.
-- Use (posix-file-name) check when saving files.
 - Find out how to build on NetBSD: problem is ncurses libraries.
 - Improve/support batch mode: output = stdout.
 - Implement per buffer/mode keymaps.
@@ -35,12 +35,11 @@
 The main goal of this release was to fix file saving into non-existing
 directories. This lead to a plenty of innovations:
 
-
 - Buffer list is a ring. Order is recently used, instead of alphabetical
 - Buffers with special flags are not considered for saving
 - Less C-code, less redundant C-code, each C file has it's own header file.
 - main.c/header.h renamed to femto.c/femto.h
-- Review of the buffer list implementation.
+- Rewrite of the buffer list implementation.
 - Start general adoption of stdbool.h types.
 - More Lisp code for higher level functionality - less unflexible C-code.
 - More buffer handling primitives for use in Lisp.
@@ -64,7 +63,8 @@ The dired implementation was completely rewritten and supports now:
 It can be used as example to improve git, defmacro, grep, oxo.
 
 Bug fixes
-- File save bug by using fmkdir.
++ lisp_eval() segfault on closing output (defmacro.lsp)
++ File save bug by using fmkdir.
   https://github.com/hughbarney/femto/issues/14
 + Make fLisp read from /dev/null to avoid:
   https://github.com/hughbarney/femto/issues/10
@@ -73,7 +73,7 @@ Bug fixes
   - https://github.com/hughbarney/femto/issues/39
   - https://github.com/hughbarney/femto/issues/37
   - https://github.com/hughbarney/femto/issues/36
-- To be closed:
++ To be closed:
   - https://github.com/hughbarney/femto/issues/1
 
 Some details on changes:
@@ -93,9 +93,12 @@ C-code:
 - Refactored include system
   + rename main.c to femto.c
   + rename header.h to femto.h
+- eval_string() does not touch interp->output, eval_block() and repl() needed
+  this, they are implemented in Lisp now.
 
 Lisp:
 
+- Implement (pop-to-buffer)
 - Implement (rename-buffer).
 - (kill-buffer) now fails if named buffer does not exist.
 - (show-prompt) removed, use (message "prompt")(update-display) instead

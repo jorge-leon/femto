@@ -1,7 +1,3 @@
-BUGS encountered while and since dynamic loading of symbols and primitives:
-
-- prompt-filename segfaults on Alpine Linux when pressing TAB then C-g
-
 BUGS encountered since fLisp refactoring and batch mode
 
 - valgrind detects several memory leaks, call with:

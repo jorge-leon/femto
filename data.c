@@ -17,7 +17,7 @@ char_t *scrap = NULL;
 char_t *input;
 int msgflag;
 char msgline[TEMPBUF];
-char response_buf[NAME_MAX];
+char response_buf[PATH_MAX];
 char searchtext[STRBUF_M];
 char replace[STRBUF_M];
 

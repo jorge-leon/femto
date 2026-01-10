@@ -22,23 +22,24 @@
  *
  * @returns: false if aborted by user, true otherwise.
  *
- * If buf is not zero it must be a / terminated directoryname to
- * be used as base directory.
+ * buf can be a wildcard string which is used for TAB-completions.
+ * Note that the wildcard is overwritten by the first TAB and not
+ * available for a second round.
+ * This is due to simplifying code by not using a tempfile.
  *
  */
-char sys_command[NAME_MAX];
+char sys_command[PATH_MAX];
 bool getfilename(char *prompt, char *buf, int nbuf)
 {
 
-    int cpos = strlen(buf);    /* current character position in string */
-    int wpos, dpos = cpos;
+    int wpos, cpos = strlen(buf);    /* current character position in string */
     int key = 0, c;
-    bool didtry, iswild = false;
+    bool didtry = false, iswild = false;
 
     FILE *fp = NULL;
 
     for (;;) {
-        didtry = (key == 0x09);    /* Was last command tab-completion? */
+        didtry = didtry && (key == 0x09);    /* Was last command tab-completion? */
         display_prompt_and_response(prompt, buf);
         key = getch(); /* get a character from the user */
 
@@ -65,35 +66,29 @@ bool getfilename(char *prompt, char *buf, int nbuf)
             /* scan backwards for a wild card and set iswild */
             iswild=false;
             for (wpos = strlen(buf); wpos; wpos--)
-                if ((iswild = (buf[wpos] == '*' || buf[wpos] == '?')))
+                if ((iswild = (buf[wpos-1] == '*' || buf[wpos-1] == '?')))
                     break;
 
             /* first time retrieval */
-            if (didtry == false) {
-                /* scan backwards for a directory separator */
-                for(dpos = strlen(buf); dpos && buf[dpos] != '/'; dpos--);
-                if (dpos)
-                    dpos++;
-                else
-                    dpos = cpos;
-
-                strcpy(sys_command, "ls -A1 ");
+            if (!didtry) {
+                strcpy(sys_command, "ls -1Adp ");
                 strcat(sys_command, buf);
+                if (!iswild)
+                    strcat(sys_command, "*");
                 strcat(sys_command, " 2>/dev/null");
                 if (fp != NULL) pclose(fp);
                 fp = popen(sys_command, "r");
                 if (fp == NULL)
                     fatal("getfilename(): failed to get directory listing\n");
             }
-            cpos = dpos;
+            cpos = 0;
 
             /* copy next filename into buf */
             while ((c = getc(fp)) != EOF && c != '\n')
                 if (cpos < nbuf - 1 && c != '*')
                     buf[cpos++] = c;
             buf[cpos] = '\0';
-
-            didtry = true;
+            didtry = (c == EOF) ? false : true;
             break;
 
         default:

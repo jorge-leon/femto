@@ -51,6 +51,9 @@ typedef struct undo_tt undo_tt;
 #ifndef NAME_MAX
 #define NAME_MAX _POSIX_NAME_MAX
 #endif
+#ifndef PATH_MAX
+#define PATH_MAX _POSIX_PATH_MAX
+#endif
 
 /*
  * Some compilers define size_t as a unsigned 16 bit number while

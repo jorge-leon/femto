@@ -1,4 +1,4 @@
-# fLisp Femto Editor Extension and Libraries
+# *fLisp* Femto Editor Extension and Libraries
 
 ### Overview
 

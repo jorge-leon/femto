@@ -19,11 +19,14 @@ The extension language of *Femto* is *fLisp*, it is documented in the
 manual](https://github.com/jorge-leon/flisp/blob/main/doc/flisp.html)
 ([Markdown](https://github.com/jorge-leon/flisp/blob/main/doc/flisp.md)).
 
+The Femto specific additions to fLisp - both in C code and Lisp are
+documented in the [*fLisp* Femto Editor Extension and
+Libraries](editor.html) manual.
+
 Note: This is an unofficial release, all relevant links go to
 <https://github.com/jorge-leon/> all credits go to the original author.
 
 ## Femto Key Bindings
-
 
 
             C-A   begining-of-line
@@ -102,7 +105,6 @@ Note: This is an unofficial release, all relevant links go to
 ### Copying and moving
 
 
-
             C-spacebar Set mark at current position
             ^W   Delete region
             ^Y   Yank back kill buffer at cursor
@@ -120,7 +122,6 @@ Generally, the procedure for copying or moving text is:
 3.  Move the cursor to the desired location and yank it back (with ^Y).
 
 ### Searching
-
 
 
             C-S or C-R enters the search prompt, where you type the search string
@@ -148,7 +149,6 @@ This works in almost the same way as GNU Emacs in the scratch buffer.
 Type a lisp function into the editor, for example:
 
 
-
             1: --------------
             2: (defun factorial (n)
             3:   (cond ((= n 0) 1)
@@ -163,12 +163,10 @@ followed by \])
 
 Femto will pass the code to lisp for it to be evaluated.
 
-
     <Lambda (n)>
 
 Now call factorial in the same way (mark the start of the code, move to
 the end of the code and hit escape-\])
-
 
     (factorial 6)
 
@@ -300,7 +298,5 @@ case that could easily be fixed.
 Adding a line at the bottom of a window will hide the line until the
 cursor moves up and down again or the screen is refreshed.
 
-prompt-filename misbehaves and segfaults on Alpine Linux
-
-dired eventually enters the key query loop recursively: one has to **q**
-out of it when already in a file buffer.
+dired eventually enters the key query loop recursively: one has to
+select a file buffer and eventually **q** out of it from there.

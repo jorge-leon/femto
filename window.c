@@ -113,6 +113,7 @@ void delete_other_windows(void)
     free_other_windows(curwp);
 }
 
+/* Note: only used in delete_other_windows() */
 void free_other_windows(window_t *winp)
 {
     window_t *wp, *next;
@@ -129,6 +130,7 @@ void free_other_windows(window_t *winp)
     one_window(winp);
 }
 
+/* Note: only used in popup_window() */
 window_t *find_window(char *bname)
 {
     window_t *wp;

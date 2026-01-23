@@ -5,8 +5,6 @@
 - Move prompt-filename to Lisp.
 - Bug: femto segfaults w/o femtorc, batch-mode
 - Consider implementing bury-buffer.
-- Make buffer mode a Lisp Object, register default symbols for it as self
-  evaluating constants.
 - Improve readability, stability and reduce code size of Femto libraries:
   - Use if/if-not, when/unless instead of cond.
   - Use intern.
@@ -25,8 +23,6 @@
 - Improve/support batch mode: output = stdout.
 - Implement per buffer/mode keymaps.
 - Make buffer name and filename Lisp string objects.
-- Move b_flags to individual bits - let the compiler work, not us.
-- Make buffer (major) mode a Lisp (symbol) object.
 - Write a test file for all lisp functions.
 
 
@@ -43,7 +39,10 @@ directories. This lead to a plenty of innovations:
 - Start general adoption of stdbool.h types.
 - More Lisp code for higher level functionality - less unflexible C-code.
 - More buffer handling primitives for use in Lisp.
+- Move b_flags to individual bits - let the compiler work, not us.
 - Buffer names and filenames are allocated dynamically.
+- Make buffer (major) mode a Lisp Object, register default symbols for it as self
+  evaluating constants.
 - Reading files into buffers is done via Lisp primitives.
 - More conformance to Emacs/Elisp naming conventions.
 

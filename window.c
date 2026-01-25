@@ -259,7 +259,10 @@ void disassociate_b(window_t *wp)
 void switch_to_buffer(buffer_t *buffer)
 {
     disassociate_b(curwp);
-    pull_buffer(buffer);
+    if (buffer == curbp->b_next)
+        curbp = buffer;
+    else
+        pull_buffer(buffer);
     associate_b2w(curbp,curwp);
 }
 

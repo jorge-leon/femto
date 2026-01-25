@@ -513,7 +513,7 @@
   (let ((filename  (buffer-filename buffer)))
     (if (not filename) mode ; skip buffers w/o file association
 	(if (eq mode :force) (save-buffer) :force
-	    (let ((response  (prompt (concat "Safe file "filename"? (y, n, !, ., q,) "))))
+	    (let ((response  (prompt (concat "Save file "filename"? (y, n, !, ., q,) "))))
 	      (cond ((eq mode :force) (save-buffer) :force)
 		    ((eq response "y")  (save-buffer) :ask)
 		    ((eq response "n") :ask)

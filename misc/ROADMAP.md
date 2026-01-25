@@ -26,6 +26,13 @@
 - Write a test file for all lisp functions.
 
 
+# Femto 2.25.1
+
+- Fix: other-buffer algorithm
+- Fix: build-dependency on pkg-conf
+- Fix: adding lines at the end of a buffer would make them disappear. Hopefully
+  without breaking something important.
+
 # Femto 2.25.0
 
 The main goal of this release was to fix file saving into non-existing

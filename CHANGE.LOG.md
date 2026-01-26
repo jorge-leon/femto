@@ -1,3 +1,11 @@
+## Femto 2.25.1
+
+* Fix issue #11: crash when killing buffer open in more then one
+  window.
+* Fix buffer-next only switching between the last two buffers.
+* Fix adding lines at the end of a buffer would make them disappear.
+
+
 ## Femto 2.25/fLisp 0.14 Dec 2026
 
 Femto:

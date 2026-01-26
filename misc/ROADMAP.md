@@ -1,6 +1,7 @@
 -*- mode: markdown; fill-column: 80 -*-
 
 # Next
+- Autoload applications to reduce startup time.
 - Use posix-filename on save-buffer.
 - Move prompt-filename to Lisp.
 - Bug: femto segfaults w/o femtorc, batch-mode
@@ -8,11 +9,14 @@
 - Improve readability, stability and reduce code size of Femto libraries:
   - Use if/if-not, when/unless instead of cond.
   - Use intern.
-  - Use after-mode-switch-hook
+  - Use after-mode-switch-hook for Lisp apps like git and grep.
 - Consider replacing display_prompt_and_response() with message()
 
 
 # Future
+- utf-8 aware search and replace.
+- capitalize-word, downcase-word, upcase-word.
+- Implement read-only buffers. Load read-only files into read-only buffers.
 - Implement add-hook and remove-hook, maybe look into subr.el, maybe need
   (set var val).
 - Pipe a buffer through a shell command and read the output back into a
@@ -24,6 +28,7 @@
 - Implement per buffer/mode keymaps.
 - Make buffer name and filename Lisp string objects.
 - Write a test file for all lisp functions.
+- User defined color themes/schemes.
 
 
 # Femto 2.25.1
@@ -32,6 +37,7 @@
 - Fix: build-dependency on pkg-conf
 - Fix: adding lines at the end of a buffer would make them disappear. Hopefully
   without breaking something important.
+- Fix: issue #11, crash when killing buffer open in more then one window.
 
 # Femto 2.25.0
 

@@ -24,6 +24,8 @@ The documentation is prebuilt in this repository and can be found in
 
 [femto.md](docs/femto.md) ([HTML](pdoc/femto.html))
 
+See the [roadmap](misc/ROADMAP.md) for future directions.
+
 
 ## Goals of Femto Emacs
 
@@ -84,7 +86,7 @@ language fLisp and less then 12.000 lines of C and Lisp.
 ## History
 
 * In late 2015 Hugh Barney wrote the Atto editor 'A minimum
-  functioning Emacs is less than 2000 lines of C'.  Atto was based on
+  functioning Emacs in less than 2000 lines of C'.  Atto was based on
   Anthony Howe's editor (commonly known as Anthony's Editor or AE,
   [2]).
 * **Femto** is based on the Atto codebase [0]
@@ -121,7 +123,7 @@ codebase less then half of the size.
 	atto           atto       33002     1.9k      10
 	pEmacs         pe         59465     5.7K      16
 	Esatz-Emacs    ee         59050     5.7K      14
-	femto          femto     157800     7.4k/4.3k 36/12 **
+	femto          femto     161896     7.4k/2.6k 36/12 **
 	GNOME          GNOME      55922     9.8k      13
 	Zile           zile      257360    11.7k      48
 	Mg             mg        585313    16.5K      50
@@ -133,14 +135,16 @@ codebase less then half of the size.
 	ue3.10         uemacs    171664    52.4K      16 ++
 	GNUEmacs       emacs   14632920   358.0k     186
 
+    ** KLOC: C / Lisp lines
+	   Files: total files / fLisp only files.
+
 Since Femto 2.12 C code is being moved out to Lisp, since Femto 2.25
-fLisp has been moved out of the Femto source tree. The first number in
-the KLOC/files column is the Femto count, the second the fLisp count.
+fLisp has been moved out of the Femto source tree.
 
 
 ## Building
 
-Note: this is the README for the unofficial Femto 2.25 release. All
+Note: this is the README for the unofficial Femto 2.25.* releases. All
 relevant links point to the Github account `jorge-leon`, all credits
 go the original author `hughbarney`.
 
@@ -182,13 +186,13 @@ From source:
 git clone https://github.com/jorge-leon/flisp
 cd flisp
 make
-sudo make install-dev
+sudo make install-dev install-lib
 ```
 
-Or download a suitable `flisp-dev` Debian Package from
-https://github.com/jorge-leon/flisp/releases and install it with
+Or download suitable `flisp-dev` and `flisp-common` Debian Packages
+from https://github.com/jorge-leon/flisp/releases and install them with
 
-	sudo dpkg -i flisp-dev_*version*_*arch*.deb
+	sudo dpkg -i flisp-dev_*version*_*arch*.deb flisp-common_*version*_*arch*.deb
 
 
 ### Build, Test and Installation
@@ -205,19 +209,8 @@ https://github.com/jorge-leon/flisp/releases and install it with
 Prebuilt packages for Debian and Alpine Linux are
 [available](https://github.com/jorge-leon/femto/releases).
 
-Alpine Linux provides femto in the "testing" repository.
-
-
-## Future Enhancements
-
-The following enhancements are envisaged.
-
-* Ability to load a file in read-only-mode
-
-* Ability to setup themes of colors that can be applied to different buffers
-  This will allow users to control their own colour scheme
-
-* Pipe a buffer through a shell command and read the output back into a different buffer
+Alpine Linux provides femto in the "testing" repository. Versions lag
+some months behind releases.
 
 
 ## Development

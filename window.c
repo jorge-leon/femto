@@ -130,7 +130,7 @@ void free_other_windows(window_t *winp)
     one_window(winp);
 }
 
-/* Note: only used in popup_window() */
+
 window_t *find_window(char *bname)
 {
     window_t *wp;

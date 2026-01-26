@@ -9,6 +9,7 @@
 #include <assert.h>
 
 #include "femto.h"
+#include "window.h"
 #include "undo.h"
 #include "buffer.h"
 #include "gap.h"
@@ -208,6 +209,7 @@ bool set_buffer_name(buffer_t *buffer, char *name)
 bool delete_buffer(buffer_t *bp)
 {
     buffer_t *sb;
+    window_t *wp;
 
     if (bp == curbp || strcmp(bp->name, str_scratch) == 0)
         return false;
@@ -227,7 +229,17 @@ bool delete_buffer(buffer_t *bp)
     else
         sb->b_next = bp->b_next;
 
+    /* disassociate all windows */
+    while (bp->b_cnt) {
+        wp = find_window(bp->name);
+        if (wp == NULL)
+            return false; /* Note: this would be a programming error and should be at least logged */
+        disassociate_b(wp);
+        associate_b2w(curbp, wp);
+    }
+
     /* now we can delete */
+
     free_undos(bp->b_utail);
     free(bp->b_buf);
     free(bp->name);

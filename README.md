@@ -123,7 +123,7 @@ codebase less then half of the size.
 	atto           atto       33002     1.9k      10
 	pEmacs         pe         59465     5.7K      16
 	Esatz-Emacs    ee         59050     5.7K      14
-	femto          femto     161896     7.4k/2.6k 36/12 **
+	femto          femto     166472     7.4k/2.4k 36/10 **
 	GNOME          GNOME      55922     9.8k      13
 	Zile           zile      257360    11.7k      48
 	Mg             mg        585313    16.5K      50

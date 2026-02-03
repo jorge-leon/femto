@@ -151,19 +151,19 @@
 
 ;; some keystroke checks that we will use later
 (defun is_ctl_g(k)
-  (eq k (ascii 7)))
+  (eq k (code-char 7)))
 
 (defun is_escape(k)
-  (eq k (ascii 27)))
+  (eq k (code-char 27)))
 
 (defun is_backspace(k)
-  (or (eq k (ascii 8)) (eq k (ascii 127))))
+  (or (eq k (code-char 8)) (eq k (code-char 127))))
 
 (defun is_ctl_s(k)
-  (eq k (ascii 19)))
+  (eq k (code-char 19)))
 
 (defun is_control_char(k)
-  (and (i>= (ascii->number k) 0) (i<= (ascii->number k) 31)))
+  (and (i>= (char-code k) 0) (i<= (char-code k) 31)))
 
 
 ;; prompt for a keystroke then show its name

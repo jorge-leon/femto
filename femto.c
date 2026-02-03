@@ -23,7 +23,8 @@
 #include "command.h"
 
 #include "flisp/lisp.h"
-#include "flisp/file.h"
+#include "flisp/string.h"
+#include "flisp/posix.h"
 #ifdef FLISP_DOUBLE_EXTENSION
 #include "flisp/double.h"
 #endif
@@ -58,7 +59,8 @@ void lisp_init(char **argv)
     interp = flisp_new(FLISP_INITIAL_MEMORY, argv, NULL, init_fd, debug_fp, debug_fp);
     if (interp == NULL)
         fatal("fLisp initialization failed");
-    flisp_file_register(interp);
+    flisp_string_register(interp);
+    flisp_posix_register(interp);
 #ifdef FLISP_DOUBLE_EXTENSION
     flisp_double_register(interp);
     debug("double extension registered\n");

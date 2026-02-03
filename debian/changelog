@@ -1,3 +1,9 @@
+femto (2.25.1-2) trixie; urgency=medium
+
+  Update for flisp 0.15.
+
+ -- Georg Lehner <jorge@magma-soft.at>  Tue, 3 Feb 2026 13:23:15 +0200
+
 femto (2.25.1-1) trixie; urgency=medium
 
   * New dependency on flisp-common

@@ -1,13 +1,10 @@
 -*- mode: markdown; fill-column: 80 -*-
 
 # Next
-- Autoload applications to reduce startup time.
 - Use posix-filename on save-buffer.
 - Move prompt-filename to Lisp.
-- Bug: femto segfaults w/o femtorc, batch-mode
 - Consider implementing bury-buffer.
 - Improve readability, stability and reduce code size of Femto libraries:
-  - Use if/if-not, when/unless instead of cond.
   - Use intern.
   - Use after-mode-switch-hook for Lisp apps like git and grep.
 - Consider replacing display_prompt_and_response() with message()
@@ -29,6 +26,13 @@
 - Make buffer name and filename Lisp string objects.
 - Write a test file for all lisp functions.
 - User defined color themes/schemes.
+
+
+# Femto 2.25.2
+- Update to fLisp 0.15
+- Autoload applications to reduce startup time.
+- Use if/if-not, when/unless instead of cond.
+- Bug: femto segfaults w/o femtorc, batch-mode
 
 
 # Femto 2.25.1

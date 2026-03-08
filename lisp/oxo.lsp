@@ -13,7 +13,7 @@
 ;; (message "")
 ;; (display)
 ;; (setq key (getch))
-;; (debug "(draw)\n")
+;; (debug "(oxo-draw)\n")
 ;; (beginning-of-buffer)
 ;; (set-mark)
 ;; (repeat 10 next-line)
@@ -35,7 +35,7 @@
 (setq oxo-debugging nil)
 
 (defun oxo-debug(s)
- (cond (oxo-debugging (log-debug s))))
+ (when oxo-debugging (log-debug s)) )
 
 (defun init()
  (oxo-debug "(init)\n")
@@ -77,7 +77,7 @@
     ((is_control_char key) (inputat ln q response))
     (t (inputat ln q (concat response key)))  ))
 
-(defun draw()
+(defun oxo-draw()
   (oxo-debug "draw\n")
   (beginning-of-buffer)
   (set-mark)
@@ -153,10 +153,10 @@
   (or (eq "X" v) (eq "O" v) (eq "E" v)) )
 
 (defun msg(s pause)
-  (cond (pause
-	 (print_message (concat s " - press a key to continue "))
-	 (getch))
-	((print_message s)) ))
+  (when pause
+    (print_message (concat s " - press a key to continue "))
+    (getch) )
+  (print_message s) )
 
 (defun print_message(s)
   (oxo-debug "print_message\n")
@@ -177,7 +177,7 @@
   (setq board (set-nth board (find_free board) "O")) )
 
 (defun show_result()
-  (draw)
+  (oxo-draw)
   (cond
     ((check_for_win wins "X") (msg "X wins !" t))
     ((check_for_win wins "O") (msg "O wins !" t))
@@ -189,28 +189,25 @@
   (or (eq m "y") (eq m "Y")) )
 
 (defun play()
-   (oxo-debug "play\n")
-  (draw)
+  (oxo-debug "play\n")
+  (oxo-draw)
   (oxo-debug "about to update display\n")
   (update-display)
   (oxo-debug "updated\n")
-  (cond ((not (game_over)) (setq board (set-nth board (get-move) "X")))
-	((show_result)) )
-  (cond ((not (game_over))
-	 (computer_move)
-	 (play))
-	((show_result)) ))
+  (if (game_over) (show_result)
+      (setq board (set-nth board (get-move) "X")) )
+  (if (game_over) (show_result)
+      (computer_move)
+      (play) ))
 
 (defun oxo()
   (init)
   (play)
-  (cond
-    ((play_again) (oxo))
-    (t
-     (msg "Thank you for playing" t)
-     (restore-buffer-modified-p nil)
-     (next-buffer)
-     (kill-buffer "*oxo*")
-     (message "")) ))
+  (if (play_again) (oxo)
+      (msg "Thank you for playing" t)
+      (restore-buffer-modified-p nil)
+      (next-buffer)
+      (kill-buffer "*oxo*")
+      (message "") ))
 
 (provide 'oxo)

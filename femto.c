@@ -53,8 +53,11 @@ void lisp_init(char **argv)
     if ((init_file = getenv("FEMTORC")) == NULL)
         init_file = CPP_XSTR(E_INITFILE);
 
-    if ((init_fd = fopen(init_file, "r")) == NULL)
+    if ((init_fd = fopen(init_file, "r")) == NULL) {
         debug("failed to open rc file %s: %s\n", init_file, strerror(errno));
+        if (!batch_mode)
+            fatal("No init file, exiting..");
+    }
 
     interp = flisp_new(FLISP_INITIAL_MEMORY, argv, NULL, init_fd, debug_fp, debug_fp);
     if (interp == NULL)
@@ -66,8 +69,10 @@ void lisp_init(char **argv)
     debug("double extension registered\n");
 #endif
     if (!femto_register(interp))
-        fatal("faile to register femto primitives");
+        fatal("failed to register femto primitives");
     debug("femto primitives and constants registered\n");
+    if (!init_fd)
+        return;
     debug("evaluating rc file %s\n", init_file);
     flisp_eval(interp, NULL);
     if (FLISP_RESULT_CODE(interp) != nil) {
@@ -110,8 +115,15 @@ int main(int argc, char **argv)
 
     debug("start\n");
 
-    /* GUI */
-    if (!batch_mode) gui();
+    if (batch_mode) {
+        interp->input.fd = stdin;
+        interp->output.fd = stdout;
+        flisp_eval(interp, NULL);
+        if (FLISP_RESULT_CODE(interp) != nil)
+            flisp_write_error(interp, stderr);
+    } else
+        /* GUI */
+        gui();
 
     debug("main(): shutdown\n");
     // Note: exit frees all memory, do we need this here?

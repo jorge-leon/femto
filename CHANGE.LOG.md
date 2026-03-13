@@ -1,5 +1,13 @@
 ## Femto 2.25.1
 
+* Adjust to fLisp 0.16
+* Experimental improvement on buffer name
+* Adjust to fLisp 0.16
+* Experimental improvement on buffer name
+* Fix batch-mode, segfault w/o femtorc
+
+## Femto 2.25.1
+
 * Fix issue #11: crash when killing buffer open in more then one
   window.
 * Fix buffer-next only switching between the last two buffers.

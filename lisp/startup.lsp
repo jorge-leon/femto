@@ -64,10 +64,25 @@
 ;;  Load extensions
 ;;
 (require 'defmacro)
-(require 'bufmenu)
-(require 'dired)
-(require 'grep)
-(require 'git)
+
+(defun buffer-menu ()
+  ;;; autoload dired with c-x c-b
+  (require 'bufmenu) )
+
+(defun dired-interactive ()
+  ;;; autoload dired with c-x d
+  (require 'dired)
+  (dired-interactive) )
+
+(defun grep-command ()
+  ;;; autoload grep with c-x g
+  (require 'grep)
+  (grep-command) )
+
+(defun git-menu ()
+  ;;; autoload git with c-x c-g
+  (require 'git)
+  (git-menu) )
 
 (defun oxo ()
   ;; autoload info with c-x c-o

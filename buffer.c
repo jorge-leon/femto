@@ -22,6 +22,8 @@ Object *mode_c = &(Object) { .string = "C" };
 Object *mode_python = &(Object) { .string = "Python" };
 Object *mode_lisp = &(Object) { .string = "Lisp" };
 Object *mode_dired = &(Object) { .string = "Dired" };
+Object *mode_buffers = &(Object) { .string = "mode-buffers" };
+Object *mode_buffers_name = &(Object) { .string = "Buffer Menu" };
 Object *mode_git = &(Object) { .string = "Git" };
 Object *mode_oxo = &(Object) { .string = "OXO" };
 
@@ -31,6 +33,8 @@ void femto_buffer_register(Interpreter *interp)
     flisp_register_constant(interp, mode_lisp, mode_lisp);
     flisp_register_constant(interp, mode_python, mode_python);
     flisp_register_constant(interp, mode_dired, mode_dired);
+    mode_buffers_name->type = type_string;
+    flisp_register_constant(interp, mode_buffers, mode_buffers_name);
     flisp_register_constant(interp, mode_git, mode_git);
     flisp_register_constant(interp, mode_oxo, mode_oxo);
 }

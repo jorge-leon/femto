@@ -100,11 +100,10 @@
   (message "buffer menu: 1,2,s,k,x")
   (update-display)
   (setq bufm-key (get-key))
-  (cond ((eq bufm-key "") (bufm-handle-bound-key))
-        (t (bufm-handle-single-key bufm-key)))
-  (cond
-    ((or (> bufm-ops bufm-max-ops) bufm-stop) (setq bufm-stop t))
-    (t (bufm-loop-payload))))
+  (if (eq bufm-key "") (bufm-handle-bound-key)
+      (bufm-handle-single-key bufm-key) )
+  (if (or (> bufm-ops bufm-max-ops) bufm-stop) (setq bufm-stop t)
+      (bufm-loop-payload) ))
 
 ;;
 ;; (bufm-handle-bound-key)

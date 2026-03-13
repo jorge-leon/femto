@@ -1,3 +1,10 @@
+v2.25, fLisp 0.15
+- dired still does not always exit
+
+v2.25.2, fLisp 0.16
+- grep fails: Failed to create temp file
+- git also fails sometimes with same error
+
 BUGS encountered since fLisp refactoring and batch mode
 
 - valgrind detects several memory leaks, call with:

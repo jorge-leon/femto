@@ -1,6 +1,9 @@
 -*- mode: markdown; fill-column: 80 -*-
 
 # Next
+- Implement Lisp buffer object
+- Fix bufmenu to use after-mode-switch-hook
+- Fix git and grep
 - Use posix-filename on save-buffer.
 - Move prompt-filename to Lisp.
 - Consider implementing bury-buffer.
@@ -21,7 +24,6 @@
 - Change eval_block to eval_region (n.a.: eval_region does a different thing).
 - dired: delete/rename buffers of deleted/renamed files/directories.
 - Find out how to build on NetBSD: problem is ncurses libraries.
-- Improve/support batch mode: output = stdout.
 - Implement per buffer/mode keymaps.
 - Make buffer name and filename Lisp string objects.
 - Write a test file for all lisp functions.
@@ -29,11 +31,11 @@
 
 
 # Femto 2.25.2
-- Update to fLisp 0.15
+- Update to fLisp 0.16
 - Autoload applications to reduce startup time.
 - Use if/if-not, when/unless instead of cond.
 - Bug: femto segfaults w/o femtorc, batch-mode
-
+- Improve/support batch mode: output = stdout.
 
 # Femto 2.25.1
 

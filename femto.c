@@ -31,7 +31,7 @@
 
 void gui(void); /* The GUI loop used in interactive mode */
 
-static Interpreter *interp;
+Interpreter *interp;
 char debug_file[] = "debug.out";
 FILE *prev, *debug_fp = NULL;
 

@@ -304,7 +304,7 @@ bool goto_line(int line)
 }
 Object *e_goto_line(Interpreter *interp, Object **args, Object **env)
 {
-    int line = FLISP_ARG_ONE->integer;
+    int line = FLISP_ARG_ONE->value;
 
     if (line < 0)
         exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(goto-line line) - line must be positive");
@@ -364,7 +364,7 @@ void set_point(point_t p)
 }
 Object *e_set_point(Interpreter *interp, Object **args, Object **env)
 {
-    set_point(FLISP_ARG_ONE->integer);
+    set_point(FLISP_ARG_ONE->value);
     return t;
 }
 
@@ -421,12 +421,12 @@ Object *e_buffer_fread(Interpreter *interp, Object **args, Object **env)
 
     if (FLISP_HAS_ARG_TWO && FLISP_ARG_TWO != nil) {
         FLISP_CHECK_TYPE(FLISP_ARG_TWO, type_integer, "(buffer-fread stream size) - size");
-        if (FLISP_ARG_TWO->integer == 0)
+        if (FLISP_ARG_TWO->value == 0)
             return newInteger(interp, 0);
 
-        if (FLISP_ARG_TWO->integer < 0)
+        if (FLISP_ARG_TWO->value < 0)
             exceptionWithObject(interp, FLISP_ARG_TWO, invalid_value, "(buffer-read size stream) - size is negative");
-        len = buffer_fread(curbp, FLISP_ARG_ONE->fd, FLISP_ARG_TWO->integer);
+        len = buffer_fread(curbp, FLISP_ARG_ONE->fd, FLISP_ARG_TWO->value);
         if (ferror(FLISP_ARG_ONE->fd))
             exceptionWithObject(interp, FLISP_ARG_ONE, io_error, "buffer_fread() failed: %s", strerror(errno));
 
@@ -460,11 +460,11 @@ Object *e_buffer_fwrite(Interpreter *interp, Object **args, Object **env)
     FLISP_CHECK_TYPE(FLISP_ARG_ONE, type_stream, "(buffer-fwrite stream size) - stream");
     if (FLISP_HAS_ARG_TWO) {
         FLISP_CHECK_TYPE(FLISP_ARG_TWO, type_stream, "(buffer-fwrite stream size) - size");
-        if (FLISP_ARG_TWO->integer == 0)
+        if (FLISP_ARG_TWO->value == 0)
             return newInteger(interp, 0);
-        if (FLISP_ARG_TWO->integer < 0)
+        if (FLISP_ARG_TWO->value < 0)
             exceptionWithObject(interp, FLISP_ARG_TWO, invalid_value, "(buffer-fwrite stream size) - size is negative");
-        len = FLISP_ARG_TWO->integer;
+        len = FLISP_ARG_TWO->value;
     } else {
         len = get_point_max() - get_point();
     }

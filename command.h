@@ -29,13 +29,13 @@ extern void up(void);
 extern void user_func(void);
 extern void yank(void);
 
-extern bool femto_register(Interpreter *);
+extern bool femto_register(Object *);
 
 /* Export void name(void) as Lisp function */
 /* Note: the C-Function is used by set_key_internal() bindings */
 #define DEFINE_EDITOR_FUNC(name)					\
     extern void name(void);                                             \
-    Object *e_##name(Interpreter *interp, Object ** args, Object **env)	\
+    Object *e_##name(Object *interp, Object ** args, Object **env, size_t nArgs)	\
     {									\
         name();								\
         return t;                                                       \

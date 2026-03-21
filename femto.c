@@ -25,13 +25,11 @@
 #include "flisp/lisp.h"
 #include "flisp/string.h"
 #include "flisp/posix.h"
-#ifdef FLISP_DOUBLE_EXTENSION
 #include "flisp/double.h"
-#endif
 
 void gui(void); /* The GUI loop used in interactive mode */
 
-static Interpreter *interp;
+Object *interp;
 char debug_file[] = "debug.out";
 FILE *prev, *debug_fp = NULL;
 
@@ -57,23 +55,18 @@ void lisp_init(char **argv)
         debug("failed to open rc file %s: %s\n", init_file, strerror(errno));
 
     interp = flisp_new(FLISP_INITIAL_MEMORY, argv, NULL, init_fd, debug_fp, debug_fp);
-    if (interp == NULL)
+    if (interp == NULL || interp->type == type_error)
         fatal("fLisp initialization failed");
-    flisp_string_register(interp);
-    flisp_posix_register(interp);
-#ifdef FLISP_DOUBLE_EXTENSION
-    flisp_double_register(interp);
-    debug("double extension registered\n");
-#endif
+
     if (!femto_register(interp))
         fatal("faile to register femto primitives");
     debug("femto primitives and constants registered\n");
     debug("evaluating rc file %s\n", init_file);
-    flisp_eval(interp, NULL);
-    if (FLISP_RESULT_CODE(interp) != nil) {
+    Object *result = flisp_eval(interp, NULL);
+    if (result->type == type_error && result->error != end_of_file) {
         debug("failed to load rc file %s:\n", init_file);
-        flisp_write_error(interp, debug_fp);
-        if (FLISP_RESULT_CODE(interp) == out_of_memory)
+        flisp_write_object(debug_fp, result, true);
+        if (result->error == out_of_memory)
             fatal("OOM, exiting..");
     }
     if (init_fd != NULL && fclose(init_fd))
@@ -106,12 +99,21 @@ int main(int argc, char **argv)
     setup_keys();
 
     lisp_init(argv);
-    femto_register(interp);
 
     debug("start\n");
 
-    /* GUI */
-    if (!batch_mode) gui();
+    if (batch_mode) {
+        interp->input->fd = stdin;
+        interp->output->fd = stdout;
+        Object * result = flisp_eval(interp, NULL);
+        if (result->type == type_error) {
+            flisp_write_object(stderr, result, true);
+            fputs("", stderr);
+            return 1;
+        }
+    } else
+        /* GUI */
+        gui();
 
     debug("main(): shutdown\n");
     // Note: exit frees all memory, do we need this here?
@@ -128,7 +130,7 @@ int main(int argc, char **argv)
  *
  * @param interp
  */
-void msg_lisp_err(Interpreter *interp)
+void msg_lisp_err(Object *result)
 {
     char *buf;
     size_t len;
@@ -136,7 +138,7 @@ void msg_lisp_err(Interpreter *interp)
 
     if (NULL == (fd = open_memstream(&buf, &len)))
         fatal("failed to allocate error formatting buffer");
-    flisp_write_error(interp, fd);
+    flisp_write_object(fd, result, true);
     msg("%s", buf);
     fclose(fd);
     free(buf);
@@ -168,13 +170,13 @@ void eval_string(bool do_format, char *format, ...)
     } else {
         input = format;
     }
-    flisp_eval(interp, input);
-    if (FLISP_RESULT_CODE(interp) == nil)
+    Object *result = flisp_eval(interp, input);
+    if (result->type != type_error)
         return;
-    msg_lisp_err(interp);
+    msg_lisp_err(result);
     if (debug_mode)
-        flisp_write_error(interp, debug_fp);
-    if (FLISP_RESULT_CODE(interp) == out_of_memory)
+        flisp_write_object(debug_fp, result, true);
+    if (result->error  == out_of_memory)
         fatal("OOM, exiting..");
     return;
 }

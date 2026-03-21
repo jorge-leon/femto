@@ -159,6 +159,7 @@ void display_utf8(buffer_t *bp, int n)
     addstr(sbuf);
 }
 
+extern Object *interp;
 void modeline(window_t *wp)
 {
     int i;
@@ -171,7 +172,9 @@ void modeline(window_t *wp)
     lch = (wp == curwp ? '=' : '-');
     mch = (wp->w_bufp->modified ? '*' : lch);
     och = (wp->w_bufp->overwrite ? 'O' : lch);
-    mode = (wp->w_bufp->mode == nil) ? "Text" : wp->w_bufp->mode->string;
+    /* Note: experimental, no error check */
+    Object *result = flisp_expr(interp, wp->w_bufp->mode);
+    mode = (wp->w_bufp->mode == nil) ? "Text" : result->string;
     snprintf(modeline, 256,
              "%c%c%c Femto: %c%c %s (%s) ",
              lch,och,mch,lch,lch, wp->w_bufp->name, mode);

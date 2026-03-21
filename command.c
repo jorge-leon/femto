@@ -79,21 +79,21 @@ void delete(void)
 }
 DEFINE_EDITOR_FUNC(delete)
 
-Object *e_zero_buffer(Interpreter *interp, Object **args, Object **env)
+Object *e_zero_buffer(Object *interp, Object **args, Object **env, size_t nArgs)
 {
     assert(curbp != NULL);
     zero_buffer(curbp);
     return nil;
 }
 
-Object *e_get_char(Interpreter *interp, Object **args, Object **env)
+Object *e_get_char(Object *interp, Object **args, Object **env, size_t nArgs)
 {
     static char ch[2] = "\0";
     ch[0] = (char)*(ptr(curbp, curbp->b_point));
     return newStringWithLength(interp, ch, 1);
 }
 
-Object *e_insert_string(Interpreter *interp, Object **args, Object **env)
+Object *e_insert_string(Object *interp, Object **args, Object **env, size_t nArgs)
 {
     insert_string(FLISP_ARG_ONE->string);
     return t;
@@ -187,16 +187,16 @@ void copy_region(void) {
 DEFINE_EDITOR_FUNC(copy_region)
 
 /* Selection aka Clipboard */
-Object *e_get_clipboard(Interpreter *interp, Object **args, Object **env)
+Object *e_get_clipboard(Object *interp, Object **args, Object **env, size_t nArgs)
 {
     if (scrap == NULL)
         return flisp_empty_string;
     return newString(interp, (char *)scrap);
 }
 
-Object *e_get_mark(Interpreter *interp, Object **args, Object **env) { return newInteger(interp, curbp->b_mark); }
+Object *e_get_mark(Object *interp, Object **args, Object **env, size_t nArgs) { return newInteger(interp, curbp->b_mark); }
 
-Object *e_set_clipboard(Interpreter *interp, Object **args, Object **env)
+Object *e_set_clipboard(Object *interp, Object **args, Object **env, size_t nArgs)
 {
     if (scrap != NULL)  free(scrap);
     scrap = (char_t *) strdup(FLISP_ARG_ONE->string);
@@ -280,11 +280,11 @@ DEFINE_EDITOR_FUNC(forward_word)
 
 /* return point in current buffer */
 point_t get_point(void) { return curbp->b_point; }
-Object *e_get_point(Interpreter *interp, Object **args, Object **env) { return newInteger(interp, curbp->b_point); }
+Object *e_get_point(Object *interp, Object **args, Object **env, size_t nArgs) { return newInteger(interp, curbp->b_point); }
 
 /* return point in current buffer */
 point_t get_point_max(void) { return pos(curbp, curbp->b_ebuf); }
-Object *e_get_point_max(Interpreter *interp, Object **args, Object **env) { return newInteger(interp, pos(curbp, curbp->b_ebuf)); }
+Object *e_get_point_max(Object *interp, Object **args, Object **env, size_t nArgs) { return newInteger(interp, pos(curbp, curbp->b_ebuf)); }
 
 bool goto_line(int line)
 {
@@ -302,12 +302,12 @@ bool goto_line(int line)
     msg(m_line, line);
     return true;
 }
-Object *e_goto_line(Interpreter *interp, Object **args, Object **env)
+Object *e_goto_line(Object *interp, Object **args, Object **env, size_t nArgs)
 {
-    int line = FLISP_ARG_ONE->integer;
+    int line = FLISP_ARG_ONE->value;
 
     if (line < 0)
-        exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(goto-line line) - line must be positive");
+        return newError(interp, invalid_value, FLISP_ARG_ONE, "(goto-line line) - line must be positive");
     return goto_line(line) ? t : nil;
 }
 
@@ -343,14 +343,14 @@ void scroll_down(void)
 }
 DEFINE_EDITOR_FUNC(scroll_down)
 
-Object *e_search_forward(Interpreter *interp, Object **args, Object **env)
+Object *e_search_forward(Object *interp, Object **args, Object **env, size_t nArgs)
 {
     point_t founded = search_forward(FLISP_ARG_ONE->string);
     move_to_search_result(founded);
     return (founded == -1 ? nil : t);
 }
 
-Object *e_search_backward(Interpreter *interp, Object **args, Object **env)
+Object *e_search_backward(Object *interp, Object **args, Object **env, size_t nArgs)
 {
     point_t founded = search_backwards(FLISP_ARG_ONE->string);
     move_to_search_result(founded);
@@ -362,14 +362,14 @@ void set_point(point_t p)
     if (p < 0 || p > pos(curbp, curbp->b_ebuf)) return;
     curbp->b_point = p;
 }
-Object *e_set_point(Interpreter *interp, Object **args, Object **env)
+Object *e_set_point(Object *interp, Object **args, Object **env, size_t nArgs)
 {
-    set_point(FLISP_ARG_ONE->integer);
+    set_point(FLISP_ARG_ONE->value);
     return t;
 }
 
 /* Buffer Management and information */
-Object *e_find_buffer_by_fname(Interpreter *interp, Object **args, Object **env)
+Object *e_find_buffer_by_fname(Object *interp, Object **args, Object **env, size_t nArgs)
 {
     if (FLISP_ARG_ONE->string[0] == '\0')
         return nil;
@@ -380,28 +380,32 @@ Object *e_find_buffer_by_fname(Interpreter *interp, Object **args, Object **env)
 }
 
 /* Helper function: return either current buffer or named buffer if first argument exists */
-buffer_t *get_buffer_arg_one(Interpreter *interp, Object **args, char *signature)
+Object *get_buffer_arg_one(Object *interp, Object **args, char *signature, buffer_t **bufferp)
 {
+    /* Note: when buffers are objects return the buffer, for now assume, caller defaults to curbp */
     if (FLISP_ARG_ONE == nil)
-        return curbp;
+        return nil;
     if (FLISP_ARG_ONE->type != type_string)
-        exceptionWithObject(interp, FLISP_ARG_ONE, wrong_type_argument,
+        return newError(interp, wrong_type_argument, FLISP_ARG_ONE,
                             "%s - expected %s, got: %s", signature,
                             type_string->string, FLISP_ARG_ONE->type->string);
     buffer_t *buffer = find_buffer(FLISP_ARG_ONE->string, false);
     if (buffer == NULL)
-        exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value,
+        return newError(interp, invalid_value, FLISP_ARG_ONE,
                             "%s - buffer does not exist", signature);
-    return buffer;
+    *bufferp = buffer;
+    return nil;
 }
 
 /* (buffer-filename[ buffer]) */
-Object *e_get_buffer_filename(Interpreter *interp, Object **args, Object **env)
+Object *e_get_buffer_filename(Object *interp, Object **args, Object **env, size_t nArgs)
 {
     buffer_t *buffer = curbp;
 
-    if (FLISP_HAS_ARGS) {
-        buffer = get_buffer_arg_one(interp, args, "(buffer-filename[ buffer])");
+    if (nArgs) {
+        Object *result = get_buffer_arg_one(interp, args, "(buffer-filename[ buffer])", &buffer);
+        if (result->type == type_error)
+            return result;
     }
     if (buffer->fname == NULL)
         return nil;
@@ -413,25 +417,25 @@ Object *e_get_buffer_filename(Interpreter *interp, Object **args, Object **env)
  *  If buffer cannot hold size more bytes, -1 is returned.
  *  If size is omitted or nil, read until eof.
  */
-Object *e_buffer_fread(Interpreter *interp, Object **args, Object **env)
+Object *e_buffer_fread(Object *interp, Object **args, Object **env, size_t nArgs)
 {
     size_t len, size = 0;
 
-    FLISP_CHECK_TYPE(FLISP_ARG_ONE, type_stream, "(buffer-fread stream size) - stream");
+    FLISP_ARG_TYPECHECK(FLISP_ARG_ONE, type_stream, "(buffer-fread stream size) - stream");
 
-    if (FLISP_HAS_ARG_TWO && FLISP_ARG_TWO != nil) {
-        FLISP_CHECK_TYPE(FLISP_ARG_TWO, type_integer, "(buffer-fread stream size) - size");
-        if (FLISP_ARG_TWO->integer == 0)
+    if (nArgs >1 && FLISP_ARG_TWO != nil) {
+        FLISP_ARG_TYPECHECK(FLISP_ARG_TWO, type_integer, "(buffer-fread stream size) - size");
+        if (FLISP_ARG_TWO->value == 0)
             return newInteger(interp, 0);
 
-        if (FLISP_ARG_TWO->integer < 0)
-            exceptionWithObject(interp, FLISP_ARG_TWO, invalid_value, "(buffer-read size stream) - size is negative");
-        len = buffer_fread(curbp, FLISP_ARG_ONE->fd, FLISP_ARG_TWO->integer);
+        if (FLISP_ARG_TWO->value < 0)
+            return newError(interp, invalid_value, FLISP_ARG_TWO, "(buffer-read size stream) - size is negative");
+        len = buffer_fread(curbp, FLISP_ARG_ONE->fd, FLISP_ARG_TWO->value);
         if (ferror(FLISP_ARG_ONE->fd))
-            exceptionWithObject(interp, FLISP_ARG_ONE, io_error, "buffer_fread() failed: %s", strerror(errno));
+            return newError(interp, io_error, FLISP_ARG_ONE, "buffer_fread() failed: %s", strerror(errno));
 
         if (len == -1)
-            exception(interp, out_of_memory, "buffer_fread() failed, could not grow current buffer");
+            return newError(interp, out_of_memory, nil, "buffer_fread() failed, could not grow current buffer");
 
         return newInteger(interp, len);
     }
@@ -439,10 +443,10 @@ Object *e_buffer_fread(Interpreter *interp, Object **args, Object **env)
         len = buffer_fread(curbp, FLISP_ARG_ONE->fd, BUFSIZ);
 
         if (ferror(FLISP_ARG_ONE->fd))
-            exceptionWithObject(interp, FLISP_ARG_ONE, io_error, "buffer_fread() failed: %s", strerror(errno));
+            return newError(interp, io_error, FLISP_ARG_ONE, "buffer_fread() failed: %s", strerror(errno));
 
         if (len == -1)
-            exception(interp, out_of_memory, "buffer_fread() failed, could not grow current buffer");
+            return newError(interp, out_of_memory, nil, "buffer_fread() failed, could not grow current buffer");
         size += len;
 
         end_of_buffer();
@@ -453,24 +457,24 @@ Object *e_buffer_fread(Interpreter *interp, Object **args, Object **env)
 }
 
 /** (buffer-fwrite stream size) - write size bytes from current buffer at point to stream, return bytes written */
-Object *e_buffer_fwrite(Interpreter *interp, Object **args, Object **env)
+Object *e_buffer_fwrite(Object *interp, Object **args, Object **env, size_t nArgs)
 {
     size_t len;
 
-    FLISP_CHECK_TYPE(FLISP_ARG_ONE, type_stream, "(buffer-fwrite stream size) - stream");
-    if (FLISP_HAS_ARG_TWO) {
-        FLISP_CHECK_TYPE(FLISP_ARG_TWO, type_stream, "(buffer-fwrite stream size) - size");
-        if (FLISP_ARG_TWO->integer == 0)
+    FLISP_ARG_TYPECHECK(FLISP_ARG_ONE, type_stream, "(buffer-fwrite stream size) - stream");
+    if (nArgs > 1) {
+        FLISP_ARG_TYPECHECK(FLISP_ARG_TWO, type_stream, "(buffer-fwrite stream size) - size");
+        if (FLISP_ARG_TWO->value == 0)
             return newInteger(interp, 0);
-        if (FLISP_ARG_TWO->integer < 0)
-            exceptionWithObject(interp, FLISP_ARG_TWO, invalid_value, "(buffer-fwrite stream size) - size is negative");
-        len = FLISP_ARG_TWO->integer;
+        if (FLISP_ARG_TWO->value < 0)
+            return newError(interp, invalid_value, FLISP_ARG_TWO, "(buffer-fwrite stream size) - size is negative");
+        len = FLISP_ARG_TWO->value;
     } else {
         len = get_point_max() - get_point();
     }
     len = buffer_fwrite(curbp, FLISP_ARG_ONE->fd, len);
     if (ferror(FLISP_ARG_ONE->fd))
-        exceptionWithObject(interp, FLISP_ARG_ONE, io_error, "buffer_fwrite() failed: %s", strerror(errno));
+        return newError(interp, io_error, FLISP_ARG_ONE, "buffer_fwrite() failed: %s", strerror(errno));
 
     return newInteger(interp, len);
 }
@@ -478,13 +482,14 @@ Object *e_buffer_fwrite(Interpreter *interp, Object **args, Object **env)
 /* (buffer-mode[ buffer[ mode]]) => mode - gets or sets mode of buffer.
  * if buffer is not given or nil, use the current buffer
  */
-Object *e_buffer_mode(Interpreter *interp, Object **args, Object **env)
+Object *e_buffer_mode(Object *interp, Object **args, Object **env, size_t nArgs)
 {
     buffer_t *buffer = curbp;
-    if (FLISP_HAS_ARGS) {
-        buffer = get_buffer_arg_one(interp, args, "(buffer-mode[ buffer[ mode]])");
-        if (FLISP_HAS_ARG_TWO) {
-            FLISP_CHECK_TYPE(FLISP_ARG_TWO, type_symbol, "buffer-mode[ buffer[ mode]]) - mode");
+    if (nArgs) {
+        Object *result = get_buffer_arg_one(interp, args, "(buffer-mode[ buffer[ mode]])", &buffer);
+        if (result->type == type_error)  return result;
+        if (nArgs > 1) {
+            FLISP_ARG_TYPECHECK(FLISP_ARG_TWO, type_symbol, "buffer-mode[ buffer[ mode]]) - mode");
             buffer->mode = FLISP_ARG_TWO;
         }
     }
@@ -493,12 +498,13 @@ Object *e_buffer_mode(Interpreter *interp, Object **args, Object **env)
 
 /* Buffer flags */
 #define GET_SET_BUFFER_FLAG(FLAG)                                       \
-    Object *e_buffer_##FLAG## _p(Interpreter *interp, Object **args, Object **env) \
+    Object *e_buffer_##FLAG## _p(Object *interp, Object **args, Object **env, size_t nArgs) \
     {                                                                   \
         buffer_t *buffer = curbp;                                       \
-        if (FLISP_HAS_ARGS) {                                           \
-            buffer = get_buffer_arg_one(interp, args, "(buffer-" #FLAG "-p[ buffer[ p]])"); \
-            if (FLISP_HAS_ARG_TWO)                                      \
+        if (nArgs) {                                           \
+            Object *result = get_buffer_arg_one(interp, args, "(buffer-" #FLAG "-p[ buffer[ p]])", &buffer); \
+            if (result->type == type_error)  return result;             \
+            if (nArgs > 1)                                      \
                 buffer->FLAG = (FLISP_ARG_TWO != nil);                  \
         }                                                               \
         return buffer->FLAG ? t : nil;                                  \
@@ -515,44 +521,44 @@ GET_SET_BUFFER_FLAG(undo)
 /* (buffer-special-p[ buffer[ bool]]) */
 GET_SET_BUFFER_FLAG(special)
 
-Object *e_buffer_next(Interpreter *interp, Object **args,Object **env)
+Object *e_buffer_next(Object *interp, Object **args,Object **env, size_t nArgs)
 {
-    if (!(FLISP_HAS_ARGS))
+    if (!(nArgs))
         return newString(interp, curbp->name);
 
     buffer_t *bp = find_buffer(FLISP_ARG_ONE->string, false);
 
     if (!bp)
-        exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(buffer-next buffer) - buffer does not exist");
+        return newError(interp, invalid_value, FLISP_ARG_ONE, "(buffer-next buffer) - buffer does not exist");
 
     return newString(interp, bp->b_next->name);
 }
 
-Object *e_buffer_show(Interpreter *interp, Object **args, Object **env)
+Object *e_buffer_show(Object *interp, Object **args, Object **env, size_t nArgs)
 {
     buffer_t *bp = find_buffer(FLISP_ARG_ONE->string, true);
     if (!bp)
-        exceptionWithObject(interp, FLISP_ARG_ONE, out_of_memory, "(generate-new-buffer name) failed, out of memory");
+        return newError(interp, out_of_memory, FLISP_ARG_ONE, "(generate-new-buffer name) failed, out of memory");
     switch_to_buffer(bp);
     return FLISP_ARG_ONE;
 }
 
-Object *e_delete_buffer(Interpreter *interp, Object **args, Object **env)
+Object *e_delete_buffer(Object *interp, Object **args, Object **env, size_t nArgs)
 {
     buffer_t *buffer = find_buffer(FLISP_ARG_ONE->string, false);
     if (buffer == NULL)
-        exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(delete-buffer buffer) - buffer does not exist");
+        return newError(interp, invalid_value, FLISP_ARG_ONE, "(delete-buffer buffer) - buffer does not exist");
     if (!delete_buffer(buffer))
-        exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(delete-buffer buffer) - refused to delete scratch or current buffer");
+        return newError(interp, invalid_value, FLISP_ARG_ONE, "(delete-buffer buffer) - refused to delete scratch or current buffer");
     return FLISP_ARG_ONE;
 }
 
 /** (get-buffer-create name) */
-Object *e_get_buffer_create(Interpreter *interp, Object **args, Object **env)
+Object *e_get_buffer_create(Object *interp, Object **args, Object **env, size_t nArgs)
 {
     if (find_buffer(FLISP_ARG_ONE->string, true))
         return FLISP_ARG_ONE;
-    exceptionWithObject(interp, FLISP_ARG_ONE, out_of_memory, "(get-buffer-create name) failed, out of memory");
+    return newError(interp, out_of_memory, nil, "(get-buffer-create name) failed, out of memory");
 }
 
 /* Note: we should move this to Lisp */
@@ -588,31 +594,31 @@ void list_buffers(void)
 }
 DEFINE_EDITOR_FUNC(list_buffers)
 
-Object *e_set_buffer(Interpreter *interp, Object **args, Object **env)
+Object *e_set_buffer(Object *interp, Object **args, Object **env, size_t nArgs)
 {
     buffer_t *bp = find_buffer(FLISP_ARG_ONE->string, false);
 
     if (!bp)
-        exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(set-buffer buffer) - buffer does not exist");
+        return newError(interp, invalid_value, FLISP_ARG_ONE, "(set-buffer buffer) - buffer does not exist");
 
     curbp = bp;
     return FLISP_ARG_ONE;
 }
 
-Object *e_set_buffer_name(Interpreter *interp, Object **args, Object **env)
+Object *e_set_buffer_name(Object *interp, Object **args, Object **env, size_t nArgs)
 {
     buffer_t *buffer = find_buffer(FLISP_ARG_ONE->string, false);
 
     if (buffer != NULL)
-        exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(set-buffer-name name) - name, already exists");
+        return newError(interp, invalid_value, FLISP_ARG_ONE, "(set-buffer-name name) - name, already exists");
 
     if (!set_buffer_name(curbp, FLISP_ARG_ONE->string))
-        exceptionWithObject(interp, FLISP_ARG_ONE, out_of_memory, "(set-buffer-name name) - name, failed to allocate string");
+        return newError(interp, out_of_memory, FLISP_ARG_ONE, "(set-buffer-name name) - name, failed to allocate string");
     return FLISP_ARG_ONE;
 }
 
 /** (set-visited-file-name name) */
-Object *e_set_buffer_filename(Interpreter *interp, Object **args, Object **env)
+Object *e_set_buffer_filename(Object *interp, Object **args, Object **env, size_t nArgs)
 {
     if (FLISP_ARG_ONE == nil) {
         if (curbp->fname != NULL)
@@ -621,10 +627,10 @@ Object *e_set_buffer_filename(Interpreter *interp, Object **args, Object **env)
         return nil;
     }
 
-    FLISP_CHECK_TYPE(FLISP_ARG_ONE, type_string, "(set-visited-file-name name) - name");
+    FLISP_ARG_TYPECHECK(FLISP_ARG_ONE, type_string, "(set-visited-file-name name) - name");
     curbp->fname = strdup(FLISP_ARG_ONE->string);
     if (curbp->fname == NULL)
-        exception(interp, out_of_memory, "(set-visited-file-name name) - name, cannot allocate memory for filename");
+        return newError(interp, out_of_memory, nil,  "(set-visited-file-name name) - name, cannot allocate memory for filename");
     curbp->modified = TRUE;
     return FLISP_ARG_ONE;
 }
@@ -636,11 +642,11 @@ DEFINE_EDITOR_FUNC(delete_other_windows)
 DEFINE_EDITOR_FUNC(other_window)
 
 /* (pop-to-buffer buffer) */
-Object *e_pop_to_buffer(Interpreter *interp, Object **args, Object **env)
+Object *e_pop_to_buffer(Object *interp, Object **args, Object **env, size_t nArgs)
 {
     window_t *wp = popup_window(FLISP_ARG_ONE->string);
     if (wp == NULL)
-        exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(pop-to-buffer buffer) - buffer does not exist");
+        return newError(interp, invalid_value, FLISP_ARG_ONE, "(pop-to-buffer buffer) - buffer does not exist");
     /* See other_window() */
     curwp->w_update = true;
     curwp = wp;
@@ -650,11 +656,11 @@ Object *e_pop_to_buffer(Interpreter *interp, Object **args, Object **env)
     return newString(interp, wp->w_bufp->name);
 }
 
-Object *e_split_window(Interpreter *interp, Object **args, Object **env) { return (NULL == split_current_window()) ? nil : t; }
+Object *e_split_window(Object *interp, Object **args, Object **env, size_t nArgs) { return (NULL == split_current_window()) ? nil : t; }
 
 DEFINE_EDITOR_FUNC(update_display)
 
-Object *e_refresh(Interpreter *interp, Object ** args, Object **env)
+Object *e_refresh(Object *interp, Object ** args, Object **env, size_t nArgs)
 {
     refresh();
     return t;
@@ -663,7 +669,7 @@ Object *e_refresh(Interpreter *interp, Object ** args, Object **env)
 /* Message Line */
 DEFINE_EDITOR_FUNC(clear_message_line)
 
-Object *e_message(Interpreter *interp, Object **args, Object **env)
+Object *e_message(Object *interp, Object **args, Object **env, size_t nArgs)
 {
     msg(FLISP_ARG_ONE->string);
     return t;
@@ -671,11 +677,11 @@ Object *e_message(Interpreter *interp, Object **args, Object **env)
 
 /** (prompt-filename prompt[ default]) */
 
-Object *e_prompt(Interpreter *interp, Object **args, Object **env)
+Object *e_prompt(Object *interp, Object **args, Object **env, size_t nArgs)
 {
     char response[81] = "";
 
-    if (FLISP_HAS_ARG_TWO) {
+    if (nArgs > 1) {
         size_t len = strlen(FLISP_ARG_TWO->string);
         if (len > 80)
             len = 80;
@@ -687,10 +693,10 @@ Object *e_prompt(Interpreter *interp, Object **args, Object **env)
     return nil;
 }
 
-Object *e_prompt_filename(Interpreter *interp, Object **args, Object **env)
+Object *e_prompt_filename(Object *interp, Object **args, Object **env, size_t nArgs)
 {
 
-    if (FLISP_HAS_ARG_TWO)
+    if (nArgs > 1)
         strcpy(response_buf, FLISP_ARG_TWO->string);
     else
         response_buf[0] = '\0';
@@ -711,7 +717,7 @@ DEFINE_EDITOR_FUNC(describe_bindings)
 DEFINE_EDITOR_FUNC(describe_functions)
 DEFINE_EDITOR_FUNC(execute_key)
 
-Object *e_getch(Interpreter *interp, Object **args, Object **env)
+Object *e_getch(Object *interp, Object **args, Object **env, size_t nArgs)
 {
     char ch[2];
     ch[0] = (unsigned char)getch();
@@ -719,14 +725,14 @@ Object *e_getch(Interpreter *interp, Object **args, Object **env)
     return newStringWithLength(interp, ch, 1);
 }
 
-Object *e_get_key(Interpreter *interp, Object **args, Object **env) { return newString(interp, get_input_key()); }
+Object *e_get_key(Object *interp, Object **args, Object **env, size_t nArgs) { return newString(interp, get_input_key()); }
 
-Object *e_get_key_funcname(Interpreter *interp, Object **args, Object **env) { return newString(interp, get_key_funcname()); }
+Object *e_get_key_funcname(Object *interp, Object **args, Object **env, size_t nArgs) { return newString(interp, get_key_funcname()); }
 
-Object *e_get_key_name(Interpreter *interp, Object **args, Object **env) { return newString(interp, get_key_name()); }
+Object *e_get_key_name(Object *interp, Object **args, Object **env, size_t nArgs) { return newString(interp, get_key_name()); }
 
 /* Note: set_key always returns 1, so we don't need to decide here either */
-Object *e_set_key(Interpreter *interp, Object **args, Object **env) { return (1 == set_key(FLISP_ARG_ONE->string, FLISP_ARG_TWO->string) ? t : nil); }
+Object *e_set_key(Object *interp, Object **args, Object **env, size_t nArgs) { return (1 == set_key(FLISP_ARG_ONE->string, FLISP_ARG_TWO->string) ? t : nil); }
 
 
 /* Programming and System Interaction */
@@ -737,7 +743,7 @@ void quit(void)
 DEFINE_EDITOR_FUNC(quit)
 
 /* Note: required? current usage might be replacable by popen() */
-Object *e_get_temp_file(Interpreter *interp, Object **args, Object **env)
+Object *e_get_temp_file(Object *interp, Object **args, Object **env, size_t nArgs)
 {
     static char temp_file[] = TEMPFILE;
 
@@ -745,17 +751,17 @@ Object *e_get_temp_file(Interpreter *interp, Object **args, Object **env)
 //    strcpy(temp_file, TEMPFILE);
 
     if (mkstemp(temp_file) == -1)
-        exception(interp, io_error, "Failed to create temp file");
+        return newError(interp, io_error, nil, "Failed to create temp file");
 
     return newStringWithLength(interp, temp_file, sizeof(TEMPFILE));
 }
 
-Object *e_get_version_string(Interpreter *interp, Object **args, Object **env)
+Object *e_get_version_string(Object *interp, Object **args, Object **env, size_t nArgs)
 {
     return newStringWithLength(interp, m_version, strlen(m_version));
 }
 
-Object *e_log_debug(Interpreter *interp, Object **args, Object **env)
+Object *e_log_debug(Object *interp, Object **args, Object **env, size_t nArgs)
 {
     fl_debug(interp, "%s", FLISP_ARG_ONE->string);
     return t;
@@ -767,7 +773,7 @@ void log_message(char *str)
     assert(bp != NULL);
     append_string(bp, str);
 }
-Object *e_log_message(Interpreter *interp, Object **args, Object **env)
+Object *e_log_message(Object *interp, Object **args, Object **env, size_t nArgs)
 {
     log_message(FLISP_ARG_ONE->string);
     return t;
@@ -959,7 +965,7 @@ void user_func(void)
 
 Object *femto_libs = &(Object) { .string = "femto_lib" };
 
-bool femto_register(Interpreter *interp)
+bool femto_register(Object *interp)
 {
     char *library_path;
     Object *femto_script_dir;

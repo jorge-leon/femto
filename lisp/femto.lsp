@@ -384,7 +384,7 @@
       ((eq (car result) :is-directory)       (find-file_directory filename))
       (t (throw (car result) (cadr result) filename)) )))
 
-(defun find-file_load (fd filename read-only)
+(defun find-file_load (fd filename read-onlyp)
   (let* ((current (current-buffer))
 	 (new (set-buffer (create-file-buffer filename)))
 	 (result
@@ -394,7 +394,7 @@
 		(set-visited-file-name filename)
 		(restore-buffer-modified-p nil)
 		;; Note: read-only mode pending implementation
-		(when read-only  (buffer-modified-p nil "read-only"))
+		(when read-onlyp  (buffer-modified-p nil "read-only"))
 		(after-find-file) ))))
     (set-buffer current)
     (when (car result) (apply throw result))

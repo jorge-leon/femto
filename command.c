@@ -386,13 +386,13 @@ Object *get_buffer_arg_one(Object *interp, Object **args, char *signature, buffe
     if (FLISP_ARG1 == nil)
         return nil;
     if (FLISP_ARG1->type != type_string)
-        return newError(interp, wrong_type_argument, FLISP_ARG1,
+        return newErrorFmt(interp, wrong_type_argument, FLISP_ARG1,
                             "%s - expected %s, got: %s", signature,
                             type_string->string, FLISP_ARG1->type->string);
     buffer_t *buffer = find_buffer(FLISP_ARG1->string, false);
     if (buffer == NULL)
-        return newError(interp, invalid_value, FLISP_ARG1,
-                            "%s - buffer does not exist", signature);
+        return newError2(interp, invalid_value, FLISP_ARG1,
+                        signature, " - buffer does not exist");
     *bufferp = buffer;
     return nil;
 }
@@ -432,7 +432,7 @@ Object *e_buffer_fread(Object *interp, Object **args, Object **env, size_t nArgs
             return newError(interp, invalid_value, FLISP_ARG2, "(buffer-read size stream) - size is negative");
         len = buffer_fread(curbp, FLISP_ARG1->stream.fd, FLISP_ARG2->value);
         if (ferror(FLISP_ARG1->stream.fd))
-            return newError(interp, io_error, FLISP_ARG1, "buffer_fread() failed: %s", strerror(errno));
+            return newError2(interp, io_error, FLISP_ARG1, "buffer_fread() failed: %s", strerror(errno));
 
         if (len == -1)
             return newError(interp, out_of_memory, nil, "buffer_fread() failed, could not grow current buffer");
@@ -443,7 +443,7 @@ Object *e_buffer_fread(Object *interp, Object **args, Object **env, size_t nArgs
         len = buffer_fread(curbp, FLISP_ARG1->stream.fd, BUFSIZ);
 
         if (ferror(FLISP_ARG1->stream.fd))
-            return newError(interp, io_error, FLISP_ARG1, "buffer_fread() failed: %s", strerror(errno));
+            return newError2(interp, io_error, FLISP_ARG1, "buffer_fread() failed: %s", strerror(errno));
 
         if (len == -1)
             return newError(interp, out_of_memory, nil, "buffer_fread() failed, could not grow current buffer");
@@ -474,7 +474,7 @@ Object *e_buffer_fwrite(Object *interp, Object **args, Object **env, size_t nArg
     }
     len = buffer_fwrite(curbp, FLISP_ARG1->stream.fd, len);
     if (ferror(FLISP_ARG1->stream.fd))
-        return newError(interp, io_error, FLISP_ARG1, "buffer_fwrite() failed: %s", strerror(errno));
+        return newError2(interp, io_error, FLISP_ARG1, "buffer_fwrite() failed: %s", strerror(errno));
 
     return newInteger(interp, len);
 }
@@ -960,6 +960,7 @@ void user_func(void)
         msg(E_NOT_BOUND);
         return;
     }
+    debug("user_func: (%s)\n", key_return->k_funcname);
     eval_string("(%s)", key_return->k_funcname);
 }
 

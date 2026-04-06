@@ -385,9 +385,10 @@ void execute_command(void)
     if (strlen(command_name) > 0) {
         funct = name_to_function(command_name);
 
-        if (funct == NULL || funct == user_func)
+        if (funct == NULL || funct == user_func) {
+            debug("execute_command: (%s)\n", command_name);
             eval_string("(%s)", command_name);
-        else
+        } else
             (funct)();
     }
 

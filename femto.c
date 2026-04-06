@@ -31,7 +31,7 @@ void gui(void); /* The GUI loop used in interactive mode */
 
 Object *interp;
 char debug_file[] = "debug.out";
-FILE *prev, *flisp_input, *debug_fp = NULL;
+FILE *prev, *debug_fp = NULL;
 int flisp_input_pipe[2];
 
 /** lisp_init() - initialize fLisp interpreter and load rc file
@@ -78,26 +78,30 @@ void lisp_init(char **argv)
         e = flisp_eval_input(interp, false);
         if (FLISP_IS_OOM(e))
             fatal("OOM, exiting..");
-
-        if (!FLISP_IS_EOF(e)) {
-            /* Note: when we fail here and do not debug Femto doesn't work and the user has no clue about it */
+        if (FLISP_IS_EOF(e)) {
+            if (fclose(init_fd) == EOF)
+                debug("failed to close rcfile %s: %s\n", init_file, strerror(errno));
+        } else if (FLISP_IS_ERR(e)) {
             debug("failed to load rc file %s:\n", init_file);
             flisp_write_object(debug_fp, e, true);
             batch_mode = true;
             fprintf(stderr, "Failed to load rc file, see debug logs. Entering batch mode, Quit with C-d\n");
         }
-        if (!fclose(init_fd))
-            debug("failed to close rcfile %s: %s\n", init_file, strerror(errno));
     }
 
+
+    /* DEBUGGING */
+    interp->self.trace_read = true;
+    
     if (pipe(flisp_input_pipe) == -1)
         fatal("Failed to create fLisp input pipe");
+    if (fcntl(flisp_input_pipe[0], F_SETFD, O_NONBLOCK) == -1)
+        fatal("Failed to configure fLisp input pipe, read end");
     if ((FLISP_STANDARD_INPUT.fd = fdopen(flisp_input_pipe[0], "r")) == NULL)
         fatal("Failed to open fLisp input pipe");
     if (fcntl(flisp_input_pipe[1], F_SETFD, O_NONBLOCK) == -1)
         fatal("Failed to configure fLisp input pipe");
-    if ((flisp_input = fdopen(flisp_input_pipe[1], "a")) == NULL)
-        fatal("Failed to configure fLisp input");
+    debug("fLisp input pipe set up\n");
 }
 
 int main(int argc, char **argv)
@@ -164,12 +168,16 @@ void msg_lisp_err(Object *result)
     size_t len;
     FILE *fd;
 
-    if (NULL == (fd = open_memstream(&buf, &len)))
-        fatal("failed to allocate error formatting buffer");
-    flisp_write_object(fd, result, true);
-    msg("%s", buf);
-    fclose(fd);
-    free(buf);
+    /* if (NULL == (fd = open_memstream(&buf, &len))) */
+    /*     fatal("failed to allocate error formatting buffer"); */
+    /* flisp_write_object(fd, result, true); */
+    /* msg("%s", buf); */
+    /* fclose(fd); */
+    /* free(buf); */
+    /* Note: want to write the error object, but it garbles.
+       We should have interp, stderr set to an output memstream, seek to zero and overwrite. Then point msg to the output memstream.
+     */
+    msg("Error:%s: %s", result->error->string, result->message->string);
 }
 
 /** eval_string - Invoke fLisp interpreter and return result as string
@@ -189,7 +197,7 @@ void eval_string(bool do_format, char *format, ...)
 
     if (do_format) {
         va_start(args, format);
-        size = vsnprintf (buf, sizeof(buf), format, args);
+        size = vsnprintf(buf, sizeof(buf), format, args);
         va_end(args);
         if (size > INPUT_FMT_BUFSIZ) {
             msg("input string larger then %d", INPUT_FMT_BUFSIZ);
@@ -212,19 +220,34 @@ void eval_string(bool do_format, char *format, ...)
 #else
 void eval_string(char *format, ...)
 {
+    char buf[INPUT_FMT_BUFSIZ];
+    int size;
     va_list args;
+
+    
     va_start(args, format);
-    if (fprintf(flisp_input, format, args) < 0) {
-        msg("Error sending command to fLisp");
+/* Note: we want:  size = dprintf(flisp_input_pipe[1], format, args);
+   but it doesn't work, why?
+ */    
+    size = vsnprintf(buf, sizeof(buf), format, args);
+    va_end(args);
+    if (size > INPUT_FMT_BUFSIZ) {
+        msg("input string larger then %d", INPUT_FMT_BUFSIZ);
         return;
     }
+    FLISP_STANDARD_INPUT.fd = fmemopen(buf, size, "r");
+    if (FLISP_STANDARD_INPUT.fd == NULL)
+        fatal("Failed to create input stream for fLisp");
     Object *result = flisp_eval_input(interp, false);
     if (FLISP_IS_OOM(result))
-        fatal("OOM, exiting..");
+        fatal("OOM wile evaluating expression");
+    if (fclose(FLISP_STANDARD_INPUT.fd))
+        fatal("Error closing expression stream");
+    if (FLISP_IS_EOF(result))
+        return;
     if (FLISP_IS_ERR(result)) {
         msg_lisp_err(result);
-        if (debug_mode)
-            flisp_write_object(debug_fp, result, true);
+        return;
     }
 }
 #endif

@@ -2,8 +2,8 @@
 
 (defun show-startup-message()
   (let* ((current  (current-buffer))
-	 (result   (catch (set-buffer "*scratch*"))) )
-    (if (car result)  (progn (set-buffer current) (apply throw result))
+	 (result   (set-buffer "*scratch*")) )
+    (if (errorp result)  (progn (set-buffer current) result)
 	(insert-string "\n\n\n\n
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;
@@ -32,7 +32,7 @@
     ((consp opts)
      (cond
        ((string-equal "-" (substring (car opts) 0 1))
-	(throw wrong-type-argument "(getopts opts pos) - unknown option" (car opts)) )
+	(error wrong-type-argument "(getopts opts pos) - unknown option" (car opts)) )
        ((eq "+" (car opts)) (getopts (cdr opts) 0))
        ((eq "+" (substring (car opts) 0 1))
 	(getopts (cdr opts) (string-to-number (substring (car opts) 1))))
@@ -40,7 +40,7 @@
 	(switch-to-buffer (find-file-noselect (car opts)))
 	(cond ((> pos 0) (goto-line pos)))
 	(getopts (cdr opts) 0))))
-    (t (throw wrong-type-argument "(getopts opts pos) - opts must be list"))))
+    (t (error wrong-type-argument "(getopts opts pos) - opts must be list"))))
 
 ;; Load and edit user specific config
 (setq
@@ -113,13 +113,13 @@
 ;;
 ;; Try to load the user rc file
 ;;
-(let ((rcfile (confn config_file)) (result nil))
-  (cond ((car (setq result (catch (load rcfile))))
-	 (log 'ERROR result "error loading rc file:"))
-	(t (log 'NOTICE nil "rc file '"rcfile"' loaded\n")) ))
+(let* ((rcfile (confn config_file))
+       (result (load rcfile)) )
+  (if (errorp result)  (errorp (log 'ERROR result "error loading rc file:"))
+      (log 'NOTICE nil "rc file '"rcfile"' loaded\n") ))
 
 ;;
 ;; Try to parse the commandline arguments
 ;;
-(let ((result (catch (getopts argv 0))))
-  (cond ((car result) (log 'ERROR result "parsing command line"))))
+(let ((result (getopts argv 0)))
+  (when (errorp result) (log 'ERROR result "parsing command line")) )

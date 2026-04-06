@@ -26,4 +26,3 @@ $(cat $(pkg-config --variable=lisplib flisp)/core.lsp)
   ;; Switch require path to Femto
   (setq script_dir femto_lib)
   (require 'startup) )
-

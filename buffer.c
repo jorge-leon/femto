@@ -25,14 +25,18 @@ Object *mode_dired = &(Object) { .string = "Dired" };
 Object *mode_git = &(Object) { .string = "Git" };
 Object *mode_oxo = &(Object) { .string = "OXO" };
 
-void femto_buffer_register(Object *interp)
+Object * femto_buffer_register(Object *interp)
 {
-    flisp_register_constant(interp, mode_c, mode_c);
-    flisp_register_constant(interp, mode_lisp, mode_lisp);
-    flisp_register_constant(interp, mode_python, mode_python);
-    flisp_register_constant(interp, mode_dired, mode_dired);
-    flisp_register_constant(interp, mode_git, mode_git);
-    flisp_register_constant(interp, mode_oxo, mode_oxo);
+    Object *e = nil;
+    do {
+        FLISP_UNLESS_ERR(flisp_register_constant(interp, mode_c, mode_c));
+        FLISP_UNLESS_ERR(flisp_register_constant(interp, mode_lisp, mode_lisp));
+        FLISP_UNLESS_ERR(flisp_register_constant(interp, mode_python, mode_python));
+        FLISP_UNLESS_ERR(flisp_register_constant(interp, mode_dired, mode_dired));
+        FLISP_UNLESS_ERR(flisp_register_constant(interp, mode_git, mode_git));
+        FLISP_UNLESS_ERR(flisp_register_constant(interp, mode_oxo, mode_oxo));
+    } while (0);
+    return e;
 }
 
 void buffer_init(buffer_t *bp)

@@ -386,7 +386,7 @@ void execute_command(void)
         funct = name_to_function(command_name);
 
         if (funct == NULL || funct == user_func)
-            eval_string(true, "(%s)", command_name);
+            eval_string("(%s)", command_name);
         else
             (funct)();
     }

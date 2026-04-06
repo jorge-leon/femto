@@ -31,7 +31,8 @@ void gui(void); /* The GUI loop used in interactive mode */
 
 Object *interp;
 char debug_file[] = "debug.out";
-FILE *prev, *debug_fp = NULL;
+FILE *prev, *flisp_input, *debug_fp = NULL;
+int flisp_input_pipe[2];
 
 /** lisp_init() - initialize fLisp interpreter and load rc file
  *
@@ -47,6 +48,7 @@ void lisp_init(char **argv)
 {
     FILE *init_fd = NULL;
     char *init_file;
+    Object *e;
 
     if ((init_file = getenv("FEMTORC")) == NULL)
         init_file = CPP_XSTR(E_INITFILE);
@@ -54,23 +56,48 @@ void lisp_init(char **argv)
     if ((init_fd = fopen(init_file, "r")) == NULL)
         debug("failed to open rc file %s: %s\n", init_file, strerror(errno));
 
-    interp = flisp_new(FLISP_INITIAL_MEMORY, argv, NULL, init_fd, debug_fp, debug_fp);
-    if (interp == NULL || interp->type == type_error)
+    do {
+        FLISP_UNLESS_ERR(interp = flisp_new(FLISP_INITIAL_MEMORY, argv, init_fd, debug_fp, debug_fp, debug_fp));
+        FLISP_UNLESS_ERR(flisp_register_extension(interp, "string", flisp_string_init));
+        FLISP_UNLESS_ERR(flisp_string_init(interp, FLISP_INTERP.extensions->car));
+        
+        FLISP_UNLESS_ERR(flisp_register_extension(interp, "posix", flisp_posix_init));
+        FLISP_UNLESS_ERR(flisp_posix_init(interp, FLISP_INTERP.extensions->car));
+        
+        FLISP_UNLESS_ERR(flisp_register_extension(interp, "double", flisp_double_init));
+        
+        FLISP_UNLESS_ERR(flisp_register_extension(interp, "editor", femto_flisp_init));
+        FLISP_UNLESS_ERR(femto_flisp_init(interp, FLISP_INTERP.extensions->car));
+    } while(0);
+    if (FLISP_IS_ERR(e))
         fatal("fLisp initialization failed");
 
-    if (!femto_register(interp))
-        fatal("faile to register femto primitives");
     debug("femto primitives and constants registered\n");
-    debug("evaluating rc file %s\n", init_file);
-    Object *result = flisp_eval(interp, NULL);
-    if (result->type == type_error && result->error != end_of_file) {
-        debug("failed to load rc file %s:\n", init_file);
-        flisp_write_object(debug_fp, result, true);
-        if (result->error == out_of_memory)
+    if (init_fd) {
+        debug("evaluating rc file %s\n", init_file);
+        e = flisp_eval_input(interp, false);
+        if (FLISP_IS_OOM(e))
             fatal("OOM, exiting..");
+
+        if (!FLISP_IS_EOF(e)) {
+            /* Note: when we fail here and do not debug Femto doesn't work and the user has no clue about it */
+            debug("failed to load rc file %s:\n", init_file);
+            flisp_write_object(debug_fp, e, true);
+            batch_mode = true;
+            fprintf(stderr, "Failed to load rc file, see debug logs. Entering batch mode, Quit with C-d\n");
+        }
+        if (!fclose(init_fd))
+            debug("failed to close rcfile %s: %s\n", init_file, strerror(errno));
     }
-    if (init_fd != NULL && fclose(init_fd))
-        debug("failed to close rcfile %s: %s\n", init_file, strerror(errno));
+
+    if (pipe(flisp_input_pipe) == -1)
+        fatal("Failed to create fLisp input pipe");
+    if ((FLISP_STANDARD_INPUT.fd = fdopen(flisp_input_pipe[0], "r")) == NULL)
+        fatal("Failed to open fLisp input pipe");
+    if (fcntl(flisp_input_pipe[1], F_SETFD, O_NONBLOCK) == -1)
+        fatal("Failed to configure fLisp input pipe");
+    if ((flisp_input = fdopen(flisp_input_pipe[1], "a")) == NULL)
+        fatal("Failed to configure fLisp input");
 }
 
 int main(int argc, char **argv)
@@ -103,10 +130,11 @@ int main(int argc, char **argv)
     debug("start\n");
 
     if (batch_mode) {
-        interp->input->fd = stdin;
-        interp->output->fd = stdout;
-        Object * result = flisp_eval(interp, NULL);
-        if (result->type == type_error) {
+        FLISP_STANDARD_INPUT.fd = stdin;
+        FLISP_STANDARD_OUTPUT.fd = stdout;
+        FLISP_STDERR.fd = stderr;
+        Object * result = flisp_eval_input(interp, false);
+        if (FLISP_IS_ERR(result)) {
             flisp_write_object(stderr, result, true);
             fputs("", stderr);
             return 1;
@@ -151,6 +179,7 @@ void msg_lisp_err(Object *result)
  * @param format     Input string for the interpreter.
  *
  */
+#if 0
 void eval_string(bool do_format, char *format, ...)
 {
     char buf[INPUT_FMT_BUFSIZ], *input;
@@ -180,7 +209,25 @@ void eval_string(bool do_format, char *format, ...)
         fatal("OOM, exiting..");
     return;
 }
-
+#else
+void eval_string(char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    if (fprintf(flisp_input, format, args) < 0) {
+        msg("Error sending command to fLisp");
+        return;
+    }
+    Object *result = flisp_eval_input(interp, false);
+    if (FLISP_IS_OOM(result))
+        fatal("OOM, exiting..");
+    if (FLISP_IS_ERR(result)) {
+        msg_lisp_err(result);
+        if (debug_mode)
+            flisp_write_object(debug_fp, result, true);
+    }
+}
+#endif
 void gui(void)
 {
     debug("gui(): init\n");

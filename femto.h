@@ -127,7 +127,7 @@ extern void fatal(char *msg);
 extern void msg(char *m, ...);
 
 
-extern void eval_string(bool, char *, ...);
+extern void eval_string(char *, ...);
 extern void free_lisp_output(char *);
 
 /*

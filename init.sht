@@ -13,7 +13,9 @@ $(cat $(pkg-config --variable=lisplib flisp)/core.lsp)
 
 ;; Batch mode processing and Femto editor startup
 
-(setq env-batch-mode (getenv "FEMTO_BATCH"))
+(setq
+ script_dir "$(pkg-config --variable=lisplib flisp)"
+ env-batch-mode (getenv "FEMTO_BATCH"))
 
 (when (or (null env-batch-mode) (string-equal "0" env-batch-mode))
   (require 'flisp)

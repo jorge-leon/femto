@@ -95,7 +95,7 @@ Object *e_get_char(Object *interp, Object **args, Object **env, size_t nArgs)
 
 Object *e_insert_string(Object *interp, Object **args, Object **env, size_t nArgs)
 {
-    insert_string(FLISP_ARG_ONE->string);
+    insert_string(FLISP_ARG1->string);
     return t;
 }
 
@@ -199,7 +199,7 @@ Object *e_get_mark(Object *interp, Object **args, Object **env, size_t nArgs) { 
 Object *e_set_clipboard(Object *interp, Object **args, Object **env, size_t nArgs)
 {
     if (scrap != NULL)  free(scrap);
-    scrap = (char_t *) strdup(FLISP_ARG_ONE->string);
+    scrap = (char_t *) strdup(FLISP_ARG1->string);
     return scrap == NULL ? nil : t;
 }
 
@@ -304,10 +304,10 @@ bool goto_line(int line)
 }
 Object *e_goto_line(Object *interp, Object **args, Object **env, size_t nArgs)
 {
-    int line = FLISP_ARG_ONE->value;
+    int line = FLISP_ARG1->value;
 
     if (line < 0)
-        return newError(interp, invalid_value, FLISP_ARG_ONE, "(goto-line line) - line must be positive");
+        return newError(interp, invalid_value, FLISP_ARG1, "(goto-line line) - line must be positive");
     return goto_line(line) ? t : nil;
 }
 
@@ -345,14 +345,14 @@ DEFINE_EDITOR_FUNC(scroll_down)
 
 Object *e_search_forward(Object *interp, Object **args, Object **env, size_t nArgs)
 {
-    point_t founded = search_forward(FLISP_ARG_ONE->string);
+    point_t founded = search_forward(FLISP_ARG1->string);
     move_to_search_result(founded);
     return (founded == -1 ? nil : t);
 }
 
 Object *e_search_backward(Object *interp, Object **args, Object **env, size_t nArgs)
 {
-    point_t founded = search_backwards(FLISP_ARG_ONE->string);
+    point_t founded = search_backwards(FLISP_ARG1->string);
     move_to_search_result(founded);
     return (founded == -1 ? nil : t);
 }
@@ -364,17 +364,17 @@ void set_point(point_t p)
 }
 Object *e_set_point(Object *interp, Object **args, Object **env, size_t nArgs)
 {
-    set_point(FLISP_ARG_ONE->value);
+    set_point(FLISP_ARG1->value);
     return t;
 }
 
 /* Buffer Management and information */
 Object *e_find_buffer_by_fname(Object *interp, Object **args, Object **env, size_t nArgs)
 {
-    if (FLISP_ARG_ONE->string[0] == '\0')
+    if (FLISP_ARG1->string[0] == '\0')
         return nil;
 
-    buffer_t *bp = find_buffer_by_fname(FLISP_ARG_ONE->string);
+    buffer_t *bp = find_buffer_by_fname(FLISP_ARG1->string);
 
     return bp == NULL ? nil : newString(interp, bp->name);
 }
@@ -383,15 +383,15 @@ Object *e_find_buffer_by_fname(Object *interp, Object **args, Object **env, size
 Object *get_buffer_arg_one(Object *interp, Object **args, char *signature, buffer_t **bufferp)
 {
     /* Note: when buffers are objects return the buffer, for now assume, caller defaults to curbp */
-    if (FLISP_ARG_ONE == nil)
+    if (FLISP_ARG1 == nil)
         return nil;
-    if (FLISP_ARG_ONE->type != type_string)
-        return newError(interp, wrong_type_argument, FLISP_ARG_ONE,
+    if (FLISP_ARG1->type != type_string)
+        return newError(interp, wrong_type_argument, FLISP_ARG1,
                             "%s - expected %s, got: %s", signature,
-                            type_string->string, FLISP_ARG_ONE->type->string);
-    buffer_t *buffer = find_buffer(FLISP_ARG_ONE->string, false);
+                            type_string->string, FLISP_ARG1->type->string);
+    buffer_t *buffer = find_buffer(FLISP_ARG1->string, false);
     if (buffer == NULL)
-        return newError(interp, invalid_value, FLISP_ARG_ONE,
+        return newError(interp, invalid_value, FLISP_ARG1,
                             "%s - buffer does not exist", signature);
     *bufferp = buffer;
     return nil;
@@ -421,18 +421,18 @@ Object *e_buffer_fread(Object *interp, Object **args, Object **env, size_t nArgs
 {
     size_t len, size = 0;
 
-    FLISP_ARG_TYPECHECK(FLISP_ARG_ONE, type_stream, "(buffer-fread stream size) - stream");
+    FLISP_ASSERT(FLISP_ARG1, type_stream, "(buffer-fread stream size) - stream");
 
-    if (nArgs >1 && FLISP_ARG_TWO != nil) {
-        FLISP_ARG_TYPECHECK(FLISP_ARG_TWO, type_integer, "(buffer-fread stream size) - size");
-        if (FLISP_ARG_TWO->value == 0)
+    if (nArgs >1 && FLISP_ARG2 != nil) {
+        FLISP_ASSERT(FLISP_ARG2, type_integer, "(buffer-fread stream size) - size");
+        if (FLISP_ARG2->value == 0)
             return newInteger(interp, 0);
 
-        if (FLISP_ARG_TWO->value < 0)
-            return newError(interp, invalid_value, FLISP_ARG_TWO, "(buffer-read size stream) - size is negative");
-        len = buffer_fread(curbp, FLISP_ARG_ONE->fd, FLISP_ARG_TWO->value);
-        if (ferror(FLISP_ARG_ONE->fd))
-            return newError(interp, io_error, FLISP_ARG_ONE, "buffer_fread() failed: %s", strerror(errno));
+        if (FLISP_ARG2->value < 0)
+            return newError(interp, invalid_value, FLISP_ARG2, "(buffer-read size stream) - size is negative");
+        len = buffer_fread(curbp, FLISP_ARG1->stream.fd, FLISP_ARG2->value);
+        if (ferror(FLISP_ARG1->stream.fd))
+            return newError(interp, io_error, FLISP_ARG1, "buffer_fread() failed: %s", strerror(errno));
 
         if (len == -1)
             return newError(interp, out_of_memory, nil, "buffer_fread() failed, could not grow current buffer");
@@ -440,10 +440,10 @@ Object *e_buffer_fread(Object *interp, Object **args, Object **env, size_t nArgs
         return newInteger(interp, len);
     }
     for (;;) {
-        len = buffer_fread(curbp, FLISP_ARG_ONE->fd, BUFSIZ);
+        len = buffer_fread(curbp, FLISP_ARG1->stream.fd, BUFSIZ);
 
-        if (ferror(FLISP_ARG_ONE->fd))
-            return newError(interp, io_error, FLISP_ARG_ONE, "buffer_fread() failed: %s", strerror(errno));
+        if (ferror(FLISP_ARG1->stream.fd))
+            return newError(interp, io_error, FLISP_ARG1, "buffer_fread() failed: %s", strerror(errno));
 
         if (len == -1)
             return newError(interp, out_of_memory, nil, "buffer_fread() failed, could not grow current buffer");
@@ -451,7 +451,7 @@ Object *e_buffer_fread(Object *interp, Object **args, Object **env, size_t nArgs
 
         end_of_buffer();
 
-        if (feof(FLISP_ARG_ONE->fd))
+        if (feof(FLISP_ARG1->stream.fd))
             return newInteger(interp, size);
     }
 }
@@ -461,20 +461,20 @@ Object *e_buffer_fwrite(Object *interp, Object **args, Object **env, size_t nArg
 {
     size_t len;
 
-    FLISP_ARG_TYPECHECK(FLISP_ARG_ONE, type_stream, "(buffer-fwrite stream size) - stream");
+    FLISP_ASSERT(FLISP_ARG1, type_stream, "(buffer-fwrite stream size) - stream");
     if (nArgs > 1) {
-        FLISP_ARG_TYPECHECK(FLISP_ARG_TWO, type_stream, "(buffer-fwrite stream size) - size");
-        if (FLISP_ARG_TWO->value == 0)
+        FLISP_ASSERT(FLISP_ARG2, type_stream, "(buffer-fwrite stream size) - size");
+        if (FLISP_ARG2->value == 0)
             return newInteger(interp, 0);
-        if (FLISP_ARG_TWO->value < 0)
-            return newError(interp, invalid_value, FLISP_ARG_TWO, "(buffer-fwrite stream size) - size is negative");
-        len = FLISP_ARG_TWO->value;
+        if (FLISP_ARG2->value < 0)
+            return newError(interp, invalid_value, FLISP_ARG2, "(buffer-fwrite stream size) - size is negative");
+        len = FLISP_ARG2->value;
     } else {
         len = get_point_max() - get_point();
     }
-    len = buffer_fwrite(curbp, FLISP_ARG_ONE->fd, len);
-    if (ferror(FLISP_ARG_ONE->fd))
-        return newError(interp, io_error, FLISP_ARG_ONE, "buffer_fwrite() failed: %s", strerror(errno));
+    len = buffer_fwrite(curbp, FLISP_ARG1->stream.fd, len);
+    if (ferror(FLISP_ARG1->stream.fd))
+        return newError(interp, io_error, FLISP_ARG1, "buffer_fwrite() failed: %s", strerror(errno));
 
     return newInteger(interp, len);
 }
@@ -489,8 +489,8 @@ Object *e_buffer_mode(Object *interp, Object **args, Object **env, size_t nArgs)
         Object *result = get_buffer_arg_one(interp, args, "(buffer-mode[ buffer[ mode]])", &buffer);
         if (result->type == type_error)  return result;
         if (nArgs > 1) {
-            FLISP_ARG_TYPECHECK(FLISP_ARG_TWO, type_symbol, "buffer-mode[ buffer[ mode]]) - mode");
-            buffer->mode = FLISP_ARG_TWO;
+            FLISP_ASSERT(FLISP_ARG2, type_symbol, "buffer-mode[ buffer[ mode]]) - mode");
+            buffer->mode = FLISP_ARG2;
         }
     }
     return buffer->mode;
@@ -505,7 +505,7 @@ Object *e_buffer_mode(Object *interp, Object **args, Object **env, size_t nArgs)
             Object *result = get_buffer_arg_one(interp, args, "(buffer-" #FLAG "-p[ buffer[ p]])", &buffer); \
             if (result->type == type_error)  return result;             \
             if (nArgs > 1)                                      \
-                buffer->FLAG = (FLISP_ARG_TWO != nil);                  \
+                buffer->FLAG = (FLISP_ARG2 != nil);                  \
         }                                                               \
         return buffer->FLAG ? t : nil;                                  \
     }                                                                   \
@@ -526,38 +526,38 @@ Object *e_buffer_next(Object *interp, Object **args,Object **env, size_t nArgs)
     if (!(nArgs))
         return newString(interp, curbp->name);
 
-    buffer_t *bp = find_buffer(FLISP_ARG_ONE->string, false);
+    buffer_t *bp = find_buffer(FLISP_ARG1->string, false);
 
     if (!bp)
-        return newError(interp, invalid_value, FLISP_ARG_ONE, "(buffer-next buffer) - buffer does not exist");
+        return newError(interp, invalid_value, FLISP_ARG1, "(buffer-next buffer) - buffer does not exist");
 
     return newString(interp, bp->b_next->name);
 }
 
 Object *e_buffer_show(Object *interp, Object **args, Object **env, size_t nArgs)
 {
-    buffer_t *bp = find_buffer(FLISP_ARG_ONE->string, true);
+    buffer_t *bp = find_buffer(FLISP_ARG1->string, true);
     if (!bp)
-        return newError(interp, out_of_memory, FLISP_ARG_ONE, "(generate-new-buffer name) failed, out of memory");
+        return newError(interp, out_of_memory, FLISP_ARG1, "(generate-new-buffer name) failed, out of memory");
     switch_to_buffer(bp);
-    return FLISP_ARG_ONE;
+    return FLISP_ARG1;
 }
 
 Object *e_delete_buffer(Object *interp, Object **args, Object **env, size_t nArgs)
 {
-    buffer_t *buffer = find_buffer(FLISP_ARG_ONE->string, false);
+    buffer_t *buffer = find_buffer(FLISP_ARG1->string, false);
     if (buffer == NULL)
-        return newError(interp, invalid_value, FLISP_ARG_ONE, "(delete-buffer buffer) - buffer does not exist");
+        return newError(interp, invalid_value, FLISP_ARG1, "(delete-buffer buffer) - buffer does not exist");
     if (!delete_buffer(buffer))
-        return newError(interp, invalid_value, FLISP_ARG_ONE, "(delete-buffer buffer) - refused to delete scratch or current buffer");
-    return FLISP_ARG_ONE;
+        return newError(interp, invalid_value, FLISP_ARG1, "(delete-buffer buffer) - refused to delete scratch or current buffer");
+    return FLISP_ARG1;
 }
 
 /** (get-buffer-create name) */
 Object *e_get_buffer_create(Object *interp, Object **args, Object **env, size_t nArgs)
 {
-    if (find_buffer(FLISP_ARG_ONE->string, true))
-        return FLISP_ARG_ONE;
+    if (find_buffer(FLISP_ARG1->string, true))
+        return FLISP_ARG1;
     return newError(interp, out_of_memory, nil, "(get-buffer-create name) failed, out of memory");
 }
 
@@ -596,43 +596,43 @@ DEFINE_EDITOR_FUNC(list_buffers)
 
 Object *e_set_buffer(Object *interp, Object **args, Object **env, size_t nArgs)
 {
-    buffer_t *bp = find_buffer(FLISP_ARG_ONE->string, false);
+    buffer_t *bp = find_buffer(FLISP_ARG1->string, false);
 
     if (!bp)
-        return newError(interp, invalid_value, FLISP_ARG_ONE, "(set-buffer buffer) - buffer does not exist");
+        return newError(interp, invalid_value, FLISP_ARG1, "(set-buffer buffer) - buffer does not exist");
 
     curbp = bp;
-    return FLISP_ARG_ONE;
+    return FLISP_ARG1;
 }
 
 Object *e_set_buffer_name(Object *interp, Object **args, Object **env, size_t nArgs)
 {
-    buffer_t *buffer = find_buffer(FLISP_ARG_ONE->string, false);
+    buffer_t *buffer = find_buffer(FLISP_ARG1->string, false);
 
     if (buffer != NULL)
-        return newError(interp, invalid_value, FLISP_ARG_ONE, "(set-buffer-name name) - name, already exists");
+        return newError(interp, invalid_value, FLISP_ARG1, "(set-buffer-name name) - name, already exists");
 
-    if (!set_buffer_name(curbp, FLISP_ARG_ONE->string))
-        return newError(interp, out_of_memory, FLISP_ARG_ONE, "(set-buffer-name name) - name, failed to allocate string");
-    return FLISP_ARG_ONE;
+    if (!set_buffer_name(curbp, FLISP_ARG1->string))
+        return newError(interp, out_of_memory, FLISP_ARG1, "(set-buffer-name name) - name, failed to allocate string");
+    return FLISP_ARG1;
 }
 
 /** (set-visited-file-name name) */
 Object *e_set_buffer_filename(Object *interp, Object **args, Object **env, size_t nArgs)
 {
-    if (FLISP_ARG_ONE == nil) {
+    if (FLISP_ARG1 == nil) {
         if (curbp->fname != NULL)
             free(curbp->fname);
         curbp->fname = NULL;
         return nil;
     }
 
-    FLISP_ARG_TYPECHECK(FLISP_ARG_ONE, type_string, "(set-visited-file-name name) - name");
-    curbp->fname = strdup(FLISP_ARG_ONE->string);
+    FLISP_ASSERT(FLISP_ARG1, type_string, "(set-visited-file-name name) - name");
+    curbp->fname = strdup(FLISP_ARG1->string);
     if (curbp->fname == NULL)
         return newError(interp, out_of_memory, nil,  "(set-visited-file-name name) - name, cannot allocate memory for filename");
     curbp->modified = TRUE;
-    return FLISP_ARG_ONE;
+    return FLISP_ARG1;
 }
 
 /* Windows Handling */
@@ -644,9 +644,9 @@ DEFINE_EDITOR_FUNC(other_window)
 /* (pop-to-buffer buffer) */
 Object *e_pop_to_buffer(Object *interp, Object **args, Object **env, size_t nArgs)
 {
-    window_t *wp = popup_window(FLISP_ARG_ONE->string);
+    window_t *wp = popup_window(FLISP_ARG1->string);
     if (wp == NULL)
-        return newError(interp, invalid_value, FLISP_ARG_ONE, "(pop-to-buffer buffer) - buffer does not exist");
+        return newError(interp, invalid_value, FLISP_ARG1, "(pop-to-buffer buffer) - buffer does not exist");
     /* See other_window() */
     curwp->w_update = true;
     curwp = wp;
@@ -671,7 +671,7 @@ DEFINE_EDITOR_FUNC(clear_message_line)
 
 Object *e_message(Object *interp, Object **args, Object **env, size_t nArgs)
 {
-    msg(FLISP_ARG_ONE->string);
+    msg(FLISP_ARG1->string);
     return t;
 }
 
@@ -682,13 +682,13 @@ Object *e_prompt(Object *interp, Object **args, Object **env, size_t nArgs)
     char response[81] = "";
 
     if (nArgs > 1) {
-        size_t len = strlen(FLISP_ARG_TWO->string);
+        size_t len = strlen(FLISP_ARG2->string);
         if (len > 80)
             len = 80;
-        strncpy(response, FLISP_ARG_TWO->string, len);
+        strncpy(response, FLISP_ARG2->string, len);
         response[len] = '\0';
     }
-    if (getinput(FLISP_ARG_ONE->string, response, 80))
+    if (getinput(FLISP_ARG1->string, response, 80))
         return newStringWithLength(interp, response, strlen(response));
     return nil;
 }
@@ -697,11 +697,11 @@ Object *e_prompt_filename(Object *interp, Object **args, Object **env, size_t nA
 {
 
     if (nArgs > 1)
-        strcpy(response_buf, FLISP_ARG_TWO->string);
+        strcpy(response_buf, FLISP_ARG2->string);
     else
         response_buf[0] = '\0';
 
-    char *prompt = strdup(FLISP_ARG_ONE->string);
+    char *prompt = strdup(FLISP_ARG1->string);
     if (!getfilename(prompt, (char*) response_buf, PATH_MAX)) {
         free(prompt);
         return nil;
@@ -732,7 +732,7 @@ Object *e_get_key_funcname(Object *interp, Object **args, Object **env, size_t n
 Object *e_get_key_name(Object *interp, Object **args, Object **env, size_t nArgs) { return newString(interp, get_key_name()); }
 
 /* Note: set_key always returns 1, so we don't need to decide here either */
-Object *e_set_key(Object *interp, Object **args, Object **env, size_t nArgs) { return (1 == set_key(FLISP_ARG_ONE->string, FLISP_ARG_TWO->string) ? t : nil); }
+Object *e_set_key(Object *interp, Object **args, Object **env, size_t nArgs) { return (1 == set_key(FLISP_ARG1->string, FLISP_ARG2->string) ? t : nil); }
 
 
 /* Programming and System Interaction */
@@ -763,7 +763,7 @@ Object *e_get_version_string(Object *interp, Object **args, Object **env, size_t
 
 Object *e_log_debug(Object *interp, Object **args, Object **env, size_t nArgs)
 {
-    fl_debug(interp, "%s", FLISP_ARG_ONE->string);
+    fl_debug(interp, "%s", FLISP_ARG1->string);
     return t;
 }
 
@@ -775,7 +775,7 @@ void log_message(char *str)
 }
 Object *e_log_message(Object *interp, Object **args, Object **env, size_t nArgs)
 {
-    log_message(FLISP_ARG_ONE->string);
+    log_message(FLISP_ARG1->string);
     return t;
 }
 
@@ -960,112 +960,123 @@ void user_func(void)
         msg(E_NOT_BOUND);
         return;
     }
-    eval_string(true, "(%s)", key_return->k_funcname);
+    eval_string("(%s)", key_return->k_funcname);
 }
 
 Object *femto_libs = &(Object) { .string = "femto_lib" };
 
-bool femto_register(Object *interp)
+Object *femto_flisp_init(Object *interp, Object *extension)
 {
-    char *library_path;
-    Object *femto_script_dir;
+    if (extension->extension.version != nil) return extension->extension.version;
 
-    femto_buffer_register(interp);
-    debug("femto buffer module registered\n");
+    char *library_path;
+    Object *e = nil;
 
     if ((library_path=getenv("FEMTOLIB")) == NULL)
         library_path = CPP_XSTR(E_SCRIPTDIR);
-    femto_script_dir= newString(interp, library_path);
-    flisp_register_constant(interp, femto_libs, femto_script_dir);
+    GC_CHECKPOINT;
+    GC_TRACE(gcExt, extension);
 
-    return
+    do {
+        FLISP_UNLESS_ERR(femto_buffer_register(interp));
+        debug("femto buffer module registered\n");
+        
+        FLISP_UNLESS_ERR(flisp_register_constant(interp, femto_libs, newString(interp, library_path)));
+
+
 /* Text manipulation: read from, write to buffer text */
-        flisp_register_primitive(   interp, "backspace",             0, 0, nil,         e_backspace)
-        && flisp_register_primitive(interp, "delete",                0, 0, nil,         e_delete)
-        && flisp_register_primitive(interp, "erase-buffer",          0, 0, nil,         e_zero_buffer)
-        && flisp_register_primitive(interp, "get-char",              0, 0, nil,         e_get_char)
-        && flisp_register_primitive(interp, "insert-string",         1, 1, type_string, e_insert_string)
-        && flisp_register_primitive(interp, "kill-region",           0, 0, nil,         e_kill_region)
-        && flisp_register_primitive(interp, "yank",                  0, 0, nil,         e_yank)
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "backspace",             0, 0, nil,         e_backspace));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "delete",                0, 0, nil,         e_delete));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "erase-buffer",          0, 0, nil,         e_zero_buffer));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "get-char",              0, 0, nil,         e_get_char));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "insert-string",         1, 1, type_string, e_insert_string));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "kill-region",           0, 0, nil,         e_kill_region));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "yank",                  0, 0, nil,         e_yank));
 
 /* Selection */
-        && flisp_register_primitive(interp, "copy-region",           0, 0, nil,         e_copy_region)
-        && flisp_register_primitive(interp, "get-clipboard",         0, 0, nil,         e_get_clipboard)
-        && flisp_register_primitive(interp, "get-mark",              0, 0, nil,         e_get_mark)
-        && flisp_register_primitive(interp, "set-clipboard",         1, 1, type_string, e_set_clipboard)
-        && flisp_register_primitive(interp, "set-mark",              0, 0, nil,         e_set_mark)
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "copy-region",           0, 0, nil,         e_copy_region));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "get-clipboard",         0, 0, nil,         e_get_clipboard));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "get-mark",              0, 0, nil,         e_get_mark));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "set-clipboard",         1, 1, type_string, e_set_clipboard));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "set-mark",              0, 0, nil,         e_set_mark));
 
 /* Cursor Movement and information */
-        && flisp_register_primitive(interp, "backward-char",         0, 0, nil,         e_left)
-        && flisp_register_primitive(interp, "backward-word",         0, 0, nil,         e_backward_word)
-        && flisp_register_primitive(interp, "beginning-of-buffer",   0, 0, nil,         e_beginning_of_buffer)
-        && flisp_register_primitive(interp, "beginning-of-line",     0, 0, nil,         e_lnbegin)
-        && flisp_register_primitive(interp, "end-of-buffer",         0, 0, nil,         e_end_of_buffer)
-        && flisp_register_primitive(interp, "end-of-line",           0, 0, nil,         e_lnend)
-        && flisp_register_primitive(interp, "forward-char",          0, 0, nil,         e_right)
-        && flisp_register_primitive(interp, "forward-word",          0, 0, nil,         e_forward_word)
-        && flisp_register_primitive(interp, "get-point",             0, 0, nil,         e_get_point)
-        && flisp_register_primitive(interp, "get-point-max",         0, 0, nil,         e_get_point_max)
-        && flisp_register_primitive(interp, "goto-line",             1, 1, type_integer, e_goto_line)
-        && flisp_register_primitive(interp, "next-line",             0, 0, nil,         e_down)
-        && flisp_register_primitive(interp, "previous-line",         0, 0, nil,         e_up)
-        && flisp_register_primitive(interp, "scroll-up",             0, 0, nil,         e_scroll_up)
-        && flisp_register_primitive(interp, "scroll-down",           0, 0, nil,         e_scroll_down)
-        && flisp_register_primitive(interp, "search-forward",        1, 1, type_string, e_search_forward)
-        && flisp_register_primitive(interp, "search-backward",       1, 1, type_string, e_search_backward)
-        && flisp_register_primitive(interp, "set-point",             1, 1, type_integer, e_set_point)
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "backward-char",         0, 0, nil,         e_left));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "backward-word",         0, 0, nil,         e_backward_word));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "beginning-of-buffer",   0, 0, nil,         e_beginning_of_buffer));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "beginning-of-line",     0, 0, nil,         e_lnbegin));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "end-of-buffer",         0, 0, nil,         e_end_of_buffer));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "end-of-line",           0, 0, nil,         e_lnend));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "forward-char",          0, 0, nil,         e_right));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "forward-word",          0, 0, nil,         e_forward_word));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "get-point",             0, 0, nil,         e_get_point));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "get-point-max",         0, 0, nil,         e_get_point_max));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "goto-line",             1, 1, type_integer, e_goto_line));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "next-line",             0, 0, nil,         e_down));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "previous-line",         0, 0, nil,         e_up));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "scroll-up",             0, 0, nil,         e_scroll_up));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "scroll-down",           0, 0, nil,         e_scroll_down));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "search-forward",        1, 1, type_string, e_search_forward));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "search-backward",       1, 1, type_string, e_search_backward));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "set-point",             1, 1, type_integer, e_set_point));
 
 /* Buffer Management and information */
-        && flisp_register_primitive(interp, "find-buffer-visiting",  1, 1, type_string, e_find_buffer_by_fname)
-        && flisp_register_primitive(interp, "buffer-filename",       0, 1, type_string, e_get_buffer_filename)
-        && flisp_register_primitive(interp, "buffer-fread",          1, 2, nil,         e_buffer_fread)
-        && flisp_register_primitive(interp, "buffer-fwrite",         1, 2, nil,         e_buffer_fwrite)
-        && flisp_register_primitive(interp, "buffer-mode",           0, 2, nil,         e_buffer_mode)
-        && flisp_register_primitive(interp, "buffer-modified-p",     0, 2, nil,         e_buffer_modified_p)
-        && flisp_register_primitive(interp, "buffer-overwrite-p",    0, 2, nil,         e_buffer_overwrite_p)
-        && flisp_register_primitive(interp, "buffer-readonly-p",     0, 2, nil,         e_buffer_readonly_p)
-        && flisp_register_primitive(interp, "buffer-special-p",      0, 2, nil,         e_buffer_special_p)
-        && flisp_register_primitive(interp, "buffer-undo-p",         0, 2, nil,         e_buffer_undo_p)
-        && flisp_register_primitive(interp, "buffer-next",           0, 1, type_string, e_buffer_next)
-        && flisp_register_primitive(interp, "buffer-show",           1, 1, type_string, e_buffer_show)
-        && flisp_register_primitive(interp, "delete-buffer",         1, 1, type_string, e_delete_buffer)
-        && flisp_register_primitive(interp, "get-buffer-create",     1, 1, type_string, e_get_buffer_create)
-        && flisp_register_primitive(interp, "list-buffers",          0, 0, nil,         e_list_buffers)
-        && flisp_register_primitive(interp, "set-buffer",            1, 1, type_string, e_set_buffer)
-        && flisp_register_primitive(interp, "set-buffer-name",       1, 1, type_string, e_set_buffer_name)
-        && flisp_register_primitive(interp, "set-visited-file-name",  1, 1, nil,        e_set_buffer_filename)
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "find-buffer-visiting",  1, 1, type_string, e_find_buffer_by_fname));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "buffer-filename",       0, 1, type_string, e_get_buffer_filename));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "buffer-fread",          1, 2, nil,         e_buffer_fread));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "buffer-fwrite",         1, 2, nil,         e_buffer_fwrite));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "buffer-mode",           0, 2, nil,         e_buffer_mode));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "buffer-modified-p",     0, 2, nil,         e_buffer_modified_p));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "buffer-overwrite-p",    0, 2, nil,         e_buffer_overwrite_p));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "buffer-readonly-p",     0, 2, nil,         e_buffer_readonly_p));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "buffer-special-p",      0, 2, nil,         e_buffer_special_p));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "buffer-undo-p",         0, 2, nil,         e_buffer_undo_p));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "buffer-next",           0, 1, type_string, e_buffer_next));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "buffer-show",           1, 1, type_string, e_buffer_show));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "delete-buffer",         1, 1, type_string, e_delete_buffer));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "get-buffer-create",     1, 1, type_string, e_get_buffer_create));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "list-buffers",          0, 0, nil,         e_list_buffers));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "set-buffer",            1, 1, type_string, e_set_buffer));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "set-buffer-name",       1, 1, type_string, e_set_buffer_name));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "set-visited-file-name",  1, 1, nil,        e_set_buffer_filename));
 
 /* Window Handling */
-        && flisp_register_primitive(interp, "delete-other-windows",  0, 0, nil,         e_delete_other_windows)
-        && flisp_register_primitive(interp, "split-window",          0, 0, nil,         e_split_window)
-        && flisp_register_primitive(interp, "other-window",          0, 0, nil,         e_other_window)
-        && flisp_register_primitive(interp, "pop-to-buffer",         1, 1, type_string, e_pop_to_buffer)
-        && flisp_register_primitive(interp, "update-display",        0, 0, nil,         e_update_display)
-        && flisp_register_primitive(interp, "refresh",               0, 0, nil,         e_refresh)
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "delete-other-windows",  0, 0, nil,         e_delete_other_windows));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "split-window",          0, 0, nil,         e_split_window));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "other-window",          0, 0, nil,         e_other_window));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "pop-to-buffer",         1, 1, type_string, e_pop_to_buffer));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "update-display",        0, 0, nil,         e_update_display));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "refresh",               0, 0, nil,         e_refresh));
 
 /* Message Line */
-        && flisp_register_primitive(interp, "clear-message-line",    0, 0, nil,         e_clear_message_line)
-        && flisp_register_primitive(interp, "message",               1, 1, type_string, e_message)
-        && flisp_register_primitive(interp, "prompt",                1, 2, type_string, e_prompt)
-        && flisp_register_primitive(interp, "prompt-filename",       1, 2, type_string, e_prompt_filename)
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "clear-message-line",    0, 0, nil,         e_clear_message_line));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "message",               1, 1, type_string, e_message));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "prompt",                1, 2, type_string, e_prompt));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "prompt-filename",       1, 2, type_string, e_prompt_filename));
 
 /* Keyboard Handling */
-        && flisp_register_primitive(interp, "describe-bindings",     0, 0, nil,         e_describe_bindings)
-        && flisp_register_primitive(interp, "describe-functions",    0, 0, nil,         e_describe_functions)
-        && flisp_register_primitive(interp, "execute-key",           0, 0, nil,         e_execute_key)
-        && flisp_register_primitive(interp, "getch",                 0, 0, nil,         e_getch)
-        && flisp_register_primitive(interp, "get-key",               0, 0, nil,         e_get_key)
-        && flisp_register_primitive(interp, "get-key-funcname",      0, 0, nil,         e_get_key_funcname)
-        && flisp_register_primitive(interp, "get-key-name",          0, 0, nil,         e_get_key_name)
-        && flisp_register_primitive(interp, "set-key",               2, 2, type_string, e_set_key)
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "describe-bindings",     0, 0, nil,         e_describe_bindings));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "describe-functions",    0, 0, nil,         e_describe_functions));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "execute-key",           0, 0, nil,         e_execute_key));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "getch",                 0, 0, nil,         e_getch));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "get-key",               0, 0, nil,         e_get_key));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "get-key-funcname",      0, 0, nil,         e_get_key_funcname));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "get-key-name",          0, 0, nil,         e_get_key_name));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "set-key",               2, 2, type_string, e_set_key));
 
 /* Programming and System Interaction */
-        && flisp_register_primitive(interp, "exit",                  0, 0, nil,         e_quit)
-        && flisp_register_primitive(interp, "get-temp-file",         0, 0, nil,         e_get_temp_file)
-        && flisp_register_primitive(interp, "get-version-string",    0, 0, nil,         e_get_version_string)
-        && flisp_register_primitive(interp, "log-debug",             1, 1, type_string, e_log_debug)
-        && flisp_register_primitive(interp, "log-message",           1, 1, type_string, e_log_message)
-        && flisp_register_primitive(interp, "suspend",               0, 0, nil,         e_suspend);
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "exit",                  0, 0, nil,         e_quit));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "get-temp-file",         0, 0, nil,         e_get_temp_file));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "get-version-string",    0, 0, nil,         e_get_version_string));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "log-debug",             1, 1, type_string, e_log_debug));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "log-message",           1, 1, type_string, e_log_message));
+        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "suspend",               0, 0, nil,         e_suspend));
+
+        FLISP_UNLESS_ERR((*gcExt)->extension.version = newString(interp, E_VERSION));
+
+    } while (0);
+    GC_RELEASE;
+    return e;
 }
 
 /*

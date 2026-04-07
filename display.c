@@ -172,8 +172,7 @@ void modeline(window_t *wp)
     lch = (wp == curwp ? '=' : '-');
     mch = (wp->w_bufp->modified ? '*' : lch);
     och = (wp->w_bufp->overwrite ? 'O' : lch);
-    /* Note: experimental, no error check */
-    Object *result = flisp_eval_expr(interp, wp->w_bufp->mode);
+    Object *result = flisp_lookup(interp, wp->w_bufp->mode);
     mode = (wp->w_bufp->mode == nil) ? "Text" : result->string;
     snprintf(modeline, 256,
              "%c%c%c Femto: %c%c %s (%s) ",

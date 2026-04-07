@@ -31,8 +31,10 @@ void gui(void); /* The GUI loop used in interactive mode */
 
 Object *interp;
 char debug_file[] = "debug.out";
-FILE *prev, *debug_fp = NULL;
+FILE *debug_fp = NULL;
 int flisp_input_pipe[2];
+char *flisp_error_output;
+size_t flisp_error_size;
 
 /** lisp_init() - initialize fLisp interpreter and load rc file
  *
@@ -89,18 +91,12 @@ void lisp_init(char **argv)
         }
     }
 
-
-    /* DEBUGGING */
-    interp->self.trace_read = true;
-    
+    if ((FLISP_STDERR.fd = open_memstream(&flisp_error_output, &flisp_error_size)) == NULL)
+        fatal("Failed to create fLisp error stream");
     if (pipe(flisp_input_pipe) == -1)
         fatal("Failed to create fLisp input pipe");
-    if (fcntl(flisp_input_pipe[0], F_SETFD, O_NONBLOCK) == -1)
-        fatal("Failed to configure fLisp input pipe, read end");
     if ((FLISP_STANDARD_INPUT.fd = fdopen(flisp_input_pipe[0], "r")) == NULL)
-        fatal("Failed to open fLisp input pipe");
-    if (fcntl(flisp_input_pipe[1], F_SETFD, O_NONBLOCK) == -1)
-        fatal("Failed to configure fLisp input pipe");
+        fatal("Failed to open fLisp input pipe read stream");
     debug("fLisp input pipe set up\n");
 }
 
@@ -158,99 +154,48 @@ int main(int argc, char **argv)
     return 0;
 }
 
-/** Handle errors from Lisp scripts
- *
- * @param interp
- */
-void msg_lisp_err(Object *result)
-{
-    char *buf;
-    size_t len;
-    FILE *fd;
-
-    /* if (NULL == (fd = open_memstream(&buf, &len))) */
-    /*     fatal("failed to allocate error formatting buffer"); */
-    /* flisp_write_object(fd, result, true); */
-    /* msg("%s", buf); */
-    /* fclose(fd); */
-    /* free(buf); */
-    /* Note: want to write the error object, but it garbles.
-       We should have interp, stderr set to an output memstream, seek to zero and overwrite. Then point msg to the output memstream.
-     */
-    msg("Error:%s: %s", result->error->string, result->message->string);
-}
-
 /** eval_string - Invoke fLisp interpreter and return result as string
  *
- * @param do_format  If true, the input string is passed through
- *                   printf style formatting, otherwise it is used directly.
- * @param format     Input string for the interpreter.
+ * @param format     printf like format string for the interpreter.
+ * @param ...        parameters to the format string.
  *
  */
-#if 0
-void eval_string(bool do_format, char *format, ...)
-{
-    char buf[INPUT_FMT_BUFSIZ], *input;
-
-    int size;
-    va_list args;
-
-    if (do_format) {
-        va_start(args, format);
-        size = vsnprintf(buf, sizeof(buf), format, args);
-        va_end(args);
-        if (size > INPUT_FMT_BUFSIZ) {
-            msg("input string larger then %d", INPUT_FMT_BUFSIZ);
-            return;
-        }
-        input = buf;
-    } else {
-        input = format;
-    }
-    Object *result = flisp_eval(interp, input);
-    if (result->type != type_error)
-        return;
-    msg_lisp_err(result);
-    if (debug_mode)
-        flisp_write_object(debug_fp, result, true);
-    if (result->error  == out_of_memory)
-        fatal("OOM, exiting..");
-    return;
+/* Note: no idea if this works */
+void empty_flisp_input_pipe() {
+    char buf[PIPE_BUF];
+    int size = read(flisp_input_pipe[0], buf, PIPE_BUF);
+    if (size == -1)
+        debug("eval_string: buffer empty, %\n", strerror(errno));
+    else 
+        debug("eval_string: emptying %d bytes: %s\n", buf);
 }
-#else
+
 void eval_string(char *format, ...)
 {
-    char buf[INPUT_FMT_BUFSIZ];
     int size;
     va_list args;
 
-    
     va_start(args, format);
-/* Note: we want:  size = dprintf(flisp_input_pipe[1], format, args);
-   but it doesn't work, why?
- */    
-    size = vsnprintf(buf, sizeof(buf), format, args);
+    size = vdprintf(flisp_input_pipe[1], format, args);
     va_end(args);
-    if (size > INPUT_FMT_BUFSIZ) {
-        msg("input string larger then %d", INPUT_FMT_BUFSIZ);
+    if (size > PIPE_BUF) {
+        msg("input string larger then %d", PIPE_BUF);
+        empty_flisp_input_pipe();
         return;
     }
-    FLISP_STANDARD_INPUT.fd = fmemopen(buf, size, "r");
-    if (FLISP_STANDARD_INPUT.fd == NULL)
-        fatal("Failed to create input stream for fLisp");
-    Object *result = flisp_eval_input(interp, false);
+    rewind(FLISP_STDERR.fd);
+    Object *result = flisp_eval_expr(interp, false);
+    fflush(FLISP_STDERR.fd);
     if (FLISP_IS_OOM(result))
         fatal("OOM wile evaluating expression");
-    if (fclose(FLISP_STANDARD_INPUT.fd))
-        fatal("Error closing expression stream");
     if (FLISP_IS_EOF(result))
-        return;
+        fatal("fLisp input pipe closed");
     if (FLISP_IS_ERR(result)) {
-        msg_lisp_err(result);
-        return;
+        debug("%s\n", flisp_error_output);
+        msg(flisp_error_output);
     }
 }
-#endif
+
 void gui(void)
 {
     debug("gui(): init\n");

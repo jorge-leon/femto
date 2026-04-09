@@ -15,10 +15,9 @@
 
 (defun eval-expression (string)
   (let* ((input   (open string "<"))
-	 (result (catch (eval (read input)))) )
+	 (result (eval (read input))) )
     (close input)
-    (if (car result) (apply throw result)
-	(caddr result) )))
+    result ))
 
 ;;; M-: M-;
 (defun eval-expression-i ()
@@ -43,12 +42,13 @@
   (let* ((result (fstat path))
 	 (size  (prop-get result :size))
 	 (type  (prop-get result :type))
-	 (check (unless (eq type "f")  (throw invalid-value "not a regular file" filename)))
+	 (check (unless (eq type "f")  (error :invalid-value "not a regular file" filename)))
 	 (fd    (open path))
 	 (len   (buffer-fread fd size)) )
     (close fd)
+    check
     (when (not (= size len))
-      (throw io-error (concat "short read: expected "size" bytes, got "len) path) )))
+      (error :io-error (concat "short read: expected "size" bytes, got "len) path) )))
 
 (defun insert-file ()
   (setq fn (prompt-filename "Insert file: "))
@@ -68,24 +68,25 @@
     (cond (command (shell-exec command)))))
 
 (defun shell-exec (command)
-  (cond ((string-equal "-" (substring command 0 1))
-	 (throw invalid-value "shell command must not start with a hypen" command)))
-  (setq temp (get-temp-file))
-  (setq rc (system (concat command " > " temp " 2>&1 </dev/null")))
-  (cond
-    ((eq command ""))
-    ((or (eq rc -1) (eq rc 127))
-	(concat "error: failed to execute" command ": "  rc))
-    (t
-     (cond (not (eq rc 0)) (message "warning: " command " exited: " rc))
-     (switch-to-buffer "*output*")
-     (erase-buffer)
-     (insert-file-contents-literally temp)
-     (system (concat "rm -f " temp))
-     (clear-message-line) )))
-
+  (if (string-equal "-" (substring command 0 1))
+      (error invalid-value "shell command must not start with a hypen" command)
+      ;; else
+      (setq temp (get-temp-file))
+      (setq rc (system (concat command " > " temp " 2>&1 </dev/null")))
+      (cond
+	((eq command ""))
+	((or (eq rc -1) (eq rc 127))
+	 (concat "error: failed to execute" command ": "  rc))
+	(t
+	 (cond (not (eq rc 0)) (message "warning: " command " exited: " rc))
+	 (switch-to-buffer "*output*")
+	 (erase-buffer)
+	 (insert-file-contents-literally temp)
+	 (system (concat "rm -f " temp))
+	 (clear-message-line) ))))
+  
 (defun shell-command-lines (command . args)
-  (let* ((cmd (join " " (cons command args)))
+    (let* ((cmd (join " " (cons command args)))
 	 (stream  (popen cmd)) )
     (let loop ((lines nil))
 	 (let ((line (fgets stream)))
@@ -95,7 +96,7 @@
 (defun shell_pclose (stream output . allowed)
   (let ((rc (pclose stream)))
     (if (memq rc (or allowed '(0))) output
-	(throw io-error (concat "exit status:"rc) output) )))
+	(error :io-error (concat "exit status:"rc) output) )))
 
 (defun shell_strip_eol (line)
   (if (memq (substring line -1) '("\n" "\r"))
@@ -247,17 +248,17 @@
        (cond
 	 ((null hook)  nil)
 	 ((consp hook)
-	  (let ((result (catch ((car hook)))))
+	  (let ((result ((car hook))))
 	    (log 'DEBUG result)
-	    (when (car result)
+	    (when (errorp result)
 	      (log-debug (concat "(run-hook hook) failed on function: "(car hook)": "result"\n")) )
 	    (process-hook-function (cdr hook)) ))
-	 (t  (throw invalid-value "(run-hook hook) - hook is not a list" hook)) )))
+	 (t  (error invalid-value "(run-hook hook) - hook is not a list" hook)) )))
 
 (defmacro run-hooks hooks
   (when hooks
     (list 'progn
-	  (list 'catch (list 'run-hook (car hooks)))
+	  (list 'run-hook (car hooks))
 	  (cons 'run-hooks (cdr hooks)) )))
 
 ;;; Note: pending a working implementation
@@ -278,7 +279,7 @@
 
 (defun switch-to-buffer (name)
   (buffer-show name)
-  (let ((result (catch (run-hooks 'after-switch-to-buffer-hook))))
+  (let ((result (run-hooks 'after-switch-to-buffer-hook)))
     (log 'DEBUG result "after-switch-to-buffer-hook") )
   name )
 
@@ -376,42 +377,41 @@
 		  (switch-to-buffer (find-file-noselect filename))  )))))
 
 (defun find-file-noselect (filename)
-  (let ((result (catch (open filename "r+"))))
-    (cond
-      ((null (car result))                   (find-file_load (caddr result) filename nil))
-      ((eq (car result) :permission-denied)  (find-file_load (open filename) filename t))
-      ((eq (car result) :not-found)          (find-file_new filename))
-      ((eq (car result) :is-directory)       (find-file_directory filename))
-      (t (throw (car result) (cadr result) filename)) )))
+  (let ((result (open filename "r+")))
+    (if-not (errorp result)  (find-file_load (caddr result) filename nil)
+	    (let ((type (error-type result)))
+	      (cond
+		((same type :permission-denied)  (find-file_load (open filename) filename t))
+		((same type :not-found)          (find-file_new filename))
+		((same type :is-directory)       (find-file_directory filename))
+		(t result) )))))
 
 (defun find-file_load (fd filename read-onlyp)
   (let* ((current (current-buffer))
 	 (new (set-buffer (create-file-buffer filename)))
 	 (result
-	  (catch
-	      (progn
-		(insert-file-contents-literally filename)
-		(set-visited-file-name filename)
-		(restore-buffer-modified-p nil)
-		;; Note: read-only mode pending implementation
-		(when read-onlyp  (buffer-modified-p nil "read-only"))
-		(after-find-file) ))))
+	  (progn
+	    (insert-file-contents-literally filename)
+	    (set-visited-file-name filename)
+	    (restore-buffer-modified-p nil)
+	    ;; Note: read-only mode pending implementation
+	    (when read-onlyp  (buffer-modified-p nil "read-only"))
+	    (after-find-file) )))
     (set-buffer current)
-    (when (car result) (apply throw result))
-    new ))
+    (if (errorp result) result
+	new )))
 
 (defun find-file_new (filename)
   (let* ((current (current-buffer))
 	 (new (set-buffer (create-file-buffer filename)))
 	 (result
-	  (catch
-	      (progn
-		(set-visited-file-name filename)
-		(restore-buffer-modified-p nil)
-		(after-find-file) ))))
-    (when (car result) (apply throw result))
-    (message "(New file)")
-    new ))
+	  (progn
+	    (set-visited-file-name filename)
+	    (restore-buffer-modified-p nil)
+	    (after-find-file) )))
+    (if (errorp result) result
+	(message "(New file)")
+	new )))
 
 (setq
  find-file-extension-highlight-mode
@@ -439,26 +439,26 @@
       (let* ((filename (buffer-filename))
 	    (directory (file-name-directory filename)) )
 	;; Note: we should handle unassociated files with write-contents-functions hooks.
-	(when (null filename)
-	  (throw invalid-value "(save-buffer) - is not associated with a file" (current-buffer)) )
-	;; Note: we should run the special hook write-file-functions here.
-	(when (and directory (memq directory '("" "./" "../")))
-	  (when (car (catch (fstat directory)))
-	    (if (not (string-equal "y" (prompt (concat "Directory ‘"directory"’ does not exist; create? (y or n) "))))
-		(message "Cancelled")
-		;; else
-		(mkdir directory t) )))
-	(let* ((fp    (open filename "w"))
-	       (point (get-point))
-	       (size  (get-point-max))
-	       (len   (progn
-			(beginning-of-buffer)
-			(buffer-fwrite fp))) )
-	  (set-point point)
-	  (close fp)
-	  (unless (i= len size)  (throw io-error "(save-buffer) - error writing buffer to file: " filename))
-	  (set-buffer-modified-p nil)
-	  (message (concat "Wrote "size" bytes to "filename)) ))))
+	(if (null filename)
+	    (error invalid-value "(save-buffer) - is not associated with a file" (current-buffer))
+	    ;; Note: we should run the special hook write-file-functions here.
+	    (when (and directory (memq directory '("" "./" "../")))
+	      (when (errorp (fstat directory))
+		(if (not (string-equal "y" (prompt (concat "Directory ‘"directory"’ does not exist; create? (y or n) "))))
+		    (message "Cancelled")
+		    ;; else
+		    (mkdir directory t) )))
+	    (let* ((fp    (open filename "w"))
+		   (point (get-point))
+		   (size  (get-point-max))
+		   (len   (progn
+			    (beginning-of-buffer)
+			    (buffer-fwrite fp))) )
+	      (set-point point)
+	      (close fp)
+	      (if-not (i= len size)  (error io-error "(save-buffer) - error writing buffer to file: " filename)
+		      (set-buffer-modified-p nil)
+		      (message (concat "Wrote "size" bytes to "filename)) ))))))
 
 (defun write-file ()
   (let ((path (prompt-filename "Write file: ")))
@@ -470,16 +470,17 @@
 	      (save-buffer) )))))
 
 (defun write-file_check_path (path)
-  (let* ((result (catch (fstat path)))
-	 (type (if (car result)  ""   (prop-get (caddr result) :type))) )
-    (cond ((car result) path) ; not found: go ahead / not accessible: err later
-	  ((string-equal type "f")
-	   ;; Found. Ask if we want to overwrite, if not return nil
-	   (when (string-equal "y" (prompt (concat "File '"path"' exists; overwrite? (y or n) ") "")) path) )
-	  ((string-equal type "d")
-	   ;; directory: create file path into directory from buffer name and check again
-	   (write-file_check_path (concat path "/" (buffer-basename (buffer-name)))) )
-	  (t  (throw invalid-value "Not a valid file or directory" path)) )))
+  (let* ((result (fstat path))
+	 (type (if (errorp result)  ""   (prop-get (caddr result) :type))) )
+    (cond
+      ((errorp result) path); not found: go ahead / not accessible: err later
+      ((string-equal type "f")
+       ;; Found. Ask if we want to overwrite, if not return nil
+       (when (string-equal "y" (prompt (concat "File '"path"' exists; overwrite? (y or n) ") "")) path) )
+      ((string-equal type "d")
+       ;; directory: create file path into directory from buffer name and check again
+       (write-file_check_path (concat path "/" (buffer-basename (buffer-name)))) )
+      (t  (error :invalid-value "Not a valid file or directory" path)) )))
 
 ;;; Saving buffers
 

@@ -53,11 +53,6 @@
 (defun edit-config()
   (find-file-noselect (confn config_file)))
 
-(defun log (level result . message)
-  (cond (result
-	 (log-debug (concat  level":"(car result)": "message" '"(caddr result)"' - "(cadr result)"\n")) )
-	 (t (log-debug (concat level": "message"\n"))) ))
-
 (provide 'startup)
 
 ;;

@@ -107,8 +107,8 @@
   ;;;    -(:dired buffer) to dired other buffer
   (update-display)
   (let* ((other (other-buffer))
-	 (result (catch (dired_process-key)))
-	 (code  (caddr result)) )
+	 (result (dired_process-key))
+	 (code  (when (errorp result) (error-type result))) )
     (log 'DEBUG nil "dired:"ops": process-key: '"result"'")
     (log 'DEBUG result "dired: result "ops)
     (if (cond
@@ -130,7 +130,7 @@
 	  ((eq code :cancel) (message "Canceled") :continue)
 	  ((eq code :update) (dired-reload) :continue)
 	  ((eq code :no-deletions) (message "No deletions performed") :continue)
-	  (:continue) )
+	  (t :continue) )
 	(dired-loop (- ops 1))
 	;; quit or exit
 	(cond
@@ -162,7 +162,7 @@
     ((memq func '(previous-line next-line))
      (beginning-of-line)
      (repeat 8 forward-word))
-    (:continue) ))
+    (t :continue) ))
 
 (defun dired_handle-command-key (key)
   (cond

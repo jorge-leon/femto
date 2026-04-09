@@ -17,12 +17,17 @@ $(cat $(pkg-config --variable=lisplib flisp)/core.lsp)
  script_dir "$(pkg-config --variable=lisplib flisp)"
  env-batch-mode (getenv "FEMTO_BATCH"))
 
+(defun log (level . message)
+      (write (concat  level":"message"\n") nil *debug-output*) )
+
+
+
 (when (or (null env-batch-mode) (string-equal "0" env-batch-mode))
   (require 'flisp)
   (require 'string)
   (require 'file)
-  (log-debug (concat "Loaded fLisp libraries: "features" from: "script_dir"\n"))
-  (log-debug (concat "Switching script_dir to: "femto_lib"\n"))
+  (log :debug concat "Loaded fLisp libraries: "features" from: "script_dir)
+  (log :debug concat "Switching script_dir to: "femto_lib)
   ;; Switch require path to Femto
   (setq script_dir femto_lib)
   (require 'startup) )

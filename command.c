@@ -763,7 +763,7 @@ Object *e_get_version_string(Object *interp, Object **args, Object **env, size_t
 
 Object *e_log_debug(Object *interp, Object **args, Object **env, size_t nArgs)
 {
-    fl_debug(interp, "%s", FLISP_ARG1->string);
+    flisp_debug(interp, "%s", FLISP_ARG1->string);
     return t;
 }
 

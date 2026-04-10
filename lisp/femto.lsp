@@ -90,13 +90,14 @@
 	 (stream  (popen cmd)) )
     (let loop ((lines nil))
 	 (let ((line (fgets stream)))
-	   (if (eq line end-of-file) (shell_pclose stream (reverse lines))
-	       (loop (cons (shell_strip_eol line) lines))) ))))
+	   (if-not (eq line :end-of-file) (loop (cons (shell_strip_eol line) lines))
+		  (shell_pclose stream)
+		  (reverse lines) )))))
 
-(defun shell_pclose (stream output . allowed)
+(defun shell_pclose (stream . allowed)
   (let ((rc (pclose stream)))
-    (if (memq rc (or allowed '(0))) output
-	(error :io-error (concat "exit status:"rc) output) )))
+    (unless (memq rc (or allowed '(list 0)))
+      (error :io-error (concat "exit status:"rc) output) )))
 
 (defun shell_strip_eol (line)
   (if (memq (substring line -1) '("\n" "\r"))

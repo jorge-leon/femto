@@ -34,11 +34,11 @@
 
 (setq oxo-debugging nil)
 
-(defun oxo-debug(s)
- (cond (oxo-debugging (log-debug s))))
+(defun oxo-debug s
+  (when oxo-debugging (log :debug . s)))
 
 (defun init()
- (oxo-debug "(init)\n")
+ (oxo-debug "(init)")
  (switch-to-buffer "*oxo*")
  (buffer-special-p "*oxo*" t)
  (beginning-of-buffer)
@@ -47,9 +47,9 @@
  (setq board (list "E" "1" "2" "3" "4" "5" "6" "7" "8" "9")))
 
 (defun val(n)
-  (oxo-debug (concat "val n=" n  "\n"))
-  (oxo-debug (concat "board=" board "\n"))
-  (oxo-debug (concat "nth=" (nth n board) "\n"))
+  (oxo-debug "val n="n)
+  (oxo-debug "board="board)
+  (oxo-debug "nth="(nth n board))
   (nth n board))
 
 (defun set-nth (list n val)
@@ -57,12 +57,12 @@
       (cons val (cdr list)) ))
 
 (defun newline_and_space()
-  (oxo-debug "newline_and_space\n")
+  (oxo-debug "newline_and_space")
   (insert-string "\n "))
 
 ;; prompt for string and return response, handle backspace, cr and c-g
 (defun inputat(ln q response)
-  (oxo-debug "inputat\n")
+  (oxo-debug "inputat")
   (goto-line ln)
   (beginning-of-line)
   (kill-to-eol)
@@ -78,7 +78,7 @@
     (t (inputat ln q (concat response key)))  ))
 
 (defun draw()
-  (oxo-debug "draw\n")
+  (oxo-debug "draw")
   (beginning-of-buffer)
   (set-mark)
   (repeat 10 next-line)
@@ -103,34 +103,34 @@
   (list 3 5 7) ))
 
 (defun check_win_line(w p)
-  (oxo-debug (concat "check_win_line w=" w " - p=" p "\n"))
+  (oxo-debug "check_win_line w=" w " - p=" p)
   (and
    (eq p (val (nth 0 w)))
    (eq p (val (nth 1 w)))
    (eq p (val (nth 2 w))) ))
 
 (defun check_for_win(l p)
-  (oxo-debug (concat "check_for_win l=" l " - p=" p "\n"))
+  (oxo-debug "check_for_win l=" l " - p=" p)
   (cond
     ((null l)
-     (oxo-debug "empty l\n")
+     (oxo-debug "empty l")
      'nil)
     ((check_win_line (car l) p)
-     (oxo-debug "check_win_line true\n")
+     (oxo-debug "check_win_line true")
      t)
     (t
-     (oxo-debug "repeat\n")
+     (oxo-debug "repeat")
      (check_for_win (cdr l) p)) ))
   
 (defun game_over()
-  (oxo-debug "game_not_over\n")
+  (oxo-debug "game_not_over")
   (or
    (check_for_win wins "X")
    (check_for_win wins "O")
    (board_full (cdr board)) ))
 
 (defun get-move()
-  (oxo-debug "get-move\n")
+  (oxo-debug "get-move")
   (setq m (inputat 7 "Your move (X): " ""))
   (setq m (string-to-number m))
   (cond
@@ -144,7 +144,7 @@
     ((string-to-number (car b)))))
 
 (defun board_full(brd)
-  (oxo-debug "board_full\n")
+  (oxo-debug "board_full")
   (cond
     ((null brd))
     ((taken (car brd)) (board_full (cdr brd)))))
@@ -159,21 +159,21 @@
 	((print_message s)) ))
 
 (defun print_message(s)
-  (oxo-debug "print_message\n")
+  (oxo-debug "print_message")
   (clearline 7)
   (insert-string s)
   (message "")
   (update-display))
 
 (defun clearline(ln)
-  (oxo-debug "clearline\n")
+  (oxo-debug "clearline")
   (goto-line ln)
   (beginning-of-line)  
   (kill-to-eol) )
 
 ;; just find first empty square
 (defun computer_move()
-  (oxo-debug "computer_move\n")
+  (oxo-debug "computer_move")
   (setq board (set-nth board (find_free board) "O")) )
 
 (defun show_result()
@@ -189,11 +189,11 @@
   (or (eq m "y") (eq m "Y")) )
 
 (defun play()
-   (oxo-debug "play\n")
+   (oxo-debug "play")
   (draw)
-  (oxo-debug "about to update display\n")
+  (oxo-debug "about to update display")
   (update-display)
-  (oxo-debug "updated\n")
+  (oxo-debug "updated")
   (cond ((not (game_over)) (setq board (set-nth board (get-move) "X")))
 	((show_result)) )
   (cond ((not (game_over))

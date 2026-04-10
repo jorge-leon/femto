@@ -13,8 +13,8 @@
 (setq command-line-args argv)
 (setq invocation-name argv0)
 
-(defun eval-expression (string)
-  (let* ((input   (open string "<"))
+(defun eval-expression (s)
+  (let* ((input   (open s "<"))
 	 (result (eval (read input))) )
     (close input)
     result ))
@@ -251,7 +251,7 @@
 	  (let ((result ((car hook))))
 	    (log 'DEBUG result)
 	    (when (errorp result)
-	      (log-debug (concat "(run-hook hook) failed on function: "(car hook)": "result"\n")) )
+	      (log :debug (concat "(run-hook hook) failed on function: "(car hook)": "result"\n")) )
 	    (process-hook-function (cdr hook)) ))
 	 (t  (error invalid-value "(run-hook hook) - hook is not a list" hook)) )))
 

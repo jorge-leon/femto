@@ -52,19 +52,20 @@
 (defun dired_init (directory)
   (unless (string-equal "/" (substring directory -1))
     (setq directory (string-append directory "/")) )
-  (fstat directory) ; throws error if path with trailing slash is not a directory
-
-  (delete-other-windows)
-  (let ((buffer (find-buffer-visiting directory)))
-    (unless buffer
-      (setq buffer (get-buffer-create (generate-new-buffer-name "*dired*")))
-      (buffer-mode buffer 'Dired)
-      (buffer-readonly-p buffer t)
-      (buffer-undo-p buffer nil)
-      (buffer-special-p buffer t)
-      (set-buffer buffer)
-      (set-visited-file-name directory) )
-    buffer ))
+  (if (errorp (fstat directory))
+      (error :not-found "(dired path) - path is not a directory" directory)
+      ;; else
+      (delete-other-windows)
+      (let ((buffer (find-buffer-visiting directory)))
+	(unless buffer
+	  (setq buffer (get-buffer-create (generate-new-buffer-name "*dired*")))
+	  (buffer-mode buffer 'Dired)
+	  (buffer-readonly-p buffer t)
+	  (buffer-undo-p buffer nil)
+	  (buffer-special-p buffer t)
+	  (set-buffer buffer)
+	  (set-visited-file-name directory) )
+	buffer )))
 
 ;;; Hook function
 (defun dired-after-switch-to-buffer-function ()
@@ -107,42 +108,37 @@
   ;;;    -(:dired buffer) to dired other buffer
   (update-display)
   (let* ((other (other-buffer))
-	 (result (dired_process-key))
-	 (code  (when (errorp result) (error-type result))) )
-    (log 'DEBUG nil "dired:"ops": process-key: '"result"'")
-    (log 'DEBUG result "dired: result "ops)
+	 (result (dired_process-key)) )
+    (log :debug "dired:"ops": process-key: '"result"'")
     (if (cond
 	  ((i= ops 0) nil)
-	  ((memq code '(quit exit))
-	   (log 'DEBUG nil "want to leave: "code)
+	  ((memq result '(quit exit))
+	   (log :debug nil "want to leave: "code)
 	   nil)
-	  ((consp code)
+	  ((consp result)
+	   (setq other (cdr result))
 	   (cond
-	     ((eq (car code) :switch)
-	      (setq other (cdr code))
+	     ((eq (car result) :switch)
 	      nil )
-	     ((eq (car code) :dired)
-	      (setq other (cdr code))
+	     ((eq (car result) :dired)
 	      (buffer-show other)
 	      (dired-reload)
 	      :continue )))
-	  ((car result) (message (join "\n" code)) :continue)
-	  ((eq code :cancel) (message "Canceled") :continue)
-	  ((eq code :update) (dired-reload) :continue)
-	  ((eq code :no-deletions) (message "No deletions performed") :continue)
+	  ((errorp result) (message (string result)) :continue)
+	  ((eq result :cancel) (message "Canceled") :continue)
+	  ((eq result :update) (dired-reload) :continue)
+	  ((eq result :no-deletions) (message "No deletions performed") :continue)
 	  (t :continue) )
 	(dired-loop (- ops 1))
 	;; quit or exit
-	(cond
-	  ((eq code :exit) save-buffers-kill-terminal)
-	  (t
-	   (log 'DEBUG nil
-		"still want to leave: "code" current: "(current-buffer)" other: "other
-		" other other: "(other-buffer)
-		" buffer list: "(buffer-list))
-	   (restore-buffer-modified-p nil)
-	   (switch-to-buffer other)
-	   (clear-message-line) )))))
+	(if (eq result :exit) (save-buffers-kill-terminal)
+	    (log :debug
+		 "still want to leave: "code" current: "(current-buffer)" other: "other
+		 " other other: "(other-buffer)
+		 " buffer list: "(buffer-list))
+	    (restore-buffer-modified-p nil)
+	    (switch-to-buffer other)
+	    (clear-message-line) ))))
 
 (defun dired_process-key ()
   (let ((key (get-key)))
@@ -150,7 +146,7 @@
 	    (dired_handle-arrow-key (intern (get-key-funcname))) )))
 
 (defun dired_handle-arrow-key (func)
-  (log 'DEBUG nil "dired: arrow key: "func)
+  (log :debug "dired: arrow key: "func)
   (when (memq func ; list of allowed "arrow" keys
 	      '(previous-line next-line  scroll-up scroll-down
 		forward-word forward-char  backward-word backward-char
@@ -184,7 +180,7 @@
 	    (name  (cdr info))
 	    (path  (if (string-equal type "d")  (concat (buffer-filename) name "/")
 		       (string-append (buffer-filename) name)) ))
-       (log 'DEBUG nil "dired: info "info", path "path)
+       (log :debug "dired: info "info", path "path)
        (cond ((string-equal type "d") (cons :dired (dired_init path)))
 	     ;; Note: 
 	     ((memq type '("-" "l")) (cons :switch (find-file-noselect path)))
@@ -230,6 +226,7 @@
 ;;; Note: We also must delete associated buffers! or prevent deletion
 ;;; when a buffer is associated
 (defun dired-do-delete ()
+  
   (let* ((info     (dired-get-info))
 	 (isdir    (string-equal "d" (car info)))
 	 (name     (cdr info))

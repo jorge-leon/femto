@@ -761,25 +761,6 @@ Object *e_get_version_string(Object *interp, Object **args, Object **env, size_t
     return newStringWithLength(interp, m_version, strlen(m_version));
 }
 
-Object *e_log_debug(Object *interp, Object **args, Object **env, size_t nArgs)
-{
-    flisp_debug(interp, "%s", FLISP_ARG1->string);
-    return t;
-}
-
-void log_message(char *str)
-{
-    buffer_t *bp = find_buffer("*messages*", true);
-    assert(bp != NULL);
-    append_string(bp, str);
-}
-Object *e_log_message(Object *interp, Object **args, Object **env, size_t nArgs)
-{
-    log_message(FLISP_ARG1->string);
-    return t;
-}
-
-
 void suspend(void)
 {
     raise(SIGTSTP);
@@ -1069,8 +1050,6 @@ Object *femto_flisp_init(Object *interp, Object *extension)
         FLISP_UNLESS_ERR(flisp_register_primitive(interp, "exit",                  0, 0, nil,         e_quit));
         FLISP_UNLESS_ERR(flisp_register_primitive(interp, "get-temp-file",         0, 0, nil,         e_get_temp_file));
         FLISP_UNLESS_ERR(flisp_register_primitive(interp, "get-version-string",    0, 0, nil,         e_get_version_string));
-        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "log-debug",             1, 1, type_string, e_log_debug));
-        FLISP_UNLESS_ERR(flisp_register_primitive(interp, "log-message",           1, 1, type_string, e_log_message));
         FLISP_UNLESS_ERR(flisp_register_primitive(interp, "suspend",               0, 0, nil,         e_suspend));
 
         FLISP_UNLESS_ERR((*gcExt)->extension.version = newString(interp, E_VERSION));

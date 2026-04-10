@@ -202,16 +202,16 @@
 ;;
 
 (defmacro log-var (var)
-  (list 'log-debug (list 'concat (symbol-name var) "=" var "\n")))
+  (list 'log :debug (list 'concat (symbol-name var) "=" var "\n")))
 
 (defun bufm-debug(msg)
   (cond (bufm-debugging
-	 (log-debug (concat msg "\n"))
+	 (log :debug (concat msg "\n"))
 	 (log-var bufm-line)
 	 (log-var bufm-start-line)
 	 (log-var bufm-last-line)
 	 (log-var bufm-obuf)
 	 (log-var bufm-buf)
-	 (log-debug "\n\n"))))
+	 (log :debug "\n\n"))))
 
 (provide 'bufmenu)

@@ -30,15 +30,11 @@ PACKAGE = femto
 SCRIPTDIR = $(DATADIR)/femto
 INITFILE = $(SCRIPTDIR)/init.lsp
 
-# Add femto.o or femtod.o whether you want the double extension or not
 OBJ = command.o display.o complete.o data.o gap.o key.o search.o 	\
 	buffer.o replace.o window.o undo.o funcmap.o hilite.o
 
-OBJD = command.o display.o complete.o data.o gap.o key.o search.o	\
-	buffer.o replace.o window.o undo.o funcmap.o hilite.o
-
-BINARIES = femto femtod
-BINOBJ = femto.o femtod.o
+BINARIES = femto
+BINOBJ = femto.o
 RC_FILES = init.lsp
 
 LISPFILES = init.lsp lisp/startup.lsp lisp/defmacro.lsp			\
@@ -56,7 +52,7 @@ MOREDOCS = README.html docs/femto.md docs/editor.md
 all: have_flisp femto
 
 have_flisp: FORCE
-	pkgconf -exists flisp || [ -f flisp/libflisp.a -a -f flisp/libflispd.a ]
+	pkgconf -exists flisp || [ -f flisp/libflisp.a ]
 
 buffer.o: buffer.c femto.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c buffer.c
@@ -88,17 +84,6 @@ femto.o: femto.c femto.h
 	  -D E_SCRIPTDIR=$(SCRIPTDIR) \
 	  -D E_INITFILE=$(INITFILE) \
 	  -c femto.c
-
-femtod: femtod.o $(OBJD) init.lsp
-	$(LD) $(LDFLAGS) -o $@ femtod.o $(OBJD) $$(pkg-config --libs flispd) $(LIBS)
-
-femtod.o: femto.c femto.h
-	$(CC) $(CPPFLAGS) $(CFLAGS) \
-	  $$(pkg-config --cflags flispd) \
-	  -D E_SCRIPTDIR=$(SCRIPTDIR) \
-	  -D E_INITFILE=$(INITFILE) \
-	  -D FLISP_DOUBLE_EXTENSION \
-	  -c femto.c -o $@
 
 funcmap.o: funcmap.c femto.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c funcmap.c
@@ -161,9 +146,6 @@ measure: $(RC_FILES) $(BINARIES) strip FORCE
 run: femto FORCE
 	FEMTORC=init.lsp FEMTOLIB=lisp FEMTO_DEBUG=1  ./femto
 
-rund: femtod FORCE
-	FEMTORC=femto.rc FEMTOLIB=lisp FEMTO_DEBUG=1  ./femtod
-
 splint: FORCE
 	splint +posixlib -macrovarprefix "M_" *.c *.h
 
@@ -219,9 +201,9 @@ deb: FORCE
 # Femto
 install: install-bin install-lib install-doc FORCE
 
-install-bin: femto femtod FORCE
+install-bin: femto FORCE
 	-$(MKDIR) -p $(DESTDIR)$(BINDIR)
-	-$(CP) femto femtod $(DESTDIR)$(BINDIR)
+	-$(CP) femto $(DESTDIR)$(BINDIR)
 
 install-doc: FORCE
 	-$(MKDIR) -p $(DESTDIR)$(DOCDIR)/$(PACKAGE)/examples

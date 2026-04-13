@@ -53,6 +53,42 @@ typedef struct buffer_t
     int b_ucnt;                 /* count of how many chars to undo on current undo */
 } buffer_t;
 
+typedef struct bufferExt
+{
+    Object *name;               /* string: buffer name */
+    Object *file;               /* string: filename */
+    Object *mode;               /* symbol: buffer major mode */
+    Object *properties;         /*`list: Buffer flags */
+
+    Object *row;                /* integer: cursor row */
+    Object *col;                /* integer: cursor col */
+    Object *windows;            /* integer count of windows referencing this buffer */
+
+    Object *buf_start;          /* integer: start of buffer */
+    Object *buf_end;            /* integer: end of buffer */
+    Object *gap_start;          /* integer: start of gap */
+    Object *gap_end;            /* integer: end of gap */
+    
+    Object *size;               /* integer: current size of text being edited (not including gap) */
+    Object *prev_size;          /* integer: previous size */
+
+    /* Points: are all integers */
+    Object *mark;               /* the mark */
+    Object *point;              /* the point */
+
+    Object *paren;              /* matching paren to the point */
+    Object *point_orig;         /* the original current point, used for mutliple window displaying */
+    Object *page_start;         /* start of page */
+    Object *page_end;           /* end of page */
+
+    /* Note: should just be a flag */
+    Object *reframe;            /* force a reframe of the display */
+
+
+    undo_tt *b_utail;           /* recent end of undo list */
+    int b_ucnt;                 /* count of how many chars to undo on current undo */
+} bufferExt;
+
 extern buffer_t *curbp;         /* current buffer */
 
 /* Major modes */

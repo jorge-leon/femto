@@ -12,8 +12,8 @@
 #include <assert.h>
 
 #include "femto.h"
-#include "undo.h"
 #include "buffer.h"
+#include "undo.h"
 #include "gap.h"
 #include "key.h"
 
@@ -32,18 +32,18 @@
 /* Note: The fatal exit should be left to the caller, though these
  *        mostly don't care.
  */
-bool growgap(buffer_t *bp, point_t n)
+bool growgap(BufferObject *bp, point_t n)
 {
     char_t *new;
     point_t buflen, newlen, xgap, xegap;
 
-    assert(bp->b_buf <= bp->b_gap);
-    assert(bp->b_gap <= bp->b_egap);
-    assert(bp->b_egap <= bp->b_ebuf);
+    assert(bp->buffer.buf <= bp->buffer.gap);
+    assert(bp->buffer.gap <= bp->buffer.egap);
+    assert(bp->buffer.egap <= bp->buffer.ebuf);
 
-    xgap = bp->b_gap - bp->b_buf;
-    xegap = bp->b_egap - bp->b_buf;
-    buflen = bp->b_ebuf - bp->b_buf;
+    xgap = bp->buffer.gap - bp->buffer.buf;
+    xegap = bp->buffer.egap - bp->buffer.buf;
+    buflen = bp->buffer.ebuf - bp->buffer.buf;
 
     /* reduce number of reallocs by growing by a minimum amount */
     n = (n < MIN_GAP_EXPAND ? MIN_GAP_EXPAND : n);
@@ -60,7 +60,7 @@ bool growgap(buffer_t *bp, point_t n)
             msg(m_alloc);
             return false;
         }
-        new = (char_t*) realloc(bp->b_buf, (size_t) newlen);
+        new = (char_t*) realloc(bp->buffer.buf, (size_t) newlen);
         if (new == NULL) {
             msg(m_alloc); /* Report non-fatal error. */
             return false;
@@ -70,57 +70,57 @@ bool growgap(buffer_t *bp, point_t n)
     /* Relocate pointers in new buffer and append the new
      * extension to the end of the gap.
      */
-    bp->b_buf = new;
-    bp->b_gap = bp->b_buf + xgap;
-    bp->b_ebuf = bp->b_buf + buflen;
-    bp->b_egap = bp->b_buf + newlen;
+    bp->buffer.buf = new;
+    bp->buffer.gap = bp->buffer.buf + xgap;
+    bp->buffer.ebuf = bp->buffer.buf + buflen;
+    bp->buffer.egap = bp->buffer.buf + newlen;
     while (xegap < buflen--)
-        *--bp->b_egap = *--bp->b_ebuf;
-    bp->b_ebuf = bp->b_buf + newlen;
+        *--bp->buffer.egap = *--bp->buffer.ebuf;
+    bp->buffer.ebuf = bp->buffer.buf + newlen;
 
-    assert(bp->b_buf < bp->b_ebuf);          /* Buffer must exist. */
-    assert(bp->b_buf <= bp->b_gap);
-    assert(bp->b_gap < bp->b_egap);          /* Gap must grow only. */
-    assert(bp->b_egap <= bp->b_ebuf);
+    assert(bp->buffer.buf < bp->buffer.ebuf);          /* Buffer must exist. */
+    assert(bp->buffer.buf <= bp->buffer.gap);
+    assert(bp->buffer.gap < bp->buffer.egap);          /* Gap must grow only. */
+    assert(bp->buffer.egap <= bp->buffer.ebuf);
     return true;
 }
 
-point_t movegap(buffer_t *bp, point_t offset)
+point_t movegap(BufferObject *bp, point_t offset)
 {
     char_t *p = ptr(bp, offset);
-    while (p < bp->b_gap)
-        *--bp->b_egap = *--bp->b_gap;
-    while (bp->b_egap < p)
-        *bp->b_gap++ = *bp->b_egap++;
-    assert(bp->b_gap <= bp->b_egap);
-    assert(bp->b_buf <= bp->b_gap);
-    assert(bp->b_egap <= bp->b_ebuf);
-    return (pos(bp, bp->b_egap));
+    while (p < bp->buffer.gap)
+        *--bp->buffer.egap = *--bp->buffer.gap;
+    while (bp->buffer.egap < p)
+        *bp->buffer.gap++ = *bp->buffer.egap++;
+    assert(bp->buffer.gap <= bp->buffer.egap);
+    assert(bp->buffer.buf <= bp->buffer.gap);
+    assert(bp->buffer.egap <= bp->buffer.ebuf);
+    return (pos(bp, bp->buffer.egap));
 }
 
 /* Given a buffer offset, convert it to a pointer into the buffer */
-char_t * ptr(buffer_t *bp, register point_t offset)
+char_t * ptr(BufferObject *bp, register point_t offset)
 {
     if (offset < 0)
-        return (bp->b_buf);
+        return (bp->buffer.buf);
 #if VALGRIND
-    return (bp->b_buf+offset +
+    return (bp->buffer.buf+offset +
             (
-                bp->b_buf +
-                offset < bp->b_gap ?
-                0 : bp->b_egap-bp->b_gap - 1
+                bp->buffer.buf +
+                offset < bp->buffer.gap ?
+                0 : bp->buffer.egap-bp->buffer.gap - 1
                 )
         );
 #else
-    return (bp->b_buf+offset + (bp->b_buf + offset < bp->b_gap ? 0 : bp->b_egap-bp->b_gap));
+    return (bp->buffer.buf+offset + (bp->buffer.buf + offset < bp->buffer.gap ? 0 : bp->buffer.egap-bp->buffer.gap));
 #endif
 }
 
 /* Given a pointer into the buffer, convert it to a buffer offset */
-point_t pos(buffer_t *bp, register char_t *cp)
+point_t pos(BufferObject *bp, register char_t *cp)
 {
-    assert(bp->b_buf <= cp && cp <= bp->b_ebuf);
-    return (cp - bp->b_buf - (cp < bp->b_egap ? 0 : bp->b_egap - bp->b_gap));
+    assert(bp->buffer.buf <= cp && cp <= bp->buffer.ebuf);
+    return (cp - bp->buffer.buf - (cp < bp->buffer.egap ? 0 : bp->buffer.egap - bp->buffer.gap));
 }
 
 /** buffer_fwrite() - write buffer content to stream
@@ -131,55 +131,55 @@ point_t pos(buffer_t *bp, register char_t *cp)
  * the bytes from point to the end of the buffer.
  *
  */
-size_t buffer_fwrite(buffer_t *buffer, FILE *stream, size_t size)
+size_t buffer_fwrite(BufferObject *buffer, FILE *stream, size_t size)
 {
     size_t len;
 
     if (size == 0)
         return 0;
 
-    buffer->b_point = movegap(buffer, buffer->b_point);
-    len = buffer->b_ebuf - buffer->b_egap;
+    buffer->buffer.point = movegap(buffer, buffer->buffer.point);
+    len = buffer->buffer.ebuf - buffer->buffer.egap;
     if (size > len)
         size = len;
-    return fwrite(buffer->b_egap, sizeof (char), size, stream);
+    return fwrite(buffer->buffer.egap, sizeof (char), size, stream);
 }
 
-void zero_buffer(buffer_t *bp)
+void zero_buffer(BufferObject *bp)
 {
     /* reset the gap, make it the whole buffer */
-    bp->b_gap = bp->b_buf;
-    bp->b_egap = bp->b_ebuf;
-    bp->b_point = 0; /* goto start of buffer */
-    bp->b_mark = NOMARK;
+    bp->buffer.gap = bp->buffer.buf;
+    bp->buffer.egap = bp->buffer.ebuf;
+    bp->buffer.point = 0; /* goto start of buffer */
+    bp->buffer.mark = NOMARK;
 }
 
 /* get the size of the document in the buffer */
-point_t document_size(buffer_t *bp)
+point_t document_size(BufferObject *bp)
 {
-    return (bp->b_ebuf - bp->b_buf) - (bp->b_egap - bp->b_gap);
+    return (bp->buffer.ebuf - bp->buffer.buf) - (bp->buffer.egap - bp->buffer.gap);
 }
 
-bool buffer_is_empty(buffer_t *bp)
+bool buffer_is_empty(BufferObject *bp)
 {
-    return (bp->b_gap == bp->b_buf && bp->b_egap == bp->b_ebuf);
+    return (bp->buffer.gap == bp->buffer.buf && bp->buffer.egap == bp->buffer.ebuf);
 }
 /** Read size bytes from stream into buffer starting at point
 
     @returns: number of bytes read or zero if the buffer cannot be grown by size
 */
-size_t buffer_fread(buffer_t *buffer, FILE *stream, size_t size)
+size_t buffer_fread(BufferObject *buffer, FILE *stream, size_t size)
 {
     size_t len;
 
     if (size == 0)
         return 0;
 
-    if (buffer->b_egap - buffer->b_gap < size * sizeof (char_t) && !growgap(buffer, size))
+    if (buffer->buffer.egap - buffer->buffer.gap < size * sizeof (char_t) && !growgap(buffer, size))
         return -1;
-    buffer->b_point = movegap(buffer, buffer->b_point);
-    len = fread(buffer->b_gap, sizeof (char), size, stream);
-    buffer->b_gap += len;
+    buffer->buffer.point = movegap(buffer, buffer->buffer.point);
+    len = fread(buffer->buffer.gap, sizeof (char), size, stream);
+    buffer->buffer.gap += len;
 
     return len;
 }
@@ -187,7 +187,7 @@ size_t buffer_fread(buffer_t *buffer, FILE *stream, size_t size)
 /* find the point for start of line ln */
 point_t line_to_point(int ln)
 {
-    point_t end_p = pos(curbp, curbp->b_ebuf);
+    point_t end_p = pos(curbp, curbp->buffer.ebuf);
     point_t p, start;
 
     for (p=0, start=0; p < end_p; p++) {
@@ -204,7 +204,7 @@ point_t line_to_point(int ln)
 /* scan buffer and fill in curline and lastline */
 void get_line_stats(int *curline, int *lastline)
 {
-    point_t end_p = pos(curbp, curbp->b_ebuf);
+    point_t end_p = pos(curbp, curbp->buffer.ebuf);
     point_t p;
     int line;
 
@@ -214,14 +214,14 @@ void get_line_stats(int *curline, int *lastline)
         line += (*(ptr(curbp,p)) == '\n') ? 1 : 0;
         *lastline = line;
 
-        if (*curline == -1 && p == curbp->b_point) {
+        if (*curline == -1 && p == curbp->buffer.point) {
             *curline = (*(ptr(curbp,p)) == '\n') ? line : line + 1;
         }
     }
 
     *lastline = *lastline + 1;
 
-    if (curbp->b_point == end_p)
+    if (curbp->buffer.point == end_p)
         *curline = *lastline;
 }
 

@@ -36,6 +36,6 @@ typedef struct undo_tt {
 extern undo_tt *execute_undo(undo_tt *);
 extern void free_undos(undo_tt *);
 extern void undo_command(void);
-extern void add_undo(buffer_t *, char, point_t, char_t *, char_t *);
+extern void add_undo(BufferObject *, char, point_t, char_t *, char_t *);
 
 #endif

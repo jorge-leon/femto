@@ -4,6 +4,7 @@
  */
 
 #include "femto.h"
+#include "buffer.h"
 #include "window.h"
 #include "undo.h"
 #include "buffer.h"
@@ -48,13 +49,16 @@ char *str_no = " n\b";
 char *str_mark = "Mark set";
 char *str_pos = "Char = %s 0x%x  Line = %d/%d  Point = %d/%d";
 char *str_endpos = "[EOB] Line = %d/%d  Point = %d/%d";
-char *str_scratch = "*scratch*";
 char *str_output = "*output*";
-char *str_buffers = "*buffers*";
+
+Object *str_scratch =     &(Object) { .type = &type_string_obj,  .size =  10, .length = 0, .string = "*scratch*" };
+Object *str_buffers =     &(Object) { .type = &type_string_obj,  .size =  10, .length = 0, .string = "*buffers*" };
+Object *str_undos =       &(Object) { .type = &type_string_obj,  .size =   8, .length = 0, .string = "*undos*" };
+Object *str_help_buf =    &(Object) { .type = &type_string_obj,  .size =   7, .length = 0, .string = "*help*" };
+Object *str_completions = &(Object) { .type = &type_string_obj,  .size =  14, .length = 0, .string = "*completions*" };
+
 char *str_clip_too_big = "Region exceeds lisp clipboard limit of %d bytes";
 char *str_not_bound  = "Not bound";
-char *str_help_buf = "*help*";
-char *str_completions = "*completions*";
 char *str_apropos = "apropos: ";
 
 /*

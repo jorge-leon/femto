@@ -13,9 +13,9 @@
 #include <assert.h>
 
 #include "femto.h"
+#include "buffer.h"
 #include "window.h"
 #include "undo.h"
-#include "buffer.h"
 #include "gap.h"
 #include "key.h"
 #include "display.h"
@@ -26,7 +26,7 @@ int prev_utf8_char_size(void)
 {
     int n;
     for (n=2;n<5;n++)
-        if (-1 < curbp->b_point - n && (utf8_size(*(ptr(curbp, curbp->b_point - n))) == n))
+        if (-1 < curbp->buffer.point - n && (utf8_size(*(ptr(curbp, curbp->buffer.point - n))) == n))
             return n;
     return 1;
 }
@@ -40,21 +40,21 @@ void backspace(void)
     char_t the_char[7]; /* the deleted char, allow 6 unsigned chars plus a null */
     int n = prev_utf8_char_size();
 
-    curbp->b_point = movegap(curbp, curbp->b_point);
+    curbp->buffer.point = movegap(curbp, curbp->buffer.point);
 
-    if (curbp->b_buf < (curbp->b_gap - (n - 1)) ) {
-        curbp->b_gap -= n; /* increase start of gap by size of char */
-        curbp->modified = TRUE;
+    if (curbp->buffer.buf < (curbp->buffer.gap - (n - 1)) ) {
+        curbp->buffer.gap -= n; /* increase start of gap by size of char */
+        curbp->buffer.modified = TRUE;
 
         /* record the backspaced chars in the undo structure */
-        memcpy(the_char, curbp->b_gap, n);
+        memcpy(the_char, curbp->buffer.gap, n);
         the_char[n] = '\0'; /* null terminate, the backspaced char(s) */
-        curbp->b_point = pos(curbp, curbp->b_egap);
-        //debug("point after bs = %ld\n", curbp->b_point);
-        add_undo(curbp, UNDO_T_BACKSPACE, curbp->b_point, the_char, NULL);
+        curbp->buffer.point = pos(curbp, curbp->buffer.egap);
+        //debug("point after bs = %ld\n", curbp->buffer.point);
+        add_undo(curbp, UNDO_T_BACKSPACE, curbp->buffer.point, the_char, NULL);
     }
 
-    curbp->b_point = pos(curbp, curbp->b_egap);
+    curbp->buffer.point = pos(curbp, curbp->buffer.egap);
 }
 DEFINE_EDITOR_FUNC(backspace)
 
@@ -63,18 +63,18 @@ void delete(void)
     char_t the_char[7]; /* the deleted char, allow 6 unsigned chars plus a null */
     int n;
 
-    curbp->b_point = movegap(curbp, curbp->b_point);
-    n = utf8_size(*(ptr(curbp, curbp->b_point)));
+    curbp->buffer.point = movegap(curbp, curbp->buffer.point);
+    n = utf8_size(*(ptr(curbp, curbp->buffer.point)));
 
-    if (curbp->b_egap < curbp->b_ebuf) {
+    if (curbp->buffer.egap < curbp->buffer.ebuf) {
         /* record the deleted chars in the undo structure */
-        memcpy(the_char, curbp->b_egap, n);
+        memcpy(the_char, curbp->buffer.egap, n);
         the_char[n] = '\0'; /* null terminate, the deleted char(s) */
         //debug("deleted = '%s'\n", the_char);
-        curbp->b_egap += n;
-        curbp->b_point = pos(curbp, curbp->b_egap);
-        curbp->modified = TRUE;
-        add_undo(curbp, UNDO_T_DELETE, curbp->b_point, the_char, NULL);
+        curbp->buffer.egap += n;
+        curbp->buffer.point = pos(curbp, curbp->buffer.egap);
+        curbp->buffer.modified = TRUE;
+        add_undo(curbp, UNDO_T_DELETE, curbp->buffer.point, the_char, NULL);
     }
 }
 DEFINE_EDITOR_FUNC(delete)
@@ -89,7 +89,7 @@ Object *e_zero_buffer(Object *interp, Object **args, Object **env, size_t nArgs)
 Object *e_get_char(Object *interp, Object **args, Object **env, size_t nArgs)
 {
     static char ch[2] = "\0";
-    ch[0] = (char)*(ptr(curbp, curbp->b_point));
+    ch[0] = (char)*(ptr(curbp, curbp->buffer.point));
     return newStringWithLength(interp, ch, 1);
 }
 
@@ -103,7 +103,7 @@ Object *e_insert_string(Object *interp, Object **args, Object **env, size_t nArg
 void unmark(void)
 {
     assert(curbp != NULL);
-    curbp->b_mark = NOMARK;
+    curbp->buffer.mark = NOMARK;
 }
 
 /* Length of scrap buffer. */
@@ -113,25 +113,25 @@ void copy_cut(int cut)
 {
     char_t *p;
     /* if no mark or point == marker, nothing doing */
-    if (curbp->b_mark == NOMARK || curbp->b_point == curbp->b_mark)
+    if (curbp->buffer.mark == NOMARK || curbp->buffer.point == curbp->buffer.mark)
         return;
     if (scrap != NULL) {
         free(scrap);
         scrap = NULL;
     }
 
-    if (curbp->b_point < curbp->b_mark) {
+    if (curbp->buffer.point < curbp->buffer.mark) {
         /* point above mark: move gap under point, region = mark - point */
-        (void) movegap(curbp, curbp->b_point);
+        (void) movegap(curbp, curbp->buffer.point);
         /* moving the gap can impact the pointer so sure get the pointer after the move */
-        p = ptr(curbp, curbp->b_point);
-        nscrap = curbp->b_mark - curbp->b_point;
+        p = ptr(curbp, curbp->buffer.point);
+        nscrap = curbp->buffer.mark - curbp->buffer.point;
     } else {
         /* if point below mark: move gap under mark, region = point - mark */
-        (void) movegap(curbp, curbp->b_mark);
+        (void) movegap(curbp, curbp->buffer.mark);
         /* moving the gap can impact the pointer so sure get the pointer after the move */
-        p = ptr(curbp, curbp->b_mark);
-        nscrap = curbp->b_point - curbp->b_mark;
+        p = ptr(curbp, curbp->buffer.mark);
+        nscrap = curbp->buffer.point - curbp->buffer.mark;
     }
     if ((scrap = (char_t*) malloc(nscrap + 1)) == NULL) {
         msg(m_alloc);
@@ -139,11 +139,11 @@ void copy_cut(int cut)
         (void) memcpy(scrap, p, nscrap * sizeof (char_t));
         *(scrap + nscrap) = '\0';  /* null terminate for insert_string */
         if (cut) {
-            //debug("CUT: pt=%ld nscrap=%d\n", curbp->b_point, nscrap);
-            add_undo(curbp, UNDO_T_KILL, (curbp->b_point < curbp->b_mark ? curbp->b_point : curbp->b_mark), scrap, NULL);
-            curbp->b_egap += nscrap; /* if cut expand gap down */
-            curbp->b_point = pos(curbp, curbp->b_egap); /* set point to after region */
-            curbp->modified = TRUE;
+            //debug("CUT: pt=%ld nscrap=%d\n", curbp->buffer.point, nscrap);
+            add_undo(curbp, UNDO_T_KILL, (curbp->buffer.point < curbp->buffer.mark ? curbp->buffer.point : curbp->buffer.mark), scrap, NULL);
+            curbp->buffer.egap += nscrap; /* if cut expand gap down */
+            curbp->buffer.point = pos(curbp, curbp->buffer.egap); /* set point to after region */
+            curbp->buffer.modified = TRUE;
             msg(m_cut, nscrap);
         } else {
             msg(m_copied, nscrap);
@@ -154,12 +154,12 @@ void copy_cut(int cut)
 
 int i_check_region(void)
 {
-    if (curbp->b_mark == NOMARK) {
+    if (curbp->buffer.mark == NOMARK) {
         msg(m_nomark);
         return FALSE;
     }
 
-    if (curbp->b_point == curbp->b_mark) {
+    if (curbp->buffer.point == curbp->buffer.mark) {
         msg(m_noregion);
         return FALSE;
     }
@@ -194,7 +194,7 @@ Object *e_get_clipboard(Object *interp, Object **args, Object **env, size_t nArg
     return newString(interp, (char *)scrap);
 }
 
-Object *e_get_mark(Object *interp, Object **args, Object **env, size_t nArgs) { return newInteger(interp, curbp->b_mark); }
+Object *e_get_mark(Object *interp, Object **args, Object **env, size_t nArgs) { return newInteger(interp, curbp->buffer.mark); }
 
 Object *e_set_clipboard(Object *interp, Object **args, Object **env, size_t nArgs)
 {
@@ -205,7 +205,7 @@ Object *e_set_clipboard(Object *interp, Object **args, Object **env, size_t nArg
 
 void set_mark(void)
 {
-    curbp->b_mark = (curbp->b_mark == curbp->b_point ? NOMARK : curbp->b_point);
+    curbp->buffer.mark = (curbp->buffer.mark == curbp->buffer.point ? NOMARK : curbp->buffer.point);
 }
 DEFINE_EDITOR_FUNC(set_mark)
 
@@ -215,76 +215,76 @@ void left(void)
 {
     int n = prev_utf8_char_size();
 
-    while (0 < curbp->b_point && n-- > 0)
-        --curbp->b_point;
+    while (0 < curbp->buffer.point && n-- > 0)
+        --curbp->buffer.point;
 }
 DEFINE_EDITOR_FUNC(left)
 
 void backward_word(void)
 {
     char_t *p;
-    while (!isspace(*(p = ptr(curbp, curbp->b_point))) && curbp->b_buf < p)
-        --curbp->b_point;
-    while (isspace(*(p = ptr(curbp, curbp->b_point))) && curbp->b_buf < p)
-        --curbp->b_point;
+    while (!isspace(*(p = ptr(curbp, curbp->buffer.point))) && curbp->buffer.buf < p)
+        --curbp->buffer.point;
+    while (isspace(*(p = ptr(curbp, curbp->buffer.point))) && curbp->buffer.buf < p)
+        --curbp->buffer.point;
 }
 DEFINE_EDITOR_FUNC(backward_word)
 
 void beginning_of_buffer(void)
 {
-    curbp->b_point = 0;
+    curbp->buffer.point = 0;
 }
 DEFINE_EDITOR_FUNC(beginning_of_buffer)
 
 void lnbegin(void)
 {
-    curbp->b_point = segstart(curbp, lnstart(curbp,curbp->b_point), curbp->b_point);
+    curbp->buffer.point = segstart(curbp, lnstart(curbp,curbp->buffer.point), curbp->buffer.point);
 }
 DEFINE_EDITOR_FUNC(lnbegin)
 
 void end_of_buffer(void)
 {
-    curbp->b_point = pos(curbp, curbp->b_ebuf);
-    if (curbp->b_epage < pos(curbp, curbp->b_ebuf)) curbp->b_reframe = 1;
+    curbp->buffer.point = pos(curbp, curbp->buffer.ebuf);
+    if (curbp->buffer.epage < pos(curbp, curbp->buffer.ebuf)) curbp->buffer.reframe = true;
 }
 DEFINE_EDITOR_FUNC(end_of_buffer)
 
 void lnend(void)
 {
-        if (curbp->b_point == pos(curbp, curbp->b_ebuf)) return; /* do nothing if EOF */
-    curbp->b_point = dndn(curbp, curbp->b_point);
-    point_t p = curbp->b_point;
+        if (curbp->buffer.point == pos(curbp, curbp->buffer.ebuf)) return; /* do nothing if EOF */
+    curbp->buffer.point = dndn(curbp, curbp->buffer.point);
+    point_t p = curbp->buffer.point;
     left();
-    curbp->b_point = (*ptr(curbp, curbp->b_point) == '\n') ? curbp->b_point : p;
+    curbp->buffer.point = (*ptr(curbp, curbp->buffer.point) == '\n') ? curbp->buffer.point : p;
 }
 DEFINE_EDITOR_FUNC(lnend)
 
 void right(void)
 {
-    int n = utf8_size(*ptr(curbp,curbp->b_point));
+    int n = utf8_size(*ptr(curbp,curbp->buffer.point));
 
-    while ((curbp->b_point < pos(curbp, curbp->b_ebuf)) && n-- > 0)
-        ++curbp->b_point;
+    while ((curbp->buffer.point < pos(curbp, curbp->buffer.ebuf)) && n-- > 0)
+        ++curbp->buffer.point;
 }
 DEFINE_EDITOR_FUNC(right)
 
 void forward_word(void)
 {
     char_t *p;
-    while (!isspace(*(p = ptr(curbp, curbp->b_point))) && p < curbp->b_ebuf)
-        ++curbp->b_point;
-    while (isspace(*(p = ptr(curbp, curbp->b_point))) && p < curbp->b_ebuf)
-        ++curbp->b_point;
+    while (!isspace(*(p = ptr(curbp, curbp->buffer.point))) && p < curbp->buffer.ebuf)
+        ++curbp->buffer.point;
+    while (isspace(*(p = ptr(curbp, curbp->buffer.point))) && p < curbp->buffer.ebuf)
+        ++curbp->buffer.point;
 }
 DEFINE_EDITOR_FUNC(forward_word)
 
 /* return point in current buffer */
-point_t get_point(void) { return curbp->b_point; }
-Object *e_get_point(Object *interp, Object **args, Object **env, size_t nArgs) { return newInteger(interp, curbp->b_point); }
+point_t get_point(void) { return curbp->buffer.point; }
+Object *e_get_point(Object *interp, Object **args, Object **env, size_t nArgs) { return newInteger(interp, curbp->buffer.point); }
 
 /* return point in current buffer */
-point_t get_point_max(void) { return pos(curbp, curbp->b_ebuf); }
-Object *e_get_point_max(Object *interp, Object **args, Object **env, size_t nArgs) { return newInteger(interp, pos(curbp, curbp->b_ebuf)); }
+point_t get_point_max(void) { return pos(curbp, curbp->buffer.ebuf); }
+Object *e_get_point_max(Object *interp, Object **args, Object **env, size_t nArgs) { return newInteger(interp, pos(curbp, curbp->buffer.ebuf)); }
 
 bool goto_line(int line)
 {
@@ -298,7 +298,7 @@ bool goto_line(int line)
         msg(m_lnot_found, line);
         return false;
     }
-    curbp->b_point = p;
+    curbp->buffer.point = p;
     msg(m_line, line);
     return true;
 }
@@ -313,23 +313,23 @@ Object *e_goto_line(Object *interp, Object **args, Object **env, size_t nArgs)
 
 void down(void)
 {
-    curbp->b_point = lncolumn(curbp, dndn(curbp, curbp->b_point),curbp->b_col);
+    curbp->buffer.point = lncolumn(curbp, dndn(curbp, curbp->buffer.point),curbp->buffer.col);
 }
 DEFINE_EDITOR_FUNC(down)
 
 void up(void)
 {
-    curbp->b_point = lncolumn(curbp, upup(curbp, curbp->b_point),curbp->b_col);
+    curbp->buffer.point = lncolumn(curbp, upup(curbp, curbp->buffer.point),curbp->buffer.col);
 }
 DEFINE_EDITOR_FUNC(up)
 
 void scroll_up(void)
 {
-    curbp->b_page = curbp->b_point = upup(curbp, curbp->b_epage);
-    while (0 < curbp->b_row--)
+    curbp->buffer.page = curbp->buffer.point = upup(curbp, curbp->buffer.epage);
+    while (0 < curbp->buffer.row--)
         down();
     /* this stops a reframe in display(), and epage is recalculated during display() */
-    curbp->b_epage = pos(curbp, curbp->b_ebuf);
+    curbp->buffer.epage = pos(curbp, curbp->buffer.ebuf);
 }
 DEFINE_EDITOR_FUNC(scroll_up)
 
@@ -337,7 +337,7 @@ void scroll_down(void)
 {
     int i = curwp->w_rows;
     while (0 < --i) {
-        curbp->b_page = upup(curbp, curbp->b_page);
+        curbp->buffer.page = upup(curbp, curbp->buffer.page);
         up();
     }
 }
@@ -359,8 +359,8 @@ Object *e_search_backward(Object *interp, Object **args, Object **env, size_t nA
 
 void set_point(point_t p)
 {
-    if (p < 0 || p > pos(curbp, curbp->b_ebuf)) return;
-    curbp->b_point = p;
+    if (p < 0 || p > pos(curbp, curbp->buffer.ebuf)) return;
+    curbp->buffer.point = p;
 }
 Object *e_set_point(Object *interp, Object **args, Object **env, size_t nArgs)
 {
@@ -374,13 +374,11 @@ Object *e_find_buffer_by_fname(Object *interp, Object **args, Object **env, size
     if (FLISP_ARG1->string[0] == '\0')
         return nil;
 
-    buffer_t *bp = find_buffer_by_fname(FLISP_ARG1->string);
-
-    return bp == NULL ? nil : newString(interp, bp->name);
+    return (Object *)find_buffer_by_fname(FLISP_ARG1);
 }
 
 /* Helper function: return either current buffer or named buffer if first argument exists */
-Object *get_buffer_arg_one(Object *interp, Object **args, char *signature, buffer_t **bufferp)
+Object *get_buffer_arg_one(Object *interp, Object **args, char *signature, BufferObject **bufferp)
 {
     /* Note: when buffers are objects return the buffer, for now assume, caller defaults to curbp */
     if (FLISP_ARG1 == nil)
@@ -389,7 +387,7 @@ Object *get_buffer_arg_one(Object *interp, Object **args, char *signature, buffe
         return newErrorFmt(interp, wrong_type_argument, FLISP_ARG1,
                             "%s - expected %s, got: %s", signature,
                             type_string->type.name->string, FLISP_ARG1->type->type.name->string);
-    buffer_t *buffer = find_buffer(FLISP_ARG1->string, false);
+    BufferObject *buffer = find_buffer(FLISP_ARG1, false);
     if (buffer == NULL)
         return newError2(interp, invalid_value, FLISP_ARG1,
                         signature, " - buffer does not exist");
@@ -400,17 +398,14 @@ Object *get_buffer_arg_one(Object *interp, Object **args, char *signature, buffe
 /* (buffer-filename[ buffer]) */
 Object *e_get_buffer_filename(Object *interp, Object **args, Object **env, size_t nArgs)
 {
-    buffer_t *buffer = curbp;
+    BufferObject *buffer = curbp;
 
     if (nArgs) {
         Object *result = get_buffer_arg_one(interp, args, "(buffer-filename[ buffer])", &buffer);
         if (result->type == type_error)
             return result;
     }
-    if (buffer->fname == NULL)
-        return nil;
-
-    return newString(interp, buffer->fname);
+    return buffer->buffer.fname;
 }
 
 /** (buffer-fread stream[ size]) - read size bytes from stream into current buffer at point, return bytes read
@@ -484,30 +479,30 @@ Object *e_buffer_fwrite(Object *interp, Object **args, Object **env, size_t nArg
  */
 Object *e_buffer_mode(Object *interp, Object **args, Object **env, size_t nArgs)
 {
-    buffer_t *buffer = curbp;
+    BufferObject *buffer = curbp;
     if (nArgs) {
         Object *result = get_buffer_arg_one(interp, args, "(buffer-mode[ buffer[ mode]])", &buffer);
         if (result->type == type_error)  return result;
         if (nArgs > 1) {
             FLISP_ASSERT(FLISP_ARG2, type_symbol, "buffer-mode[ buffer[ mode]]) - mode");
-            buffer->mode = FLISP_ARG2;
+            buffer->buffer.mode = FLISP_ARG2;
         }
     }
-    return buffer->mode;
+    return buffer->buffer.mode;
 }
 
 /* Buffer flags */
 #define GET_SET_BUFFER_FLAG(FLAG)                                       \
     Object *e_buffer_##FLAG## _p(Object *interp, Object **args, Object **env, size_t nArgs) \
     {                                                                   \
-        buffer_t *buffer = curbp;                                       \
+        BufferObject *buffer = curbp;                                       \
         if (nArgs) {                                           \
             Object *result = get_buffer_arg_one(interp, args, "(buffer-" #FLAG "-p[ buffer[ p]])", &buffer); \
             if (result->type == type_error)  return result;             \
-            if (nArgs > 1)                                      \
-                buffer->FLAG = (FLISP_ARG2 != nil);                  \
+            if (nArgs > 1)                                              \
+                buffer->buffer.FLAG = (FLISP_ARG2 != nil);              \
         }                                                               \
-        return buffer->FLAG ? t : nil;                                  \
+        return buffer->buffer.FLAG ? t : nil;                                  \
     }                                                                   \
 
 /* (buffer-modified-p[ buffer[ bool]]) */
@@ -524,20 +519,15 @@ GET_SET_BUFFER_FLAG(special)
 Object *e_buffer_next(Object *interp, Object **args,Object **env, size_t nArgs)
 {
     if (!(nArgs))
-        return newString(interp, curbp->name);
+        return curbp->buffer.name;
 
-    buffer_t *bp = find_buffer(FLISP_ARG1->string, false);
-
-    if (!bp)
-        return newError(interp, invalid_value, FLISP_ARG1, "(buffer-next buffer) - buffer does not exist");
-
-    return newString(interp, bp->b_next->name);
+    return (Object *)find_buffer(FLISP_ARG1, false);
 }
 
 Object *e_buffer_show(Object *interp, Object **args, Object **env, size_t nArgs)
 {
-    buffer_t *bp = find_buffer(FLISP_ARG1->string, true);
-    if (!bp)
+    BufferObject *bp = find_buffer(FLISP_ARG1, true);
+    if ((Object *)bp == nil)
         return newError(interp, out_of_memory, FLISP_ARG1, "(generate-new-buffer name) failed, out of memory");
     switch_to_buffer(bp);
     return FLISP_ARG1;
@@ -545,7 +535,7 @@ Object *e_buffer_show(Object *interp, Object **args, Object **env, size_t nArgs)
 
 Object *e_delete_buffer(Object *interp, Object **args, Object **env, size_t nArgs)
 {
-    buffer_t *buffer = find_buffer(FLISP_ARG1->string, false);
+    BufferObject *buffer = find_buffer(FLISP_ARG1, false);
     if (buffer == NULL)
         return newError(interp, invalid_value, FLISP_ARG1, "(delete-buffer buffer) - buffer does not exist");
     if (!delete_buffer(buffer))
@@ -556,7 +546,7 @@ Object *e_delete_buffer(Object *interp, Object **args, Object **env, size_t nArg
 /** (get-buffer-create name) */
 Object *e_get_buffer_create(Object *interp, Object **args, Object **env, size_t nArgs)
 {
-    if (find_buffer(FLISP_ARG1->string, true))
+    if (find_buffer(FLISP_ARG1, true))
         return FLISP_ARG1;
     return newError(interp, out_of_memory, nil, "(get-buffer-create name) failed, out of memory");
 }
@@ -564,8 +554,8 @@ Object *e_get_buffer_create(Object *interp, Object **args, Object **env, size_t 
 /* Note: we should move this to Lisp */
 void list_buffers(void)
 {
-    buffer_t *bp;
-    buffer_t *list_bp;
+    BufferObject *bp;
+    BufferObject *list_bp;
     char mod_ch, over_ch;
     char blank[] = " ";
     static char report_line[NAME_MAX + 40];
@@ -573,7 +563,7 @@ void list_buffers(void)
     char *fn;
 
     list_bp = find_buffer(str_buffers, true);
-    list_bp->special = 1;
+    list_bp->buffer.special = 1;
 
     /* Notes: should'n we use popup-buffer here? */
     switch_to_buffer(list_bp); /* we are leaving the old buffer for a new one */
@@ -583,12 +573,12 @@ void list_buffers(void)
     insert_string("CO    Size Buffer           File\n");
     insert_string("-- ------- ------           ----\n");
 
-    for (bp = curbp->b_next;  bp != curbp; bp = bp->b_next) {
-        mod_ch  = (bp->modified ? '*' : ' ');
-        over_ch = (bp->overwrite ? 'O' : ' ');
-        bn = (bp->name == NULL) ? blank : bp->name;
-        fn = (bp->fname == NULL) ? blank : bp->fname;
-        snprintf(report_line, sizeof(report_line),  "%c%c %7d %-16s %s\n",  mod_ch, over_ch, bp->b_size, bn, fn);
+    for (bp = curbp->buffer.next;  bp != curbp; bp = bp->buffer.next) {
+        mod_ch  = (bp->buffer.modified ? '*' : ' ');
+        over_ch = (bp->buffer.overwrite ? 'O' : ' ');
+        bn = (bp->buffer.name == nil) ? blank : bp->buffer.name->string;
+        fn = (bp->buffer.fname == nil) ? blank : bp->buffer.fname->string;
+        snprintf(report_line, sizeof(report_line),  "%c%c %7d %-16s %s\n",  mod_ch, over_ch, bp->buffer.size, bn, fn);
         insert_string(report_line);
     }
 }
@@ -596,9 +586,9 @@ DEFINE_EDITOR_FUNC(list_buffers)
 
 Object *e_set_buffer(Object *interp, Object **args, Object **env, size_t nArgs)
 {
-    buffer_t *bp = find_buffer(FLISP_ARG1->string, false);
+    BufferObject *bp = find_buffer(FLISP_ARG1, false);
 
-    if (!bp)
+    if ((Object*)bp == nil)
         return newError(interp, invalid_value, FLISP_ARG1, "(set-buffer buffer) - buffer does not exist");
 
     curbp = bp;
@@ -607,31 +597,20 @@ Object *e_set_buffer(Object *interp, Object **args, Object **env, size_t nArgs)
 
 Object *e_set_buffer_name(Object *interp, Object **args, Object **env, size_t nArgs)
 {
-    buffer_t *buffer = find_buffer(FLISP_ARG1->string, false);
+    BufferObject *buffer = find_buffer(FLISP_ARG1, false);
 
-    if (buffer != NULL)
+    if ((Object *)buffer != nil)
         return newError(interp, invalid_value, FLISP_ARG1, "(set-buffer-name name) - name, already exists");
 
-    if (!set_buffer_name(curbp, FLISP_ARG1->string))
-        return newError(interp, out_of_memory, FLISP_ARG1, "(set-buffer-name name) - name, failed to allocate string");
+    curbp->buffer.name = FLISP_ARG1;
     return FLISP_ARG1;
 }
 
-/** (set-visited-file-name name) */
 Object *e_set_buffer_filename(Object *interp, Object **args, Object **env, size_t nArgs)
 {
-    if (FLISP_ARG1 == nil) {
-        if (curbp->fname != NULL)
-            free(curbp->fname);
-        curbp->fname = NULL;
-        return nil;
-    }
-
     FLISP_ASSERT(FLISP_ARG1, type_string, "(set-visited-file-name name) - name");
-    curbp->fname = strdup(FLISP_ARG1->string);
-    if (curbp->fname == NULL)
-        return newError(interp, out_of_memory, nil,  "(set-visited-file-name name) - name, cannot allocate memory for filename");
-    curbp->modified = TRUE;
+    curbp->buffer.fname = FLISP_ARG1;
+    curbp->buffer.modified = TRUE;
     return FLISP_ARG1;
 }
 
@@ -644,7 +623,7 @@ DEFINE_EDITOR_FUNC(other_window)
 /* (pop-to-buffer buffer) */
 Object *e_pop_to_buffer(Object *interp, Object **args, Object **env, size_t nArgs)
 {
-    window_t *wp = popup_window(FLISP_ARG1->string);
+    window_t *wp = popup_window(FLISP_ARG1);
     if (wp == NULL)
         return newError(interp, invalid_value, FLISP_ARG1, "(pop-to-buffer buffer) - buffer does not exist");
     /* See other_window() */
@@ -653,7 +632,7 @@ Object *e_pop_to_buffer(Object *interp, Object **args, Object **env, size_t nArg
     pull_buffer(wp->w_bufp);
     /* Note: bug: first time the cursor does not jump to new window */
     update_display();
-    return newString(interp, wp->w_bufp->name);
+    return wp->w_bufp->buffer.name;
 }
 
 Object *e_split_window(Object *interp, Object **args, Object **env, size_t nArgs) { return (NULL == split_current_window()) ? nil : t; }
@@ -775,46 +754,46 @@ DEFINE_EDITOR_FUNC(suspend)
 void insert(void)
 {
     char_t the_char[2]; /* the inserted char plus a null */
-    assert(curbp->b_gap <= curbp->b_egap);
+    assert(curbp->buffer.gap <= curbp->buffer.egap);
 
-    if (curbp->b_gap == curbp->b_egap && !growgap(curbp, CHUNK))
+    if (curbp->buffer.gap == curbp->buffer.egap && !growgap(curbp, CHUNK))
         return;
-    curbp->b_point = movegap(curbp, curbp->b_point);
+    curbp->buffer.point = movegap(curbp, curbp->buffer.point);
 
 
     /* overwrite if mid line, not EOL or EOF, CR will insert as normal */
-    if (curbp->overwrite && *input != '\r' && *(ptr(curbp, curbp->b_point)) != '\n' && curbp->b_point < pos(curbp,curbp->b_ebuf) ) {
-        *(ptr(curbp, curbp->b_point)) = *input;
-        if (curbp->b_point < pos(curbp, curbp->b_ebuf))
-            ++curbp->b_point;
+    if (curbp->buffer.overwrite && *input != '\r' && *(ptr(curbp, curbp->buffer.point)) != '\n' && curbp->buffer.point < pos(curbp,curbp->buffer.ebuf) ) {
+        *(ptr(curbp, curbp->buffer.point)) = *input;
+        if (curbp->buffer.point < pos(curbp, curbp->buffer.ebuf))
+            ++curbp->buffer.point;
         /* FIXME - overwite mode not handled properly for undo yet */
     } else {
         the_char[0] = *input == '\r' ? '\n' : *input;
         the_char[1] = '\0'; /* null terminate */
-        *curbp->b_gap++ = the_char[0];
-        curbp->b_point = pos(curbp, curbp->b_egap);
+        *curbp->buffer.gap++ = the_char[0];
+        curbp->buffer.point = pos(curbp, curbp->buffer.egap);
         /* the point is set so that and undo will backspace over the char */
-        add_undo(curbp, UNDO_T_INSERT, curbp->b_point, the_char, NULL);
+        add_undo(curbp, UNDO_T_INSERT, curbp->buffer.point, the_char, NULL);
     }
-    curbp->modified = TRUE;
+    curbp->buffer.modified = TRUE;
 }
 
 void insert_string(char *str)
 {
     int len = (str == NULL) ? 0 : strlen(str);
 
-    if (curbp->overwrite)
+    if (curbp->buffer.overwrite)
         return;
     if (len <= 0) {
         msg(m_empty);
-    } else if (len < curbp->b_egap - curbp->b_gap || growgap(curbp, len)) {
-        curbp->b_point = movegap(curbp, curbp->b_point);
-        //debug("INS STR: pt=%ld len=%d\n", curbp->b_point, strlen((char *)str));
-        add_undo(curbp, UNDO_T_YANK, curbp->b_point, (char_t *)str, NULL);
-        memcpy(curbp->b_gap, str, len * sizeof (char_t));
-        curbp->b_gap += len;
-        curbp->b_point = pos(curbp, curbp->b_egap);
-        curbp->modified = TRUE;
+    } else if (len < curbp->buffer.egap - curbp->buffer.gap || growgap(curbp, len)) {
+        curbp->buffer.point = movegap(curbp, curbp->buffer.point);
+        //debug("INS STR: pt=%ld len=%d\n", curbp->buffer.point, strlen((char *)str));
+        add_undo(curbp, UNDO_T_YANK, curbp->buffer.point, (char_t *)str, NULL);
+        memcpy(curbp->buffer.gap, str, len * sizeof (char_t));
+        curbp->buffer.gap += len;
+        curbp->buffer.point = pos(curbp, curbp->buffer.egap);
+        curbp->buffer.modified = TRUE;
     }
 }
 
@@ -822,7 +801,7 @@ void insert_string(char *str)
  * append a string to the end of a buffer
  * used in funcmap.c
  */
-void append_string(buffer_t *bp, char *str)
+void append_string(BufferObject *bp, char *str)
 {
     int len = (str == NULL) ? 0 : strlen(str);
 
@@ -830,18 +809,18 @@ void append_string(buffer_t *bp, char *str)
     if (len == 0) return;
 
     /* goto end of buffer */
-    bp->b_epage = bp->b_point = pos(bp, bp->b_ebuf);
+    bp->buffer.epage = bp->buffer.point = pos(bp, bp->buffer.ebuf);
 
-    if (len < bp->b_egap - bp->b_gap || growgap(bp, len)) {
-        bp->b_point = movegap(bp, bp->b_point);
-        memcpy(bp->b_gap, str, len * sizeof (char_t));
-        bp->b_gap += len;
-        bp->b_point = pos(bp, bp->b_egap);
-        curbp->modified = TRUE;
-        bp->b_epage = bp->b_point = pos(bp, bp->b_ebuf); /* goto end of buffer */
+    if (len < bp->buffer.egap - bp->buffer.gap || growgap(bp, len)) {
+        bp->buffer.point = movegap(bp, bp->buffer.point);
+        memcpy(bp->buffer.gap, str, len * sizeof (char_t));
+        bp->buffer.gap += len;
+        bp->buffer.point = pos(bp, bp->buffer.egap);
+        curbp->buffer.modified = TRUE;
+        bp->buffer.epage = bp->buffer.point = pos(bp, bp->buffer.ebuf); /* goto end of buffer */
 
         /* if window is displayed mark all windows for update */
-        if (bp->b_cnt > 0) {
+        if (bp->buffer.cnt > 0) {
             b2w_all_windows(bp);
             mark_all_windows();
         }
@@ -849,12 +828,12 @@ void append_string(buffer_t *bp, char *str)
 }
 
 /* Used in femto.c */
-void match_paren_forwards(buffer_t *bp, char open_paren, char close_paren)
+void match_paren_forwards(BufferObject *bp, char open_paren, char close_paren)
 {
     int lcount = 0;
     int rcount = 0;
-    point_t end = pos(bp, bp->b_ebuf);
-    point_t position = bp->b_point;
+    point_t end = pos(bp, bp->buffer.ebuf);
+    point_t position = bp->buffer.point;
     char c;
 
     while (position <= end) {
@@ -864,20 +843,20 @@ void match_paren_forwards(buffer_t *bp, char open_paren, char close_paren)
         if (c == close_paren)
             rcount++;
         if (lcount == rcount && lcount > 0) {
-            bp->b_paren = position;
+            bp->buffer.paren = position;
             return;
         }
         position++;
     }
-    bp->b_paren = NOPAREN;
+    bp->buffer.paren = NOPAREN;
 }
 
-void match_paren_backwards(buffer_t *bp, char open_paren, char close_paren)
+void match_paren_backwards(BufferObject *bp, char open_paren, char close_paren)
 {
     int lcount = 0;
     int rcount = 0;
     point_t start = 0;
-    point_t position = bp->b_point;
+    point_t position = bp->buffer.point;
     char c;
 
     while (position >= start) {
@@ -887,25 +866,25 @@ void match_paren_backwards(buffer_t *bp, char open_paren, char close_paren)
         if (c == close_paren)
             rcount++;
         if (lcount == rcount && lcount > 0) {
-            bp->b_paren = position;
+            bp->buffer.paren = position;
             return;
         }
         position--;
     }
-    bp->b_paren = NOPAREN;
+    bp->buffer.paren = NOPAREN;
 }
 
 void match_parens(void)
 {
     assert(curwp != NULL);
-    buffer_t *bp = curwp->w_bufp;
+    BufferObject *bp = curwp->w_bufp;
     assert(bp != NULL);
 
     if (buffer_is_empty(bp))
         return;
 
     // Note: valgrind: Invalid read of size 1
-    char p = *ptr(bp, bp->b_point);
+    char p = *ptr(bp, bp->buffer.point);
 
     switch(p) {
     case '{':
@@ -927,7 +906,7 @@ void match_parens(void)
         match_paren_backwards(bp, '(', ')');
         break;
     default:
-        bp->b_paren = NOPAREN;
+        bp->buffer.paren = NOPAREN;
         break;
     }
 }

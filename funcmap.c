@@ -8,8 +8,8 @@
 #include <assert.h>
 
 #include "femto.h"
-#include "window.h"
 #include "buffer.h"
+#include "window.h"
 #include "gap.h"
 #include "key.h"
 #include "display.h"
@@ -189,7 +189,7 @@ char *shortest_common_string(string_list_t *list)
 /* show commands that match a sub-string */
 void apropos(void)
 {
-    buffer_t *bp;
+    BufferObject *bp;
     command_t *fn;
     keymap_t *ky;
     char bindlist[40];
@@ -232,7 +232,7 @@ void apropos(void)
 /* show all the key bindings in a buffer names str_help_buf: "*help*" */
 void describe_bindings(void)
 {
-    buffer_t *bp;
+    BufferObject *bp;
     keymap_t *ky;
     char binding[80];
 
@@ -245,13 +245,13 @@ void describe_bindings(void)
         append_string(bp, binding);
     }
 
-    (void)popup_window(bp->name);
+    (void)popup_window(bp->buffer.name);
 }
 
 /* show all registered functions in a buffer */
 void describe_functions(void)
 {
-    buffer_t *bp;
+    BufferObject *bp;
     command_t *cp;
     char funcname[80];
 
@@ -264,13 +264,13 @@ void describe_functions(void)
         append_string(bp, funcname);
     }
 
-    (void)popup_window(bp->name);
+    (void)popup_window(bp->buffer.name);
 }
 
 /* Esc-x execute command prompt */
 void execute_command(void)
 {
-    buffer_t *bp = NULL;
+    BufferObject *bp = (BufferObject*)nil;
     window_t *wp = NULL;
     string_list_t *cmd_list, *sl;
     void_func funct = NULL;
@@ -334,7 +334,7 @@ void execute_command(void)
 
             if (tab_count > 1 || wp != NULL) {
                 zero_buffer(bp);
-                wp = popup_window(bp->name); /* does nothing if already exists */
+                wp = popup_window(bp->buffer.name); /* does nothing if already exists */
                 column = 0;
 
                 /* show matched commands, start wrapping from 30 chars from end of screen */

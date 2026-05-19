@@ -102,8 +102,6 @@ extern char *m_noregion;
 extern char *str_pos;
 extern char *str_endpos;
 extern char *str_not_bound;
-extern char *str_help_buf;
-extern char *str_completions;
 extern char *str_apropos;
 
 
@@ -111,10 +109,15 @@ extern char *str_apropos;
 extern char *str_modified_buffers;
 extern char *str_yes;
 extern char *str_no;
-extern char *str_scratch;
 extern char *str_output;
-extern char *str_buffers;
 extern char *str_clip_too_big;
+
+/* Special buffer names */
+extern Object *str_scratch;
+extern Object *str_buffers;
+extern Object *str_undos;
+extern Object *str_help_buf;
+extern Object *str_completions;
 
 
 /* functions in complete.c */

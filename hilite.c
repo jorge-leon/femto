@@ -4,8 +4,8 @@
 #include <string.h>
 
 #include "femto.h"
-#include "undo.h"
 #include "buffer.h"
+#include "undo.h"
 #include "gap.h"
 #include "hilite.h"
 #include "flisp/lisp.h"
@@ -14,7 +14,7 @@ int state = ID_DEFAULT;
 int next_state = ID_DEFAULT;
 int skip_count = 0;
 
-char_t get_at(buffer_t *bp, point_t pt)
+char_t get_at(BufferObject *bp, point_t pt)
 {
     // Note: ptr get's it wrong here: when at the end
     //   Valgrind complains, the pointer is behind 0 bytes
@@ -34,7 +34,7 @@ int is_symbol(char_t c)
     return 0;
 }
 
-void set_parse_state(buffer_t *bp, point_t pt)
+void set_parse_state(BufferObject *bp, point_t pt)
 {
     register point_t po;
 
@@ -46,7 +46,7 @@ void set_parse_state(buffer_t *bp, point_t pt)
         parse_text(bp, po);
 }
 
-int parse_text(buffer_t *bp, point_t pt)
+int parse_text(BufferObject *bp, point_t pt)
 {
     if (skip_count-- > 0)
         return state;
@@ -59,10 +59,10 @@ int parse_text(buffer_t *bp, point_t pt)
     bool c_mode      = false;
     bool lisp_mode   = false;
     bool python_mode = false;
-    if (bp->mode == nil) ;
-    else if ((c_mode =       (0 == (strcmp(((SimpleObject *)bp->mode)->str, "C")))));
-    else if ((lisp_mode =    (0 == (strcmp(((SimpleObject *)bp->mode)->str, "Lisp")))));
-    else if ((python_mode =  (0 == (strcmp(((SimpleObject *)bp->mode)->str, "Python")))));
+    if (bp->buffer.mode == nil) ;
+    else if ((c_mode =       (0 == (strcmp(((SimpleObject *)bp->buffer.mode)->str, "C")))));
+    else if ((lisp_mode =    (0 == (strcmp(((SimpleObject *)bp->buffer.mode)->str, "Lisp")))));
+    else if ((python_mode =  (0 == (strcmp(((SimpleObject *)bp->buffer.mode)->str, "Python")))));
 
     //debug("parse_text(): c_mode %d, lisp_mode %d, python_mode %d\n", c_mode, lisp_mode, python_mode);
 

@@ -9,8 +9,8 @@
 #include <assert.h>
 
 #include "femto.h"
-#include "undo.h"
 #include "buffer.h"
+#include "undo.h"
 #include "display.h"
 #include "command.h"
 #include "window.h"
@@ -102,7 +102,7 @@ void other_window(void) {
     curwp = (curwp->w_next == NULL ? wheadp : curwp->w_next);
     curbp = curwp->w_bufp;
 
-    if (curbp->b_cnt > 1)
+    if (curbp->buffer.cnt > 1)
         w2b(curwp); /* push win vars to buffer */
 }
 
@@ -136,7 +136,7 @@ window_t *find_window(char *bname)
     window_t *wp;
 
     for (wp = wheadp; wp != NULL; wp = wp->w_next)
-        if (strcmp(wp->w_bufp->name, bname) == 0)
+        if (strcmp(wp->w_bufp->buffer.name->string, bname) == 0)
             return wp;
 
     return NULL;
@@ -152,19 +152,19 @@ window_t *find_window(char *bname)
  * Note: changed: if buffer is not found we return NULL instead of asserting.
  */
 
-window_t *popup_window(char *bname)
+window_t *popup_window(Object *bname)
 {
     window_t *wp;
-    buffer_t *bp;
+    BufferObject *bp;
 
-    wp = find_window(bname);
+    wp = find_window(bname->string);
 
     /* if already displayed do nothing */
     if (wp != NULL)
         return wp;
 
     bp = find_buffer(bname, false);
-    if (bp == NULL)
+    if (bp == (BufferObject*)nil)
         return NULL;
 
     if (count_windows() == 1) {
@@ -212,9 +212,9 @@ int count_windows(void)
  * allows a pop up window to highjack an already displayed window
  * the w_hijack member holds the previously associated buffer.
  */
-void hijack_window(window_t *wp, buffer_t *bp)
+void hijack_window(window_t *wp, BufferObject *bp)
 {
-    assert(bp != NULL);
+    assert(bp != (BufferObject*)nil);
     assert(wp != NULL);
     assert(wp->w_hijack == NULL);
     wp->w_hijack = wp->w_bufp;
@@ -235,12 +235,12 @@ void restore_hijacked_window(window_t *wp)
     wp->w_update = true;
 }
 
-void associate_b2w(buffer_t *bp, window_t *wp)
+void associate_b2w(BufferObject *bp, window_t *wp)
 {
-    assert(bp != NULL);
+    assert(bp != (BufferObject*)nil);
     assert(wp != NULL);
     wp->w_bufp = bp;
-    bp->b_cnt++;
+    bp->buffer.cnt++;
 }
 
 /*
@@ -251,15 +251,15 @@ void associate_b2w(buffer_t *bp, window_t *wp)
 void disassociate_b(window_t *wp)
 {
     assert(wp != NULL);
-    assert(wp->w_bufp != NULL);
-    wp->w_bufp->b_cnt--;
+    assert(wp->w_bufp != (BufferObject*)nil);
+    wp->w_bufp->buffer.cnt--;
 }
 
 
-void switch_to_buffer(buffer_t *buffer)
+void switch_to_buffer(BufferObject *buffer)
 {
     disassociate_b(curwp);
-    if (buffer == curbp->b_next)
+    if (buffer == curbp->buffer.next)
         curbp = buffer;
     else
         pull_buffer(buffer);

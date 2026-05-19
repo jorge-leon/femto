@@ -11,9 +11,9 @@
 #include <assert.h>
 
 #include "femto.h"
+#include "buffer.h"
 #include "window.h"
 #include "undo.h"
-#include "buffer.h"
 #include "gap.h"
 #include "key.h"
 #include "display.h"
@@ -45,22 +45,22 @@ void i_gotoline(void)
     }
 }
 
-void toggle_overwrite_mode(void) { curbp->overwrite = !curbp->overwrite; }
+void toggle_overwrite_mode(void) { curbp->buffer.overwrite = !curbp->buffer.overwrite; }
 
 void cursor_position(void)
 {
     int current, lastln;
-    point_t end_p = pos(curbp, curbp->b_ebuf);
+    point_t end_p = pos(curbp, curbp->buffer.ebuf);
 
     get_line_stats(&current, &lastln);
 
-    if (curbp->b_point == end_p) {
+    if (curbp->buffer.point == end_p) {
         msg(str_endpos, current, lastln,
-            curbp->b_point, ((curbp->b_ebuf - curbp->b_buf) - (curbp->b_egap - curbp->b_gap)));
+            curbp->buffer.point, ((curbp->buffer.ebuf - curbp->buffer.buf) - (curbp->buffer.egap - curbp->buffer.gap)));
     } else {
-        msg(str_pos, unctrl(*(ptr(curbp, curbp->b_point))), *(ptr(curbp, curbp->b_point)),
+        msg(str_pos, unctrl(*(ptr(curbp, curbp->buffer.point))), *(ptr(curbp, curbp->buffer.point)),
             current, lastln,
-            curbp->b_point, ((curbp->b_ebuf - curbp->b_buf) - (curbp->b_egap - curbp->b_gap)));
+            curbp->buffer.point, ((curbp->buffer.ebuf - curbp->buffer.buf) - (curbp->buffer.egap - curbp->buffer.gap)));
     }
 }
 

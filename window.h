@@ -4,8 +4,8 @@
 typedef struct window_t
 {
     struct window_t *w_next;    /* Next window */
-    struct buffer_t *w_bufp;    /* Buffer displayed in window */
-    struct buffer_t *w_hijack;  /* holds the buffer association for a hijacked window */
+    BufferObject *w_bufp;    /* Buffer displayed in window */
+    BufferObject *w_hijack;  /* holds the buffer association for a hijacked window */
     point_t w_point;
     point_t w_mark;
     point_t w_page;
@@ -22,20 +22,20 @@ extern window_t *curwp;
 extern window_t *wheadp;
 
 extern int count_windows(void);
-extern void associate_b2w(buffer_t *, window_t *);
+extern void associate_b2w(BufferObject *, window_t *);
 extern void delete_other_windows(void);
 extern void disassociate_b(window_t *);
 extern void free_other_windows(window_t *);
-extern void hijack_window(window_t *, buffer_t *);
+extern void hijack_window(window_t *, BufferObject *);
 extern void mark_all_windows(void);
 extern void one_window(window_t *);
 extern void other_window(void);
 extern void restore_hijacked_window(window_t *);
 extern window_t *find_window(char *);
 extern window_t* new_window(void);
-extern window_t *popup_window(char *);
+extern window_t *popup_window(Object*);
 extern window_t *split_current_window(void);
-extern void switch_to_buffer(buffer_t *);
+extern void switch_to_buffer(BufferObject *);
 extern void split_window(void);
 extern void redraw(void);
 

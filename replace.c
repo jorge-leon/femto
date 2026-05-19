@@ -6,9 +6,9 @@
 #include <curses.h>
 
 #include "femto.h"
+#include "buffer.h"
 #include "window.h"
 #include "undo.h"
-#include "buffer.h"
 #include "gap.h"
 #include "key.h"
 #include "display.h"
@@ -18,7 +18,7 @@
 /*search for a string and replace it with another string */
 void query_replace(void)
 {
-    point_t o_point = curbp->b_point;
+    point_t o_point = curbp->buffer.point;
     point_t l_point = -1;
     point_t found;
     char question[STRBUF_L];
@@ -49,13 +49,13 @@ void query_replace(void)
 
         /* if not found set the point to the last point of replacement, or where we started */
         if (found == -1) {
-            curbp->b_point = (l_point == -1 ? o_point : l_point);
+            curbp->buffer.point = (l_point == -1 ? o_point : l_point);
             break;
         }
 
-        curbp->b_point = found;
+        curbp->buffer.point = found;
         /* search_forward places point at end of search, move to start of search */
-        curbp->b_point -= slen;
+        curbp->buffer.point -= slen;
 
         if (ask) {
             msg(question);
@@ -70,7 +70,7 @@ void query_replace(void)
                 break;
 
             case 'n': /* no, find next */
-                curbp->b_point = found; /* set to end of search string */
+                curbp->buffer.point = found; /* set to end of search string */
                 continue;
 
             case '!': /* yes/stop asking, do the lot */
@@ -88,7 +88,7 @@ void query_replace(void)
             }
         }
 
-        l_point = curbp->b_point; /* save last point */
+        l_point = curbp->buffer.point; /* save last point */
         replace_string(curbp, searchtext, replace, slen, rlen);
         numsub++;
     }
@@ -96,36 +96,36 @@ void query_replace(void)
     msg("%d substitutions", numsub);
 }
 
-void replace_string(buffer_t *bp, char *s, char *r, int slen, int rlen)
+void replace_string(BufferObject *bp, char *s, char *r, int slen, int rlen)
 {
     /*
      * we call this function with the point set at the start of the search string
      * search places the point at the end of the search
      * to claculate the value of found we add on the length of the search string
      */
-    point_t found = bp->b_point + slen;
+    point_t found = bp->buffer.point + slen;
 
     if (rlen > slen) {
         movegap(bp, found);
         /*check enough space in gap left */
-        if (rlen - slen < bp->b_egap - bp->b_gap)
+        if (rlen - slen < bp->buffer.egap - bp->buffer.gap)
             growgap(bp, rlen - slen);
         /* shrink gap right by r - s */
-        bp->b_gap = bp->b_gap + (rlen - slen);
+        bp->buffer.gap = bp->buffer.gap + (rlen - slen);
     } else if (slen > rlen) {
         movegap(bp, found);
         /* stretch gap left by s - r, no need to worry about space */
-        bp->b_gap = bp->b_gap - (slen - rlen);
+        bp->buffer.gap = bp->buffer.gap - (slen - rlen);
     } else {
         /* if rlen = slen, we just overwrite the chars, no need to move gap */
     }
 
     /* now just overwrite the chars at point in the buffer */
-    memcpy(ptr(bp, bp->b_point), r, rlen * sizeof (char_t));
-    curbp->modified = true;
+    memcpy(ptr(bp, bp->buffer.point), r, rlen * sizeof (char_t));
+    curbp->buffer.modified = true;
 
-    add_undo(curbp, UNDO_T_REPLACE, curbp->b_point, (char_t *)s, (char_t *)r);
-    curbp->b_point = found - (slen - rlen); /* set point to end of replacement */
+    add_undo(curbp, UNDO_T_REPLACE, curbp->buffer.point, (char_t *)s, (char_t *)r);
+    curbp->buffer.point = found - (slen - rlen); /* set point to end of replacement */
 }
 
 /*

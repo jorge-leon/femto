@@ -9,15 +9,16 @@
 #include <assert.h>
 
 #include "femto.h"
+#include "buffer.h"
 #include "window.h"
 #include "undo.h"
-#include "buffer.h"
 #include "gap.h"
 #include "command.h"
 
 /* Globals */
-buffer_t *curbp;                /* current buffer */
+BufferObject *curbp;                /* current buffer */
 
+FLISP_DEFINE_TYPE(buffer);
 FLISP_DEFINE_CONSTANT(mode_c,C);
 FLISP_DEFINE_CONSTANT(mode_python,Python);
 FLISP_DEFINE_CONSTANT(mode_lisp,Lisp);
@@ -40,45 +41,47 @@ Object * femto_buffer_register(Object *interp)
     return e;
 }
 
-void buffer_init(buffer_t *bp)
+void buffer_init(BufferObject *bp)
 {
-    bp->name = NULL;
-    bp->b_next = NULL;
+    bp->buffer.name = nil;
+    bp->buffer.fname = nil;
+    bp->buffer.mode = nil;
+    bp->buffer.next = bp;
 
-    bp->fname = NULL;
-    bp->b_mark = NOMARK;
-    bp->b_point = 0;
-    bp->mode = nil;
-    bp->modified = false;
-    bp->overwrite = false;
-    bp->readonly = false;
-    bp->undo = true;
-    bp->special = false;
+    
+    bp->buffer.mark = NOMARK;
+    bp->buffer.point = 0;
+    bp->buffer.modified = false;
+    bp->buffer.overwrite = false;
+    bp->buffer.readonly = false;
+    bp->buffer.undo = true;
+    bp->buffer.special = false;
 
-    bp->b_paren = NOPAREN;
-    bp->b_cpoint = 0;
-    bp->b_page = 0;
-    bp->b_epage = 0;
-    bp->b_reframe = 0;
-    bp->b_size = 0;
-    bp->b_psize = 0;
+    bp->buffer.reframe = false;
 
-    bp->b_buf = NULL;
-    bp->b_ebuf = NULL;
-    bp->b_gap = NULL;
-    bp->b_egap = NULL;
+    bp->buffer.paren = NOPAREN;
+    bp->buffer.cpoint = 0;
+    bp->buffer.page = 0;
+    bp->buffer.epage = 0;
+    bp->buffer.size = 0;
+    bp->buffer.psize = 0;
 
-    bp->b_cnt = 0;
-    bp->b_utail = NULL;
-    bp->b_ucnt = -1;
+    bp->buffer.buf = NULL;
+    bp->buffer.ebuf = NULL;
+    bp->buffer.gap = NULL;
+    bp->buffer.egap = NULL;
+
+    bp->buffer.cnt = 0;
+    bp->buffer.utail = NULL;
+    bp->buffer.ucnt = -1;
 }
 
-#define BUFFER_B_PREV(PREV, BUF) for (PREV = BUF; PREV->b_next != BUF; PREV = PREV->b_next)
+#define BUFFER_B_PREV(PREV, BUF) for (PREV = BUF; PREV->buffer.next != BUF; PREV = PREV->buffer.next)
 
 /** new_buffer() - allocate, initialize and register a buffer.
  *
  * @param name .. name of the buffer.
- * @returns pointer to buffer or NULL if buffer name is empty or allocation fails.
+ * @returns buffer object or nil if buffer name is empty or allocation fails.
  *
  * The buffer is put in front of the list.
  *
@@ -87,15 +90,15 @@ void buffer_init(buffer_t *bp)
  * It is an error to create a buffer with a name that already exists.
  *
  */
-buffer_t *new_buffer(char *name)
+BufferObject *new_buffer(Object *name)
 {
-    buffer_t *bp, *sb;
+    BufferObject *bp, *sb;
 
-    if (name == NULL || name[0] == '\n')
-        return NULL;
+    if (name == nil || name->string[0] == '\n')
+        return (BufferObject*)nil;
 
-    if ((bp = (buffer_t *) malloc (sizeof (buffer_t))) == NULL)
-        return NULL;
+    if ((bp = (BufferObject *) malloc (sizeof (BufferObject))) == NULL)
+        return (BufferObject*)nil;
 
     buffer_init(bp);
 
@@ -103,59 +106,57 @@ buffer_t *new_buffer(char *name)
     if (!growgap(bp, MIN_GAP_EXPAND))
         goto new_buffer_error;
 
-    if (curbp == NULL) {
+    if (curbp == (BufferObject*)nil) {
         /* assure there is a scratch buffer */
         debug("new_buffer(): curbp is NULL, creating %s buffer\n", str_scratch);
-        if (!set_buffer_name(bp, str_scratch))
-            goto new_buffer_error;
+        bp->buffer.name = str_scratch;
 
         curbp = bp;
-        if (strcmp(bp->name, str_scratch) == 0) {
-            bp->b_next = bp;
-            bp->special = true;
+        if (strcmp(bp->buffer.name->string, str_scratch->string) == 0) {
+            debug("new_buffer(*scratch*): creating %s buffer\n", name->string);
+            bp->buffer.next = bp;
+            bp->buffer.special = true;
             return bp;
         }
-        if ((bp = new_buffer(name)) == NULL)
-            return NULL;
+        if ((bp = new_buffer(name)) == (BufferObject*)nil)
+            return (BufferObject*)nil;
     }
-    debug("new_buffer(): creating %s buffer\n", name);
-    if (!set_buffer_name(bp, name))
-        goto new_buffer_error;
+    debug("new_buffer(): creating %s buffer\n", name->string);
+    bp->buffer.name = name;
 
     BUFFER_B_PREV(sb, curbp);
-    sb->b_next = bp;
-    bp->b_next = curbp;
+    sb->buffer.next = bp;
+    bp->buffer.next = curbp;
     curbp = bp;
     return bp;
 
 new_buffer_error:
     free(bp);
     debug("new_buffer(): failed to allocate memory\n");
-    return NULL;
+    return (BufferObject*)nil;
 }
 
-buffer_t *search_buffer(char *name)
+BufferObject *search_buffer(Object *name)
 {
-    buffer_t *bp = curbp;
+    BufferObject *bp = curbp;
     do
-        if (strcmp(name, bp->name) == 0)
+        if (strcmp(name->string, bp->buffer.name->string) == 0)
             return bp;
-    while ((bp = bp->b_next) != curbp);
-    return NULL;
+    while ((bp = bp->buffer.next) != curbp);
+    return (BufferObject*)nil;
 }
 /*
- * Find a buffer, by buffer name. Return a pointer to the buffer_t
- * structure associated with it. If the buffer is not found and the
- * "cflag" is TRUE, create it.
+ * Find a buffer, by buffer name. Return the BufferObject or nil. If
+ * the buffer is not found and the "cflag" is TRUE, create it.
  */
-buffer_t *find_buffer(char *name, bool cflag)
+BufferObject *find_buffer(Object *name, bool cflag)
 {
-    buffer_t *bp = NULL;
+    BufferObject *bp = (BufferObject*)nil;
 
-    debug("find-buffer(%s, %d)\n", name, cflag);
+    debug("find-buffer(%s, %d)\n", name->string, cflag);
     bp = search_buffer(name);
 
-    if (bp == NULL && cflag)
+    if (bp == (BufferObject*)nil && cflag)
         bp = new_buffer(name);
     return bp;
 }
@@ -164,36 +165,17 @@ buffer_t *find_buffer(char *name, bool cflag)
  * Given a file name, either find the buffer it uses, or create a new
  * empty buffer to put it in.
  */
-buffer_t *find_buffer_by_fname(char *fname)
+BufferObject *find_buffer_by_fname(Object *fname)
 {
-    buffer_t *bp;
+    BufferObject *bp;
 
-    for (bp = curbp; bp != curbp; bp = bp->b_next) {
-        if (bp->fname == NULL)
+    for (bp = curbp; bp != curbp; bp = bp->buffer.next) {
+        if (bp->buffer.fname == NULL)
             continue;
-        if (strcmp(fname, bp->fname) == 0)
+        if (strcmp(fname->string, bp->buffer.fname->string) == 0)
             return bp;
     }
     return NULL;
-}
-
-/** set_buffer_name() name or rename buffer
- *
- * @param buffer .. pointer to buffer struct.
- * @param name   .. pointer to string
- *
- * @returns TRUE on success, else FALSE.
- *
- * If the buffer already has a name it is deallocated.
- *
- */
-
-bool set_buffer_name(buffer_t *buffer, char *name)
-{
-    if (buffer->name != NULL)
-        free(buffer->name);
-
-    return (buffer->name = strdup(name)) != NULL;
 }
 
 /** delete_buffer() - deallocate and unregister a buffer.
@@ -204,39 +186,39 @@ bool set_buffer_name(buffer_t *buffer, char *name)
  * buffer
  *
  * Assure that the head points to a live buffer and neither the
- * *scratch* nore the current buffer is deleted.
+ * *scratch* nor the current buffer is deleted.
  *
  * Unlink from the list of buffers and free the memory associated with
  * the buffer.
  *
  * Assumes that buffer has been saved if modified
  */
-bool delete_buffer(buffer_t *bp)
+bool delete_buffer(BufferObject *bp)
 {
-    buffer_t *sb;
+    BufferObject *sb;
     window_t *wp;
 
-    if (bp == curbp || strcmp(bp->name, str_scratch) == 0)
+    if (bp == curbp || strcmp(bp->buffer.name->string, str_scratch->string) == 0)
         return false;
 
     BUFFER_B_PREV(sb, bp);
 
     if (bp == sb) {
         /* lone buffer */
-        curbp = NULL; /* from scratch */
+        curbp = (BufferObject*)nil; /* from scratch */
         curbp = new_buffer(str_scratch);
-        if (curbp == NULL)
+        if (curbp == (BufferObject*)nil)
             return false;
     }
     else if (bp == curbp)
         /* advance curbp before deletion */
-        curbp = curbp->b_next;
+        curbp = curbp->buffer.next;
     else
-        sb->b_next = bp->b_next;
+        sb->buffer.next = bp->buffer.next;
 
     /* disassociate all windows */
-    while (bp->b_cnt) {
-        wp = find_window(bp->name);
+    while (bp->buffer.cnt) {
+        wp = find_window(bp->buffer.name->string);
         if (wp == NULL)
             return false; /* Note: this would be a programming error and should be at least logged */
         disassociate_b(wp);
@@ -245,28 +227,26 @@ bool delete_buffer(buffer_t *bp)
 
     /* now we can delete */
 
-    free_undos(bp->b_utail);
-    free(bp->b_buf);
-    free(bp->name);
-    free(bp->fname);
+    free_undos(bp->buffer.utail);
+    free(bp->buffer.buf);
     free(bp);
 
     return true;
 }
 
 /* Move buffer to the front of the buffer list */
-void pull_buffer(buffer_t *bp)
+void pull_buffer(BufferObject *bp)
 {
-    buffer_t *sb;
+    BufferObject *sb;
 
     if (bp == curbp)
         return;
 
     BUFFER_B_PREV(sb, bp);
-    sb->b_next = bp->b_next;
+    sb->buffer.next = bp->buffer.next;
     BUFFER_B_PREV(sb, curbp);
-    sb->b_next = bp;
-    bp->b_next = curbp;
+    sb->buffer.next = bp;
+    bp->buffer.next = curbp;
     curbp = bp;
 }
 

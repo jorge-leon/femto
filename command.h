@@ -1,7 +1,7 @@
 #ifndef COMMAND_H
 #define COMMAND_H
 
-extern void append_string(buffer_t *, char *);
+extern void append_string(BufferObject *, char *);
 extern void backspace(void);
 extern void scroll_down(void);
 extern void backward_word(void);

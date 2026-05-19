@@ -25,18 +25,19 @@ typedef struct buffer_t
      *       modes defined in C and registered on interpreter startup
      */
     Object *mode;                /* buffer major mode */
-    /* buffer flags */
+    /* buffer public flags */
     bool modified: 1;
     bool overwrite: 1;
     bool readonly: 1;
     bool undo: 1;
     bool special: 1;
-
+    /* internal */
+    bool reframe: 1;            /* force a reframe of the display */
+    
     point_t b_paren;            /* matching paren to the point */
     point_t b_cpoint;           /* the original current point, used for mutliple window displaying */
     point_t b_page;             /* start of page */
     point_t b_epage;            /* end of page */
-    point_t b_reframe;          /* force a reframe of the display */
     int b_size;                 /* current size of text being edited (not including gap) */
     int b_psize;                /* previous size */
 
@@ -53,6 +54,7 @@ typedef struct buffer_t
     int b_ucnt;                 /* count of how many chars to undo on current undo */
 } buffer_t;
 
+#if 0
 typedef struct bufferExt
 {
     Object *name;               /* string: buffer name */
@@ -88,8 +90,54 @@ typedef struct bufferExt
     undo_tt *b_utail;           /* recent end of undo list */
     int b_ucnt;                 /* count of how many chars to undo on current undo */
 } bufferExt;
+#else
+typedef struct BufferObject BufferObject;
+typedef struct BufferExt
+{
+    Object *name;               /* buffer name */
+    Object *fname;              /* filename */
+    Object *mode;               /* buffer major mode */    
+    BufferObject *next;         /* Link to next */
 
-extern buffer_t *curbp;         /* current buffer */
+    point_t mark;               /* the mark */
+    point_t point;              /* the point */
+
+    /* buffer public flags */
+    bool modified: 1;
+    bool overwrite: 1;
+    bool readonly: 1;
+    bool undo: 1;
+    bool special: 1;
+    /* internal */
+    bool reframe: 1;            /* force a reframe of the display */
+    
+    point_t paren;            /* matching paren to the point */
+    point_t cpoint;           /* the original current point, used for mutliple window displaying */
+    point_t page;             /* start of page */
+    point_t epage;            /* end of page */
+    int size;                 /* current size of text being edited (not including gap) */
+    int psize;                /* previous size */
+
+    char_t *buf;              /* start of buffer */
+    char_t *ebuf;             /* end of buffer */
+    char_t *gap;              /* start of gap */
+    char_t *egap;             /* end of gap */
+    int row;                  /* cursor row */
+    int col;                  /* cursor col */
+
+    int cnt;                  /* count of windows referencing this buffer */
+
+    undo_tt *utail;           /* recent end of undo list */
+    int ucnt;                 /* count of how many chars to undo on current undo */
+} BufferExt;
+#endif
+typedef struct BufferObject {
+    SimpleObject self;
+    BufferExt buffer;  
+} BufferObject;
+
+
+extern BufferObject *curbp;         /* current buffer */
 
 /* Major modes */
 extern Object *mode_c;
@@ -101,12 +149,12 @@ extern Object *mode_oxo;
 
 extern Object *femto_buffer_register(Object *);
 
-extern buffer_t *new_buffer(char *);
-extern buffer_t *find_buffer(char *, bool);
-extern buffer_t *find_buffer_by_fname(char *);
-extern bool set_buffer_name(buffer_t *, char *);
-extern bool delete_buffer(buffer_t *);
-extern void pull_buffer(buffer_t *);
+extern BufferObject *new_buffer(Object*);
+extern BufferObject *find_buffer(Object*, bool);
+extern BufferObject *find_buffer_by_fname(Object*);
+extern bool set_buffer_name(BufferObject*, Object*);
+extern bool delete_buffer(BufferObject*);
+extern void pull_buffer(BufferObject*);
 
 
 #endif

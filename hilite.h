@@ -19,7 +19,7 @@
 #define ID_ASSIGNMENT 14
 
 extern void hilite_init();
-extern int parse_text(buffer_t *, point_t);
-extern void set_parse_state(buffer_t *, point_t);
+extern int parse_text(BufferObject *, point_t);
+extern void set_parse_state(BufferObject *, point_t);
 
 #endif

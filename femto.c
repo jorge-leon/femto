@@ -15,8 +15,8 @@
 #include <curses.h>
 
 #include "femto.h"
-#include "window.h"
 #include "buffer.h"
+#include "window.h"
 #include "key.h"
 #include "display.h"
 #include "hilite.h"
@@ -113,7 +113,7 @@ int main(int argc, char **argv)
     /* buffers */
     setlocale(LC_ALL, "") ; /* required for 3,4 byte UTF8 chars */
     curbp = new_buffer(str_scratch);
-    if (curbp == NULL)
+    if ((Object *)curbp == nil)
         fatal("failed to allocate memory for sratch buffer");
     /* windows */
     curwp = wheadp = new_window();
@@ -282,7 +282,7 @@ void debug(char *format, ...)
 
 void debug_stats(char *s)
 {
-    debug("%s bsz=%d p=%d m=%d gap=%d egap=%d\n", s, curbp->b_ebuf - curbp->b_buf, curbp->b_point, curbp->b_mark, curbp->b_gap - curbp->b_buf, curbp->b_egap - curbp->b_buf);
+    debug("%s bsz=%d p=%d m=%d gap=%d egap=%d\n", s, curbp->buffer.ebuf - curbp->buffer.buf, curbp->buffer.point, curbp->buffer.mark, curbp->buffer.gap - curbp->buffer.buf, curbp->buffer.egap - curbp->buffer.buf);
 }
 
 /*

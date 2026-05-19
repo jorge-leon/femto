@@ -8,9 +8,9 @@
 #include <curses.h>
 
 #include "femto.h"
+#include "buffer.h"
 #include "window.h"
 #include "undo.h"
-#include "buffer.h"
 #include "key.h"
 #include "display.h"
 

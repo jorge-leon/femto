@@ -8,9 +8,9 @@
 #include <curses.h>
 
 #include "femto.h"
+#include "buffer.h"
 #include "window.h"
 #include "undo.h"
-#include "buffer.h"
 #include "gap.h"
 #include "display.h"
 #include "search.h"
@@ -19,13 +19,13 @@
 void display_search_result(point_t found, int dir, char *prompt, char *search)
 {
     if (found != -1 ) {
-        curbp->b_point = found;
+        curbp->buffer.point = found;
         msg("%s%s",prompt, search);
         display(curwp, TRUE);
     } else {
         msg("Failing %s%s",prompt, search);
         dispmsg();
-        curbp->b_point = (dir == FWD_SEARCH ? 0 : pos(curbp, curbp->b_ebuf));
+        curbp->buffer.point = (dir == FWD_SEARCH ? 0 : pos(curbp, curbp->buffer.ebuf));
     }
 }
 
@@ -33,7 +33,7 @@ void search(void)
 {
     int cpos = 0;
     int c;
-    point_t o_point = curbp->b_point;
+    point_t o_point = curbp->buffer.point;
     point_t found;
 
     searchtext[0] = '\0';
@@ -53,7 +53,7 @@ void search(void)
             return;
 
         case 0x07: /* ctrl-g */
-            curbp->b_point = o_point;
+            curbp->buffer.point = o_point;
             return;
 
         case 0x13: /* ctrl-s, do the search */
@@ -88,20 +88,20 @@ void search(void)
 void move_to_search_result(point_t found)
 {
     if (found != -1) {
-        curbp->b_point = found;
+        curbp->buffer.point = found;
         display(curwp, TRUE);
     }
 }
 point_t search_forward(char *stext)
 {
-    point_t end_p = pos(curbp, curbp->b_ebuf);
+    point_t end_p = pos(curbp, curbp->buffer.ebuf);
     point_t p,pp;
     char* s;
 
     if (0 == strlen(stext))
-        return curbp->b_point;
+        return curbp->buffer.point;
 
-    for (p=curbp->b_point; p < end_p; p++) {
+    for (p=curbp->buffer.point; p < end_p; p++) {
         for (s=stext, pp=p; *s == *(ptr(curbp, pp)) && *s !='\0' && pp < end_p; s++, pp++)
             ;
 
@@ -118,9 +118,9 @@ point_t search_backwards(char *stext)
     char* s;
 
     if (0 == strlen(stext))
-        return curbp->b_point;
+        return curbp->buffer.point;
 
-    for (p=curbp->b_point; p > 0; p--) {
+    for (p=curbp->buffer.point; p > 0; p--) {
         for (s=stext, pp=p; *s == *(ptr(curbp, pp)) && *s != '\0' && pp > 0; s++, pp++)
             ;
 

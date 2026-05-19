@@ -58,7 +58,7 @@ typedef struct bufferExt
     Object *name;               /* string: buffer name */
     Object *file;               /* string: filename */
     Object *mode;               /* symbol: buffer major mode */
-    Object *properties;         /*`list: Buffer flags */
+    Object *flags;              /* Buffer flags */
 
     Object *row;                /* integer: cursor row */
     Object *col;                /* integer: cursor col */

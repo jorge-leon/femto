@@ -18,23 +18,24 @@
 /* Globals */
 buffer_t *curbp;                /* current buffer */
 
-Object *mode_c = &(Object) { .string = "C" };
-Object *mode_python = &(Object) { .string = "Python" };
-Object *mode_lisp = &(Object) { .string = "Lisp" };
-Object *mode_dired = &(Object) { .string = "Dired" };
-Object *mode_git = &(Object) { .string = "Git" };
-Object *mode_oxo = &(Object) { .string = "OXO" };
+FLISP_DEFINE_CONSTANT(mode_c,C);
+FLISP_DEFINE_CONSTANT(mode_python,Python);
+FLISP_DEFINE_CONSTANT(mode_lisp,Lisp);
+FLISP_DEFINE_CONSTANT(mode_dired,Dired);
+FLISP_DEFINE_CONSTANT(mode_git,Git);
+FLISP_DEFINE_CONSTANT(mode_oxo,OXO);
+
 
 Object * femto_buffer_register(Object *interp)
 {
     Object *e = nil;
     do {
-        FLISP_UNLESS_ERR(flisp_register_constant(interp, mode_c, mode_c));
-        FLISP_UNLESS_ERR(flisp_register_constant(interp, mode_lisp, mode_lisp));
-        FLISP_UNLESS_ERR(flisp_register_constant(interp, mode_python, mode_python));
-        FLISP_UNLESS_ERR(flisp_register_constant(interp, mode_dired, mode_dired));
-        FLISP_UNLESS_ERR(flisp_register_constant(interp, mode_git, mode_git));
-        FLISP_UNLESS_ERR(flisp_register_constant(interp, mode_oxo, mode_oxo));
+        FLISP_UNLESS_ERR(flisp_register_constant(interp, mode_c, NULL));
+        FLISP_UNLESS_ERR(flisp_register_constant(interp, mode_lisp, NULL));
+        FLISP_UNLESS_ERR(flisp_register_constant(interp, mode_python, NULL));
+        FLISP_UNLESS_ERR(flisp_register_constant(interp, mode_dired, NULL));
+        FLISP_UNLESS_ERR(flisp_register_constant(interp, mode_git, NULL));
+        FLISP_UNLESS_ERR(flisp_register_constant(interp, mode_oxo, NULL));
     } while (0);
     return e;
 }

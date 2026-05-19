@@ -50,7 +50,7 @@ void lisp_init(char **argv)
 {
     FILE *init_fd = NULL;
     char *init_file;
-    Object *e;
+    Object *e = nil;
 
     if ((init_file = getenv("FEMTORC")) == NULL)
         init_file = CPP_XSTR(E_INITFILE);
@@ -85,7 +85,7 @@ void lisp_init(char **argv)
                 debug("failed to close rcfile %s: %s\n", init_file, strerror(errno));
         } else if (FLISP_IS_ERR(e)) {
             debug("failed to load rc file %s:\n", init_file);
-            flisp_write_object(debug_fp, e, true);
+            flisp_write_object(interp, e, nil, interp->self.debug);
             batch_mode = true;
             fprintf(stderr, "Failed to load rc file, see debug logs. Entering batch mode, Quit with C-d\n");
         }
@@ -135,7 +135,7 @@ int main(int argc, char **argv)
         FLISP_STDERR.fd = stderr;
         Object * result = flisp_eval_input(interp, false);
         if (FLISP_IS_ERR(result)) {
-            flisp_write_object(stderr, result, true);
+            flisp_write_object(interp, result, nil, interp->self.stderr);
             fputs("", stderr);
             return 1;
         }
@@ -145,7 +145,7 @@ int main(int argc, char **argv)
 
     debug("main(): shutdown\n");
     // Note: exit frees all memory, do we need this here?
-    // Note: we can't do
+    // Note: we can't do, or we can again
     //flisp_destroy(interp);
     //here, because we get segfaults in wide character routines.
 

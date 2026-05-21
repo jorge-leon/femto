@@ -16,7 +16,7 @@
 #include "command.h"
 
 /* Globals */
-BufferObject *curbp;                /* current buffer */
+BufferObject *curbp = (BufferObject*)&nil_obj;                /* current buffer */
 
 FLISP_DEFINE_TYPE(buffer);
 FLISP_DEFINE_CONSTANT(mode_c,C);

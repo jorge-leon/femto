@@ -110,22 +110,26 @@ int main(int argc, char **argv)
         if ((debug_fp = fopen(debug_file, "w")) == NULL)
             fatal("could not open debug file");
 
-    /* buffers */
+    /* keymaps */
+    setup_keys();
+
     setlocale(LC_ALL, "") ; /* required for 3,4 byte UTF8 chars */
-    curbp = new_buffer(str_scratch);
-    if ((Object *)curbp == nil)
-        fatal("failed to allocate memory for sratch buffer");
+
     /* windows */
     curwp = wheadp = new_window();
     if (curwp == NULL)
         fatal("failed to allocate memory for first window");
 
+    /* buffers */
+    curbp = new_buffer(str_scratch);
+    if ((Object *)curbp == nil)
+        fatal("failed to allocate memory for sratch buffer");
+
+    
     associate_b2w(curbp, curwp);
 
-    /* keymaps */
-    setup_keys();
-
     lisp_init(argv);
+   
 
     debug("start\n");
 
@@ -160,7 +164,6 @@ int main(int argc, char **argv)
  * @param ...        parameters to the format string.
  *
  */
-/* Note: no idea if this works */
 void empty_flisp_input_pipe() {
     char buf[PIPE_BUF];
     int size = read(flisp_input_pipe[0], buf, PIPE_BUF);

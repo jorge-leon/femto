@@ -27,7 +27,7 @@ Object *mode_buffers_name = &(Object) { .string = "Buffer Menu" };
 Object *mode_git = &(Object) { .string = "Git" };
 Object *mode_oxo = &(Object) { .string = "OXO" };
 
-void femto_buffer_register(Interpreter *interp)
+void femto_buffer_register(Object *interp)
 {
     flisp_register_constant(interp, mode_c, mode_c);
     flisp_register_constant(interp, mode_lisp, mode_lisp);

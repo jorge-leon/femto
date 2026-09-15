@@ -31,7 +31,7 @@
 
 void gui(void); /* The GUI loop used in interactive mode */
 
-Interpreter *interp;
+Object *interp;
 char debug_file[] = "debug.out";
 FILE *prev, *debug_fp = NULL;
 
@@ -49,6 +49,7 @@ void lisp_init(char **argv)
 {
     FILE *init_fd = NULL;
     char *init_file;
+    Object *e = nil;
 
     if ((init_file = getenv("FEMTORC")) == NULL)
         init_file = CPP_XSTR(E_INITFILE);
@@ -59,18 +60,20 @@ void lisp_init(char **argv)
             fatal("No init file, exiting..");
     }
 
-    interp = flisp_new(FLISP_INITIAL_MEMORY, argv, NULL, init_fd, debug_fp, debug_fp);
-    if (interp == NULL)
-        fatal("fLisp initialization failed");
-    flisp_string_register(interp);
-    flisp_posix_register(interp);
+    do {
+        FLISP_UNLESS_ERR(interp = flisp_interpreter(FLISP_INITIAL_MEMORY, argv, NULL, init_fd, debug_fp, debug_fp));
+        FLISP_UNLESS_ERR(flisp_register_extension(interp, "string", flisp_string_init));
+        FLISP_UNLESS_ERR(flisp_register_extension(interp, "posix", flisp_posix_init));
+        FLISP_UNLESS_ERR(flisp_register_extension(interp, "femto", flisp_femto_init));
+        debug("femto primitives and constants registered\n");
 #ifdef FLISP_DOUBLE_EXTENSION
-    flisp_double_register(interp);
-    debug("double extension registered\n");
+        FLISP_UNLESS_ERR(flisp_register_extension(interp, "double", flisp_double_init));
+        debug("double extension registered\n");
 #endif
-    if (!femto_register(interp))
-        fatal("failed to register femto primitives");
-    debug("femto primitives and constants registered\n");
+    } while(0);
+    if (FLISP_IS_ERR(e))
+        fatal("fLisp initialization failed")
+        
     if (!init_fd)
         return;
     debug("evaluating rc file %s\n", init_file);
@@ -140,7 +143,7 @@ int main(int argc, char **argv)
  *
  * @param interp
  */
-void msg_lisp_err(Interpreter *interp)
+void msg_lisp_err(Object *interp)
 {
     char *buf;
     size_t len;

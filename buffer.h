@@ -63,7 +63,7 @@ extern Object *mode_dired;
 extern Object *mode_git;
 extern Object *mode_oxo;
 
-extern void femto_buffer_register(Interpreter *);
+extern void femto_buffer_register(Object *);
 
 extern buffer_t *new_buffer(char *);
 extern buffer_t *find_buffer(char *, bool);

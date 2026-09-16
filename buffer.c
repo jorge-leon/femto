@@ -18,27 +18,30 @@
 /* Globals */
 buffer_t *curbp;                /* current buffer */
 
-Object *mode_c = &(Object) { .string = "C" };
-Object *mode_python = &(Object) { .string = "Python" };
-Object *mode_lisp = &(Object) { .string = "Lisp" };
-Object *mode_dired = &(Object) { .string = "Dired" };
-Object *mode_buffers = &(Object) { .string = "mode-buffers" };
-Object *mode_buffers_name = &(Object) { .string = "Buffer Menu" };
-Object *mode_git = &(Object) { .string = "Git" };
-Object *mode_oxo = &(Object) { .string = "OXO" };
+FLISP_DEFINE_CONSTANT(mode_c,C);
+FLISP_DEFINE_CONSTANT(mode_python,Python);
+FLISP_DEFINE_CONSTANT(mode_lisp,Lisp);
+FLISP_DEFINE_CONSTANT(mode_dired,Dired);
+FLISP_DEFINE_CONSTANT(mode_buffers,mode-buffers);
+FLISP_DEFINE_CONSTANT(mode_buffers_name,Buffer Menu);
+FLISP_DEFINE_CONSTANT(mode_git,Git);
+FLISP_DEFINE_CONSTANT(mode_oxo,OXO);
 
-void femto_buffer_register(Object *interp)
+Object *femto_buffer_register(Object *interp)
 {
-    flisp_register_constant(interp, mode_c, mode_c);
-    flisp_register_constant(interp, mode_lisp, mode_lisp);
-    flisp_register_constant(interp, mode_python, mode_python);
-    flisp_register_constant(interp, mode_dired, mode_dired);
-    mode_buffers_name->type = type_string;
-    flisp_register_constant(interp, mode_buffers, mode_buffers_name);
-    flisp_register_constant(interp, mode_git, mode_git);
-    flisp_register_constant(interp, mode_oxo, mode_oxo);
+    Object *e = nil;
+    do {
+        FLISP_UNLESS_ERR(flisp_register_constant(interp, mode_c, mode_c));
+        FLISP_UNLESS_ERR(flisp_register_constant(interp, mode_lisp, mode_lisp));
+        FLISP_UNLESS_ERR(flisp_register_constant(interp, mode_python, mode_python));
+        FLISP_UNLESS_ERR(flisp_register_constant(interp, mode_dired, mode_dired));
+        mode_buffers_name->type = type_string;
+        FLISP_UNLESS_ERR(flisp_register_constant(interp, mode_buffers, mode_buffers_name));
+        FLISP_UNLESS_ERR(flisp_register_constant(interp, mode_git, mode_git));
+        FLISP_UNLESS_ERR(flisp_register_constant(interp, mode_oxo, mode_oxo));
+    } while(0);
+    return e;
 }
-
 void buffer_init(buffer_t *bp)
 {
     bp->name = NULL;

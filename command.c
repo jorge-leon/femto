@@ -967,14 +967,15 @@ Object *femto_init(Object *interp, Object *extension)
     GC_CHECKPOINT;
     GC_TRACE(gcExt, extension);
     do {
-        femto_buffer_register(interp);
-        debug("femto buffer module registered\n");
 
+        FLISP_UNLESS_ERR(femto_buffer_register(interp));
+        debug("femto buffer module registered\n");
+        
         if ((library_path=getenv("FEMTOLIB")) == NULL)
             library_path = CPP_XSTR(E_SCRIPTDIR);
         femto_script_dir = newString(interp, library_path);
+        
         FLISP_UNLESS_ERR(flisp_register_constant(interp, femto_libs, femto_script_dir));
-
 
 /* Text manipulation: read from, write to buffer text */
         FLISP_UNLESS_ERR(flisp_register_primitive(interp, "backspace",             0, 0, type_any,         e_backspace));

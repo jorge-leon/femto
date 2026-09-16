@@ -64,25 +64,26 @@ void lisp_init(char **argv)
         FLISP_UNLESS_ERR(interp = flisp_interpreter(FLISP_INITIAL_MEMORY, argv, NULL, init_fd, debug_fp, debug_fp));
         FLISP_UNLESS_ERR(flisp_register_extension(interp, "string", flisp_string_init));
         FLISP_UNLESS_ERR(flisp_register_extension(interp, "posix", flisp_posix_init));
-        FLISP_UNLESS_ERR(flisp_register_extension(interp, "femto", flisp_femto_init));
-        debug("femto primitives and constants registered\n");
+        FLISP_UNLESS_ERR(flisp_register_extension(interp, "femto", femto_init));
+        debug("femto primitives and constants registered and loaded\n");
 #ifdef FLISP_DOUBLE_EXTENSION
         FLISP_UNLESS_ERR(flisp_register_extension(interp, "double", flisp_double_init));
         debug("double extension registered\n");
 #endif
     } while(0);
     if (FLISP_IS_ERR(e))
-        fatal("fLisp initialization failed")
+        fatal("fLisp initialization failed");
         
     if (!init_fd)
         return;
     debug("evaluating rc file %s\n", init_file);
-    flisp_eval(interp, NULL);
-    if (FLISP_RESULT_CODE(interp) != nil) {
+    FLISP_STANDARD_INPUT.fd=init_fd;
+    e = flisp_eval_input(interp, nil);
+    if (FLISP_IS_ERR(e)) {
+        flisp_write_object(interp, e, t, interp->self.stderr);
         debug("failed to load rc file %s:\n", init_file);
-        flisp_write_error(interp, debug_fp);
-        if (FLISP_RESULT_CODE(interp) == out_of_memory)
-            fatal("OOM, exiting..");
+        if (FLISP_IS_OOM(e))
+            fatal("exiting..");
     }
     if (init_fd != NULL && fclose(init_fd))
         debug("failed to close rcfile %s: %s\n", init_file, strerror(errno));
@@ -114,16 +115,14 @@ int main(int argc, char **argv)
     setup_keys();
 
     lisp_init(argv);
-    femto_register(interp);
 
     debug("start\n");
 
     if (batch_mode) {
-        interp->input.fd = stdin;
-        interp->output.fd = stdout;
-        flisp_eval(interp, NULL);
-        if (FLISP_RESULT_CODE(interp) != nil)
-            flisp_write_error(interp, stderr);
+        FLISP_STANDARD_INPUT.fd = stdin;
+        FLISP_STANDARD_OUTPUT.fd = stdout;
+        FLISP_STDERR.fd = stderr;
+        while (!FLISP_IS_EOF(flisp_eval_input(interp, nil)));
     } else
         /* GUI */
         gui();
@@ -143,16 +142,19 @@ int main(int argc, char **argv)
  *
  * @param interp
  */
-void msg_lisp_err(Object *interp)
+void msg_lisp_err(Object *interp, Object *e)
 {
     char *buf;
     size_t len;
     FILE *fd;
 
+    /* Note: use file_fopen() here. */
     if (NULL == (fd = open_memstream(&buf, &len)))
         fatal("failed to allocate error formatting buffer");
-    flisp_write_error(interp, fd);
+    FLISP_STANDARD_OUTPUT.fd = fd;
+    flisp_write_object(interp, e, t, interp->self.output);
     msg("%s", buf);
+    FLISP_STANDARD_OUTPUT.fd = NULL;
     fclose(fd);
     free(buf);
 }
@@ -167,6 +169,7 @@ void msg_lisp_err(Object *interp)
 void eval_string(bool do_format, char *format, ...)
 {
     char buf[INPUT_FMT_BUFSIZ], *input;
+    Object *e;
 
     int size;
     va_list args;
@@ -183,13 +186,15 @@ void eval_string(bool do_format, char *format, ...)
     } else {
         input = format;
     }
-    flisp_eval(interp, input);
-    if (FLISP_RESULT_CODE(interp) == nil)
+    if (FLISP_IS_ERR(interp->self.input = file_fopen(interp, input, "<")))
+        fatal("OOM preparing input...");
+    e = flisp_eval_input(interp, t);
+    if (!FLISP_IS_ERR(e))
         return;
-    msg_lisp_err(interp);
+    msg_lisp_err(interp, e);
     if (debug_mode)
-        flisp_write_error(interp, debug_fp);
-    if (FLISP_RESULT_CODE(interp) == out_of_memory)
+        flisp_write_object(interp, e, t, interp->self.debug);
+    if (e->error.type == out_of_memory)
         fatal("OOM, exiting..");
     return;
 }

@@ -159,12 +159,13 @@ void display_utf8(buffer_t *bp, int n)
     addstr(sbuf);
 }
 
-extern Interpreter *interp;
+extern Object *interp;
 void modeline(window_t *wp)
 {
     int i;
     char lch, mch, och, *mode;
     static char modeline[256];
+    Object *m;
 
     /* n = utf8_size(*(ptr(wp->w_bufp, wp->w_bufp->b_point))); */
     attron(COLOR_PAIR(ID_MODELINE));
@@ -173,8 +174,8 @@ void modeline(window_t *wp)
     mch = (wp->w_bufp->modified ? '*' : lch);
     och = (wp->w_bufp->overwrite ? 'O' : lch);
     /* Note: experimental, no error check */
-    flisp_expr(interp, wp->w_bufp->mode);
-    mode = (wp->w_bufp->mode == nil) ? "Text" : interp->result->string;
+    m = flisp_eval_object(interp, wp->w_bufp->mode);
+    mode = (wp->w_bufp->mode == nil) ? "Text" : flisp_symbol_string(m);
     snprintf(modeline, 256,
              "%c%c%c Femto: %c%c %s (%s) ",
              lch,och,mch,lch,lch, wp->w_bufp->name, mode);

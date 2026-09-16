@@ -65,7 +65,9 @@ void lisp_init(char **argv)
         FLISP_UNLESS_ERR(flisp_register_extension(interp, "string", flisp_string_init));
         FLISP_UNLESS_ERR(flisp_register_extension(interp, "posix", flisp_posix_init));
         FLISP_UNLESS_ERR(flisp_register_extension(interp, "femto", femto_init));
-        debug("femto primitives and constants registered and loaded\n");
+        debug("femto primitives and constants registered\n");
+        FLISP_UNLESS_ERR(femto_init(interp, interp->self.extensions->car));
+        debug("femto extension loaded\n");
 #ifdef FLISP_DOUBLE_EXTENSION
         FLISP_UNLESS_ERR(flisp_register_extension(interp, "double", flisp_double_init));
         debug("double extension registered\n");

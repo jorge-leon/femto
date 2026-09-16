@@ -109,8 +109,9 @@
 ;; Try to load the user rc file
 ;;
 (let* ((rcfile (confn config_file))
+       ;; Note: admittedly it's rude to test for existence this way. It just that it is so short... 
        (result (load rcfile)) )
-  (if (errorp result)  (errorp (log 'ERROR result "error loading rc file:"))
+  (if (errorp result)  (errorp (log 'ERROR (elements result 0 1) " error loading rc file: "(elements result 1 2)))
       (log 'NOTICE nil "rc file '"rcfile"' loaded\n") ))
 
 ;;

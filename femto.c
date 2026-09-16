@@ -91,6 +91,10 @@ void lisp_init(char **argv)
 
     if ((FLISP_STDERR.fd = open_memstream(&flisp_error_output, &flisp_error_size)) == NULL)
         fatal("Failed to create fLisp error stream");
+    /* Note: This is a residue of the approach to vfprintf to the interpreter via a pipe.
+     *   it worked well, but we forgot and overwrote the other half.
+     *   Consider re-instating it.
+     */
     if (pipe(flisp_input_pipe) == -1)
         fatal("Failed to create fLisp input pipe");
     if ((FLISP_STANDARD_INPUT.fd = fdopen(flisp_input_pipe[0], "r")) == NULL)

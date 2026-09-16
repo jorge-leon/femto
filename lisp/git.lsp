@@ -104,21 +104,24 @@ then select one of the following letters to operate on the file
   (git-count-line))
 
 (defun git-count-line()
-  (when (> (get-point) 0)
-    (setq git-last-line (+ 1 git-last-line))
-    (previous-line)
-    (beginning-of-line)
-    (git-count-line) ))
+  (cond
+    ((> (get-point) 0)
+     (setq git-last-line (+ 1 git-last-line))
+     (previous-line)
+     (beginning-of-line)
+     (git-count-line))))
 
 (defun git-loop()
   (setq git-ops (+ git-ops 1))
-  (when (< git-ops git-max-ops)
-    (message (concat git-status "(" git-name ") git menu: c,d,s,u,p,x h=help"))
-    (update-display)
-    (setq git-key (get-key))
-    (if (eq git-key "") (git-handle-arrow-key)
-	(git-handle-command-key git-key) )
-    (git-loop) ))
+  (cond
+    ((< git-ops git-max-ops)
+     (message (concat git-status "(" git-name ") git menu: c,d,s,u,p,x h=help"))
+     (update-display)
+     (setq git-key (get-key))
+     (cond
+       ((eq git-key "") (git-handle-arrow-key))
+       (t (git-handle-command-key git-key)))
+     (git-loop))))
 
 (defun git-handle-arrow-key()
   (setq git-key (get-key-funcname))
@@ -134,14 +137,15 @@ then select one of the following letters to operate on the file
       (kill-buffer git-buffer)
       (setq git-ops (+ git-max-ops 1)))
     ((eq k "s")
-     (if (eq git-status2 "D") (setq git-minus-u "-u ") (setq git-minus-u "")) 
+     (cond ((eq git-status2 "D") (setq git-minus-u "-u ")) (t (setq git-minus-u ""))) 
      (shell-command (concat "git add " git-minus-u git-name))
      (kill-buffer out-buffer)
-     (git-menu) )
+     (git-menu))
     ((eq k "c")
-     (when (eq "commit" (git-get-commit-string))
-       (shell-command (concat "git commit -F " git-commit-file)) )
-      (git-menu) )
+     (cond
+       ((eq "commit" (git-get-commit-string))
+        (shell-command (concat "git commit -F " git-commit-file))))
+      (git-menu))
     ((eq k "p")
       (message "pushing commits to master ...")
       (update-display)
@@ -189,25 +193,25 @@ then select one of the following letters to operate on the file
 ;;
 (defun git-get-commit-string()
   (kill-buffer git-commit-buffer)
-  (unless (split-window) (throw out-of-memory "Failed to allocate memory for new window"))
-  (switch-to-buffer git-commit-buffer)
-  (restore-buffer-modified-p nil)
-  (message "c-c c-c to commit, c-c c-q to cancel")
-  (update-display)
-  (setq r (get-commit-key))
-  (if-not (eq r "commit") "cancel"
-	  (setq git-commit-file (get-temp-file))
+  (if-not (split-window) (error :out-of-memory "Failed to allocate memory for new window")
 	  (switch-to-buffer git-commit-buffer)
-	  (beginning-of-buffer)
-	  (set-mark)
-	  (end-of-buffer)
-	  (copy-region)
-	  (find-file git-commit-file)
-	  (yank)
-	  (save-buffer (buffer-name))
-	  (kill-buffer (buffer-name))
-	  (kill-buffer git-commit-buffer)
-	  "commit" ) )
+	  (restore-buffer-modified-p nil)
+	  (message "c-c c-c to commit, c-c c-q to cancel")
+	  (update-display)
+	  (setq r (get-commit-key))
+	  (if-not (eq r "commit") "cancel"
+		  (setq git-commit-file (get-temp-file))
+		  (switch-to-buffer git-commit-buffer)
+		  (beginning-of-buffer)
+		  (set-mark)
+		  (end-of-buffer)
+		  (copy-region)
+		  (find-file git-commit-file)
+		  (yank)
+		  (save-buffer (buffer-name))
+		  (kill-buffer (buffer-name))
+		  (kill-buffer git-commit-buffer)
+		  "commit" )))
 
 (defun get-commit-key()
   (update-display)
@@ -235,13 +239,13 @@ then select one of the following letters to operate on the file
 
 (defun exec-view-key()
   (setq f (get-key-funcname))
-  (when
-      (memq f
-	    '("page-down" "page-up"
-	      "next-line" "previous-line"
-	      "beginning-of-buffer""end-of-buffer") )
-    (execute-key)
-    (update-display) ))
+  (cond
+    ((memq f
+	   '("page-down" "page-up"
+	     "next-line" "previous-line"
+	     "beginning-of-buffer""end-of-buffer"))
+     (execute-key)
+     (update-display))))
 
 (defun git-move-line(n)
   (setq git-line (max git-start-line (min (+ git-line n) git-last-line))))

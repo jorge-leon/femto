@@ -25,15 +25,16 @@
 #include "flisp/lisp.h"
 #include "flisp/string.h"
 #include "flisp/posix.h"
-#ifdef FLISP_DOUBLE_EXTENSION
 #include "flisp/double.h"
-#endif
 
 void gui(void); /* The GUI loop used in interactive mode */
 
 Object *interp;
 char debug_file[] = "debug.out";
-FILE *prev, *debug_fp = NULL;
+FILE *debug_fp = NULL;
+int flisp_input_pipe[2];
+char *flisp_error_output;
+size_t flisp_error_size;
 
 /** lisp_init() - initialize fLisp interpreter and load rc file
  *
@@ -87,8 +88,14 @@ void lisp_init(char **argv)
         if (FLISP_IS_OOM(e))
             fatal("exiting..");
     }
-    if (init_fd != NULL && fclose(init_fd))
-        debug("failed to close rcfile %s: %s\n", init_file, strerror(errno));
+
+    if ((FLISP_STDERR.fd = open_memstream(&flisp_error_output, &flisp_error_size)) == NULL)
+        fatal("Failed to create fLisp error stream");
+    if (pipe(flisp_input_pipe) == -1)
+        fatal("Failed to create fLisp input pipe");
+    if ((FLISP_STANDARD_INPUT.fd = fdopen(flisp_input_pipe[0], "r")) == NULL)
+        fatal("Failed to open fLisp input pipe read stream");
+    debug("fLisp input pipe set up\n");
 }
 
 int main(int argc, char **argv)
@@ -131,7 +138,7 @@ int main(int argc, char **argv)
 
     debug("main(): shutdown\n");
     // Note: exit frees all memory, do we need this here?
-    // Note: we can't do
+    // Note: we can't do, or we can again
     //flisp_destroy(interp);
     //here, because we get segfaults in wide character routines.
 
@@ -163,16 +170,14 @@ void msg_lisp_err(Object *interp, Object *e)
 
 /** eval_string - Invoke fLisp interpreter and return result as string
  *
- * @param do_format  If true, the input string is passed through
- *                   printf style formatting, otherwise it is used directly.
- * @param format     Input string for the interpreter.
+ * @param format     printf like format string for the interpreter.
+ * @param ...        parameters to the format string.
  *
  */
 void eval_string(bool do_format, char *format, ...)
 {
     char buf[INPUT_FMT_BUFSIZ], *input;
     Object *e;
-
     int size;
     va_list args;
 

@@ -374,10 +374,6 @@
     <dd>Create a file in <code>/tmp</code> with a unique name, return filename.</dd>
     <dt><code>(get-version-string)</code> ⇒ <var>string</var> <u>f</u></dt>
     <dd>Returns the complete version string of Femto, including the copyright.</dd>
-    <dt><code>(log-debug <var>string</var>)</code> ⇒ <code>t</code> <u>f</u></dt>
-    <dd>Logs string to the file <code>debug.out</code>.</dd>
-    <dt><code>(log-message <var>string</var>)</code> ⇒ <code>t</code> <u>f</u></dt>
-    <dd>Logs <var>string</var> to the <samp>*messages*</samp> buffer.</dd>
     <dt><code>(suspend)</code> ⇒ <code>t</code> <u>S: suspend-emacs</u></dt>
     <dd>Suspend <i>Femto</i>.</dd>
   </dl>
@@ -473,6 +469,9 @@
     <dt><code>(run-hooks <var>hooks</var>)</code></dt>
     <dd><var>hooks</var> is a variable name holding a list of function symbols which are run in order. This implements
     Emacs <q>normal</q> hooks.</dd>
+    <dt><code>(log <var>level</var>[ <var>arg</var> ..])</code></dt>
+    <dd><code>(concat)</code> all given <var>args</var>, prepended with &nbsp;<q><code><var>level</var>:</code></q> and
+    write the resulting string to&nbsp;debug output.</dd>
   </dl>
   <nav>
     <a href="#toc">^</a>
@@ -525,9 +524,7 @@
   </nav>
   <h3 id="femto_apps">Femto Lisp Applications</h3>
   <h4 id="defmacro"><code>defmacro</code> Editor Macros</h4>
-  <p><mark>Note: currently not working because of segfault in lisp_eval(), supposedly double free/segfault</mark></p>
-  <p id="dired">This applications allows to record a keyboard macros and make it available in a buffer called
-  *macro*.</p>
+  <p>This applications allows to record a keyboard macros and make it available in a buffer called *macro*.</p>
   <p>Keybindings:</p>
   <dl>
     <dt>c-x (</dt>

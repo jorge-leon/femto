@@ -407,12 +407,6 @@ Create a file in `/tmp` with a unique name, return filename.
 `(get-version-string)` ⇒ *string* <u>f</u>  
 Returns the complete version string of Femto, including the copyright.
 
-`(log-debug «string»)` ⇒ `t` <u>f</u>  
-Logs string to the file `debug.out`.
-
-`(log-message «string»)` ⇒ `t` <u>f</u>  
-Logs *string* to the `*messages*` buffer.
-
 `(suspend)` ⇒ `t` <u>S: suspend-emacs</u>  
 Suspend *Femto*.
 
@@ -538,6 +532,10 @@ a dash `-`, is only alphanumeric plus dot, underscore, dash and slash.
 *hooks* is a variable name holding a list of function symbols which are
 run in order. This implements Emacs “normal” hooks.
 
+`(log «level»[ «arg» ..])`  
+`(concat)` all given *args*, prepended with  “*level*`:`” and write the
+resulting string to debug output.
+
 [^](#toc)
 
 ##### *Femto* Buffer Functions
@@ -605,9 +603,6 @@ the major mode of the buffer and runs the hook `find-file-hook`.
 ### Femto Lisp Applications
 
 #### `defmacro` Editor Macros
-
-<span class="mark">Note: currently not working because of segfault in
-lisp_eval(), supposedly double free/segfault</span>
 
 This applications allows to record a keyboard macros and make it
 available in a buffer called \*macro\*.

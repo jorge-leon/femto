@@ -307,7 +307,7 @@ Object *e_goto_line(Object *interp, Object **args, Object **env, size_t nArgs)
     int line = FLISP_ARG1->value;
 
     if (line < 0)
-        return newError(interp, FLISP_ARG1, invalid_value, "(goto-line line) - line must be positive");
+        return newError(interp, invalid_value, FLISP_ARG1, "(goto-line line) - line must be positive");
     return goto_line(line) ? t : nil;
 }
 
@@ -425,10 +425,10 @@ Object *e_buffer_fread(Object *interp, Object **args, Object **env, size_t nArgs
             return newInteger(interp, 0);
 
         if (FLISP_ARG2->value < 0)
-            return newError(interp, FLISP_ARG2, invalid_value, "(buffer-read size stream) - size is negative");
+            return newError(interp, invalid_value, FLISP_ARG2, "(buffer-read size stream) - size is negative");
         len = buffer_fread(curbp, FLISP_ARG1->stream.fd, FLISP_ARG2->value);
         if (ferror(FLISP_ARG1->stream.fd))
-            return newError2(interp, FLISP_ARG1, io_error, "buffer_fread() failed: %s", strerror(errno));
+            return newError2(interp, io_error, FLISP_ARG1, "buffer_fread() failed: %s", strerror(errno));
 
         if (len == -1)
             return newError(interp, out_of_memory, nil, "buffer_fread() failed, could not grow current buffer");
@@ -439,7 +439,7 @@ Object *e_buffer_fread(Object *interp, Object **args, Object **env, size_t nArgs
         len = buffer_fread(curbp, FLISP_ARG1->stream.fd, BUFSIZ);
 
         if (ferror(FLISP_ARG1->stream.fd))
-            return newError2(interp, FLISP_ARG1, io_error, "buffer_fread() failed: %s", strerror(errno));
+            return newError2(interp, io_error, FLISP_ARG1, "buffer_fread() failed: %s", strerror(errno));
 
         if (len == -1)
             return newError(interp, out_of_memory, nil, "buffer_fread() failed, could not grow current buffer");
@@ -463,14 +463,14 @@ Object *e_buffer_fwrite(Object *interp, Object **args, Object **env, size_t nArg
         if (FLISP_ARG2->value == 0)
             return newInteger(interp, 0);
         if (FLISP_ARG2->value < 0)
-            return newError(interp, FLISP_ARG2, invalid_value, "(buffer-fwrite stream size) - size is negative");
+            return newError(interp, invalid_value, FLISP_ARG2, "(buffer-fwrite stream size) - size is negative");
         len = FLISP_ARG2->value;
     } else {
         len = get_point_max() - get_point();
     }
     len = buffer_fwrite(curbp, FLISP_ARG1->stream.fd, len);
     if (ferror(FLISP_ARG1->stream.fd))
-        return newError2(interp, FLISP_ARG1, io_error, "buffer_fwrite() failed: %s", strerror(errno));
+        return newError2(interp, io_error, FLISP_ARG1, "buffer_fwrite() failed: %s", strerror(errno));
 
     return newInteger(interp, len);
 }
@@ -522,7 +522,7 @@ Object *e_buffer_next(Object *interp, Object **args,Object **env, size_t nArgs)
     buffer_t *bp = find_buffer(FLISP_ARG1->string, false);
 
     if (!bp)
-        return newError(interp, FLISP_ARG1, invalid_value, "(buffer-next buffer) - buffer does not exist");
+        return newError(interp, invalid_value, FLISP_ARG1, "(buffer-next buffer) - buffer does not exist");
 
     return newString(interp, bp->b_next->name);
 }
@@ -531,7 +531,7 @@ Object *e_buffer_show(Object *interp, Object **args, Object **env, size_t nArgs)
 {
     buffer_t *bp = find_buffer(FLISP_ARG1->string, true);
     if (!bp)
-        return newError(interp, FLISP_ARG1, out_of_memory, "(generate-new-buffer name) failed, out of memory");
+        return newError(interp, out_of_memory, FLISP_ARG1, "(generate-new-buffer name) failed, out of memory");
     switch_to_buffer(bp);
     return FLISP_ARG1;
 }
@@ -540,9 +540,9 @@ Object *e_delete_buffer(Object *interp, Object **args, Object **env, size_t nArg
 {
     buffer_t *buffer = find_buffer(FLISP_ARG1->string, false);
     if (buffer == NULL)
-        return newError(interp, FLISP_ARG1, invalid_value, "(delete-buffer buffer) - buffer does not exist");
+        return newError(interp, invalid_value, FLISP_ARG1, "(delete-buffer buffer) - buffer does not exist");
     if (!delete_buffer(buffer))
-        return newError(interp, FLISP_ARG1, invalid_value, "(delete-buffer buffer) - refused to delete scratch or current buffer");
+        return newError(interp, invalid_value, FLISP_ARG1, "(delete-buffer buffer) - refused to delete scratch or current buffer");
     return FLISP_ARG1;
 }
 
@@ -551,7 +551,7 @@ Object *e_get_buffer_create(Object *interp, Object **args, Object **env, size_t 
 {
     if (find_buffer(FLISP_ARG1->string, true))
         return FLISP_ARG1;
-    return newError(interp, FLISP_ARG1, out_of_memory, "(get-buffer-create name) failed, out of memory");
+    return newError(interp, out_of_memory, nil, "(get-buffer-create name) failed, out of memory");
 }
 
 /* Note: we should move this to Lisp */
@@ -592,7 +592,7 @@ Object *e_set_buffer(Object *interp, Object **args, Object **env, size_t nArgs)
     buffer_t *bp = find_buffer(FLISP_ARG1->string, false);
 
     if (!bp)
-        return newError(interp, FLISP_ARG1, invalid_value, "(set-buffer buffer) - buffer does not exist");
+        return newError(interp, invalid_value, FLISP_ARG1, "(set-buffer buffer) - buffer does not exist");
 
     curbp = bp;
     return FLISP_ARG1;
@@ -603,10 +603,10 @@ Object *e_set_buffer_name(Object *interp, Object **args, Object **env, size_t nA
     buffer_t *buffer = find_buffer(FLISP_ARG1->string, false);
 
     if (buffer != NULL)
-        return newError(interp, FLISP_ARG1, invalid_value, "(set-buffer-name name) - name, already exists");
+        return newError(interp, invalid_value, FLISP_ARG1, "(set-buffer-name name) - name, already exists");
 
     if (!set_buffer_name(curbp, FLISP_ARG1->string))
-        return newError(interp, FLISP_ARG1, out_of_memory, "(set-buffer-name name) - name, failed to allocate string");
+        return newError(interp, out_of_memory, FLISP_ARG1, "(set-buffer-name name) - name, failed to allocate string");
     return FLISP_ARG1;
 }
 
@@ -639,7 +639,7 @@ Object *e_pop_to_buffer(Object *interp, Object **args, Object **env, size_t nArg
 {
     window_t *wp = popup_window(FLISP_ARG1->string);
     if (wp == NULL)
-        return newError(interp, FLISP_ARG1, invalid_value, "(pop-to-buffer buffer) - buffer does not exist");
+        return newError(interp, invalid_value, FLISP_ARG1, "(pop-to-buffer buffer) - buffer does not exist");
     /* See other_window() */
     curwp->w_update = true;
     curwp = wp;
@@ -953,7 +953,8 @@ void user_func(void)
         msg(E_NOT_BOUND);
         return;
     }
-    eval_string(true, "(%s)", key_return->k_funcname);
+    debug("user_func: (%s)\n", key_return->k_funcname);
+    eval_string("(%s)", key_return->k_funcname);
 }
 
 FLISP_DEFINE_CONSTANT(femto_libs,femto_lib);

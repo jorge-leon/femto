@@ -60,9 +60,9 @@ int parse_text(buffer_t *bp, point_t pt)
     bool lisp_mode   = false;
     bool python_mode = false;
     if (bp->mode == nil) ;
-    else if ((c_mode =       (0 == (strcmp(bp->mode->string, "C")))));
-    else if ((lisp_mode =    (0 == (strcmp(bp->mode->string, "Lisp")))));
-    else if ((python_mode =  (0 == ((strcmp(bp->mode->string, "Python"))))));
+    else if ((c_mode =       (0 == (strcmp(((SimpleObject *)bp->mode)->str, "C")))));
+    else if ((lisp_mode =    (0 == (strcmp(((SimpleObject *)bp->mode)->str, "Lisp")))));
+    else if ((python_mode =  (0 == (strcmp(((SimpleObject *)bp->mode)->str, "Python")))));
 
     //debug("parse_text(): c_mode %d, lisp_mode %d, python_mode %d\n", c_mode, lisp_mode, python_mode);
 

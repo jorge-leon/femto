@@ -113,7 +113,7 @@
     (if (cond
 	  ((i= ops 0) nil)
 	  ((memq result '(quit exit))
-	   (log :debug nil "want to leave: "code)
+	   (log :debug nil "want to leave: "result)
 	   nil)
 	  ((consp result)
 	   (setq other (cdr result))
@@ -133,7 +133,7 @@
 	;; quit or exit
 	(if (eq result :exit) (save-buffers-kill-terminal)
 	    (log :debug
-		 "still want to leave: "code" current: "(current-buffer)" other: "other
+		 "still want to leave: "result" current: "(current-buffer)" other: "other
 		 " other other: "(other-buffer)
 		 " buffer list: "(buffer-list))
 	    (restore-buffer-modified-p nil)

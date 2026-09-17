@@ -382,7 +382,7 @@ Object *e_find_buffer_by_fname(Object *interp, Object **args, Object **env, size
 /* Helper function: set buffer either to current buffer or named buffer if first argument exists, return nil on success, else error */
 Object *get_buffer_arg_one(Object *interp, Object **args, size_t nArgs, buffer_t **buffer, char *signature)
 {
-    if (nArgs) {
+    if (nArgs == 0 || FLISP_ARG1 == nil) {
         *buffer = curbp;
         return nil;
     }

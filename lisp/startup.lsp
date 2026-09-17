@@ -59,20 +59,19 @@
 ;;  Load extensions
 ;;
 (require 'defmacro)
-(require 'bufmenu)
-(require 'dired)
-(require 'grep)
-(require 'git)
 
-(defun oxo ()
-  ;; autoload info with c-x c-o
-  (require 'oxo)
-  (oxo) )
-
-(defun show-info ()
-  ;; autoload info with c-x h
-  (require 'info)
-  (show-info) )
+;;; autoload dired with c-x c-b
+(defun buffer-menu () (require 'bufmenu) buffer-menu)
+;;; autoload dired with c-x d
+(defun dired-interactive () (require 'dired) (dired-interactive))
+;;; autoload grep with c-x g
+(defun grep-command () (require 'grep) (grep-command))
+;;; autoload git with c-x c-g
+(defun git-menu () (require 'git) (git-menu))
+;;; autoload info with c-x c-o
+(defun oxo () (require 'oxo) (oxo))
+;;; autoload info with c-x h
+(defun show-info () (require 'info) (show-info))
 
 ;;
 ;;  Key Bindings, setkey is used to bind keys to user defined functions in lisp

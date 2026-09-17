@@ -281,7 +281,7 @@
 (defun switch-to-buffer (name)
   (buffer-show name)
   (let ((result (run-hooks 'after-switch-to-buffer-hook)))
-    (log 'DEBUG result "after-switch-to-buffer-hook") )
+    (log :debug result "after-switch-to-buffer-hook") )
   name )
 
 (defun restore-buffer-modified-p (bool)  (buffer-modified-p (current-buffer) bool))

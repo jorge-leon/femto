@@ -69,10 +69,8 @@ void lisp_init(char **argv)
         debug("femto primitives and constants registered\n");
         FLISP_UNLESS_ERR(femto_init(interp, interp->self.extensions->car));
         debug("femto extension loaded\n");
-#ifdef FLISP_DOUBLE_EXTENSION
         FLISP_UNLESS_ERR(flisp_register_extension(interp, "double", flisp_double_init));
         debug("double extension registered\n");
-#endif
     } while(0);
     if (FLISP_IS_ERR(e))
         fatal("fLisp initialization failed");
@@ -91,7 +89,7 @@ void lisp_init(char **argv)
 
     if ((FLISP_STDERR.fd = open_memstream(&flisp_error_output, &flisp_error_size)) == NULL)
         fatal("Failed to create fLisp error stream");
-    /* Note: This is a residue of the approach to vfprintf to the interpreter via a pipe.
+    /* Note: The following a residue of the approach to vfprintf to the interpreter via a pipe.
      *   it worked well, but we forgot and overwrote the other half.
      *   Consider re-instating it.
      */
@@ -135,6 +133,7 @@ int main(int argc, char **argv)
         FLISP_STANDARD_INPUT.fd = stdin;
         FLISP_STANDARD_OUTPUT.fd = stdout;
         FLISP_STDERR.fd = stderr;
+        /* Note: we might need to set interp->self.print here */
         while (!FLISP_IS_EOF(flisp_eval_input(interp, nil)));
     } else
         /* GUI */
@@ -157,57 +156,56 @@ int main(int argc, char **argv)
  */
 void msg_lisp_err(Object *interp, Object *e)
 {
-    char *buf;
-    size_t len;
-    FILE *fd;
+    /* Note: only open one globally and reuse */
+    Object *stream = file_fopen(interp, "", ">");
+    if (FLISP_IS_ERR(stream))
+        fatal("failed to open error formatting stream");
+    flisp_write_object(interp, e, nil, stream);
+    msg("%s", stream->stream.buf);
+    if (file_fclose(interp, stream))
+        fatal("failed to close error formatting stream");
+}
 
-    /* Note: use file_fopen() here. */
-    if (NULL == (fd = open_memstream(&buf, &len)))
-        fatal("failed to allocate error formatting buffer");
-    FLISP_STANDARD_OUTPUT.fd = fd;
-    flisp_write_object(interp, e, t, interp->self.output);
-    msg("%s", buf);
-    FLISP_STANDARD_OUTPUT.fd = NULL;
-    fclose(fd);
-    free(buf);
+void drain_flisp_input_pipe() {
+    char buf[PIPE_BUF];
+    int size = read(flisp_input_pipe[0], buf, PIPE_BUF);
+    if (size == -1)
+        debug("eval_string: buffer empty, %\n", strerror(errno));
+    else 
+        debug("eval_string: emptying %d bytes: %s\n", buf);
 }
 
 /** eval_string - Invoke fLisp interpreter and return result as string
  *
- * @param format     printf like format string for the interpreter.
  * @param ...        parameters to the format string.
  *
  */
-void eval_string(bool do_format, char *format, ...)
+void eval_string(char *format, ...)
 {
-    char buf[INPUT_FMT_BUFSIZ], *input;
     Object *e;
-    int size;
     va_list args;
+    size_t size;
 
-    if (do_format) {
-        va_start(args, format);
-        size = vsnprintf (buf, sizeof(buf), format, args);
-        va_end(args);
-        if (size > INPUT_FMT_BUFSIZ) {
-            msg("input string larger then %d", INPUT_FMT_BUFSIZ);
-            return;
-        }
-        input = buf;
-    } else {
-        input = format;
+    va_start(args, format);
+    size = vdprintf(flisp_input_pipe[1], format, args);
+    va_end(args);
+    if (size > PIPE_BUF) {
+        msg("input string larger then %d", PIPE_BUF);
+        drain_flisp_input_pipe();
+        return;
     }
-    if (FLISP_IS_ERR(interp->self.input = file_fopen(interp, input, "<")))
-        fatal("OOM preparing input...");
-    e = flisp_eval_input(interp, t);
+    e = flisp_eval_expr(interp, t);
     if (!FLISP_IS_ERR(e))
         return;
-    msg_lisp_err(interp, e);
+    if (FLISP_IS_OOM(e))
+        fatal("OOM wile evaluating expression");    
+    if (FLISP_IS_EOF(e))
+        fatal("fLisp input pipe closed");
+    /* Note: since interp->stderr goes to debug, the following just doubles output there */
     if (debug_mode)
         flisp_write_object(interp, e, t, interp->self.debug);
-    if (e->error.type == out_of_memory)
-        fatal("OOM, exiting..");
-    return;
+    msg_lisp_err(interp, e);
+
 }
 
 void gui(void)

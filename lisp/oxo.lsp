@@ -13,7 +13,7 @@
 ;; (message "")
 ;; (display)
 ;; (setq key (getch))
-;; (debug "(draw)\n")
+;; (debug "(oxo-draw)\n")
 ;; (beginning-of-buffer)
 ;; (set-mark)
 ;; (repeat 10 next-line)

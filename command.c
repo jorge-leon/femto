@@ -974,8 +974,8 @@ Object *femto_init(Object *interp, Object *extension)
         
         if ((library_path=getenv("FEMTOLIB")) == NULL)
             library_path = CPP_XSTR(E_SCRIPTDIR);
-        femto_script_dir = newString(interp, library_path);
         
+        FLISP_UNLESS_ERR(femto_script_dir = newString(interp, library_path));
         FLISP_UNLESS_ERR(flisp_register_constant(interp, femto_libs, femto_script_dir));
 
 /* Text manipulation: read from, write to buffer text */

@@ -7,7 +7,7 @@
 #include "flisp/lisp.h"
 
 #define E_NAME          "femto"
-#define E_VERSION       "2.25.2"
+#define E_VERSION       "2.25.3"
 #define E_LABEL         "Femto:"
 #define E_NOT_BOUND     "<not bound>"
 #ifndef E_SCRIPTDIR
@@ -127,7 +127,7 @@ extern void fatal(char *msg);
 extern void msg(char *m, ...);
 
 
-extern void eval_string(bool, char *, ...);
+extern void eval_string(char *, ...);
 extern void free_lisp_output(char *);
 
 /*

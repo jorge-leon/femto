@@ -226,7 +226,6 @@
 ;;; Note: We also must delete associated buffers! or prevent deletion
 ;;; when a buffer is associated
 (defun dired-do-delete ()
-  
   (let* ((info     (dired-get-info))
 	 (isdir    (string-equal "d" (car info)))
 	 (name     (cdr info))

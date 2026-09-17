@@ -100,11 +100,10 @@
   (message "buffer menu: 1,2,s,k,x")
   (update-display)
   (setq bufm-key (get-key))
-  (cond ((eq bufm-key "") (bufm-handle-bound-key))
-        (t (bufm-handle-single-key bufm-key)))
-  (cond
-    ((or (> bufm-ops bufm-max-ops) bufm-stop) (setq bufm-stop t))
-    (t (bufm-loop-payload))))
+  (if (eq bufm-key "") (bufm-handle-bound-key)
+      (bufm-handle-single-key bufm-key) )
+  (if (or (> bufm-ops bufm-max-ops) bufm-stop) (setq bufm-stop t)
+      (bufm-loop-payload)) )
 
 ;;
 ;; (bufm-handle-bound-key)
@@ -139,8 +138,8 @@
     ((memq k '("x" "q"))
      (goto-line bufm-start-line)
      (beginning-of-line)
-     (cond ((search-forward bufm-obuf) (switch-to-buffer bufm-obuf))
-           (t (switch-to-buffer "*scratch*")))
+     (if (search-forward bufm-obuf) (switch-to-buffer bufm-obuf)
+         (switch-to-buffer "*scratch*") )
      (setq bufm-stop t)
      (update-display))
     ((and (eq k "1") (> bufm_count 1))
@@ -205,13 +204,13 @@
   (list 'log :debug (list 'concat (symbol-name var) "=" var "\n")))
 
 (defun bufm-debug(msg)
-  (cond (bufm-debugging
-	 (log :debug (concat msg "\n"))
-	 (log-var bufm-line)
-	 (log-var bufm-start-line)
-	 (log-var bufm-last-line)
-	 (log-var bufm-obuf)
-	 (log-var bufm-buf)
-	 (log :debug "\n\n"))))
+  (when bufm-debugging
+    (log :debug (concat msg "\n"))
+    (log-var bufm-line)
+    (log-var bufm-start-line)
+    (log-var bufm-last-line)
+    (log-var bufm-obuf)
+    (log-var bufm-buf)
+    (log :debug "\n\n") ))
 
 (provide 'bufmenu)

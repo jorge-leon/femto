@@ -4,6 +4,8 @@
 - Implement Lisp buffer object
 - Fix bufmenu to use after-mode-switch-hook
 - Fix git and grep
+- Auoload applications to reduce startup time.
+- Bug: femto segfaults w/o femtorc, batch-mode
 - Use posix-filename on save-buffer.
 - Move prompt-filename to Lisp.
 - Consider implementing bury-buffer.

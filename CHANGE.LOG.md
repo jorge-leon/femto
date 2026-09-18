@@ -1,6 +1,6 @@
 ## Femto 2.25.3
 
-* Adjust do fLisp 0.17
+* Adjust to fLisp 0.17
 
 ## Femto 2.25.2
 

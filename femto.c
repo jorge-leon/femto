@@ -29,7 +29,7 @@
 
 void gui(void); /* The GUI loop used in interactive mode */
 
-Object *interp;
+Object *interp, *err_stream;
 char debug_file[] = "debug.out";
 FILE *debug_fp = NULL;
 int flisp_input_pipe[2];
@@ -89,10 +89,7 @@ void lisp_init(char **argv)
 
     if ((FLISP_STDERR.fd = open_memstream(&flisp_error_output, &flisp_error_size)) == NULL)
         fatal("Failed to create fLisp error stream");
-    /* Note: The following a residue of the approach to vfprintf to the interpreter via a pipe.
-     *   it worked well, but we forgot and overwrote the other half.
-     *   Consider re-instating it.
-     */
+    /* fLisp's input is a pipe, Femto writes commands to it */
     if (pipe(flisp_input_pipe) == -1)
         fatal("Failed to create fLisp input pipe");
     if ((FLISP_STANDARD_INPUT.fd = fdopen(flisp_input_pipe[0], "r")) == NULL)
@@ -135,11 +132,20 @@ int main(int argc, char **argv)
         FLISP_STDERR.fd = stderr;
         /* Note: we might need to set interp->self.print here */
         while (!FLISP_IS_EOF(flisp_eval_input(interp, nil)));
-    } else
-        /* GUI */
-        gui();
+        return 0;
+    }
+
+    err_stream = file_fopen(interp, "", ">");
+    if (FLISP_IS_ERR(err_stream))
+        fatal("failed to open error formatting stream");
+    
+    /* GUI */
+    gui();
 
     debug("main(): shutdown\n");
+    if (file_fclose(interp, err_stream))
+        fatal("failed to close error formatting stream");
+
     // Note: exit frees all memory, do we need this here?
     // Note: we can't do, or we can again
     //flisp_destroy(interp);
@@ -156,16 +162,10 @@ int main(int argc, char **argv)
  */
 void msg_lisp_err(Object *interp, Object *e)
 {
-    /* Note: only open one globally and reuse */
-    Object *stream = file_fopen(interp, "", ">");
-    if (FLISP_IS_ERR(stream))
-        fatal("failed to open error formatting stream");
-    flisp_write_object(interp, e, nil, stream);
-    msg("%s", stream->stream.buf);
-    if (file_fclose(interp, stream))
-        fatal("failed to close error formatting stream");
+    rewind(err_stream->stream.fd);
+    flisp_write_object(interp, e, nil, err_stream);
+    msg("%s", err_stream->stream.buf);
 }
-
 void drain_flisp_input_pipe() {
     char buf[PIPE_BUF];
     int size = read(flisp_input_pipe[0], buf, PIPE_BUF);
@@ -201,11 +201,7 @@ void eval_string(char *format, ...)
         fatal("OOM wile evaluating expression");    
     if (FLISP_IS_EOF(e))
         fatal("fLisp input pipe closed");
-    /* Note: since interp->stderr goes to debug, the following just doubles output there */
-    if (debug_mode)
-        flisp_write_object(interp, e, t, interp->self.debug);
     msg_lisp_err(interp, e);
-
 }
 
 void gui(void)

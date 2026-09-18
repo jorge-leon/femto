@@ -241,51 +241,56 @@ functions are:
 
 Additional extensions loaded by `femto.rc`
 
-- **dired** - enbles directory editing (Emacs style filemanager)
+- `dired` - enbles directory editing (Emacs style filemanager)
 
-  - **C-x C-d** to invoke, then single character keystrokes provide menu
-    options
-  - **f/Ret** load file or dired directory on current line
-  - **q** exit dired
-  - **g** reload dired buffer
-  - **^** dired parent directory
-  - **+** create directory
+  - <span class="kbd">C-x C-d</span> to invoke, then single character
+    keystrokes provide menu options
+  - <span class="kbd">f/Ret</span> load file or dired directory
+    on current line
+  - <span class="kbd">q</span> exit dired
+  - <span class="kbd">g</span> reload dired buffer
+  - <span class="kbd">^</span> dired parent directory
+  - <span class="kbd">+</span> create directory
   - On current line:
-    - **C** copy
-    - **D** delete 
-    - **G** change group
-    - **M** change mode
-    - **O** change owner
-    - **R** rename/move
-    - **S** symlink
-    - **T** touch (change timestamp)
+    - <span class="kbd">C</span> copy
+    - <span class="kbd">D</span> delete 
+    - <span class="kbd">G</span> change group
+    - <span class="kbd">M</span> change mode
+    - <span class="kbd">O</span> change owner
+    - <span class="kbd">R</span> rename/move
+    - <span class="kbd">S</span> symlink
+    - <span class="kbd">T</span> touch (change timestamp)
 
-- **grep** - enables searching for text in files and loading of the
-  files at the location of the match into the editor.
+- `grep` - enables searching for text in files and loading of the files
+  at the location of the match into the editor.
 
-  - **C-x g** to invoke, will request a search string and files to
-    search
-  - **C-x \`** to load the next matching file
+  - <span class="kbd">C-x g</span> to invoke, will request a search
+    string and files to search
+  - <span class="kbd">C-x \`</span> to load the next matching file
 
-- **bufmenu** - the classic Emacs buffer menu
+- `bufmenu` - the classic Emacs buffer menu
 
-  - **C-x C-b** to invoke, then single character keystrokes provide menu
-    options
-  - **1** loads the file on the current line in one window
-  - **2** loads the file on the current line in a split window
-  - **s** saves the file on the current line to disk
-  - **k** unloads the file without saving
-  - **x** exits bufmenu
+  - <span class="kbd">C-x C-b</span> to invoke, then single character
+    keystrokes provide menu options
+  - <span class="kbd">1</span> loads the file on the current line in one
+    window
+  - <span class="kbd">2</span> loads the file on the current line in a
+    split window
+  - <span class="kbd">s</span> saves the file on the current line to
+    disk
+  - <span class="kbd">k</span> unloads the file without saving
+  - <span class="kbd">x</span> exits bufmenu
 
-- **git** - a simple interface to the git version control tool (similar
-  to GNU Emacs magit).
+- `git` - a simple interface to the git version control tool (similar to
+  GNU Emacs magit).
 
-  - **C-x g** to invoke, then single character keystrokes menu options
+  - <span class="kbd">C-x g</span> to invoke, then single character
+    keystrokes menu options
 
-- **oxo** - a basic implementation of tick-tack-toe that runs in the
+- `oxo` - a basic implementation of tick-tack-toe that runs in the
   Editor.
 
-  - **C-x C-o** to invoke
+  - <span class="kbd">C-x C-o</span> to invoke
 
 ![Femto
 screenshot](https://github.com/hughbarney/femto/blob/master/screenshots/femto-oxo.jpg)
@@ -295,8 +300,6 @@ screenshot](https://github.com/hughbarney/femto/blob/master/screenshots/femto-ox
 `goto-line` will fail to go to the very last line. This is a special
 case that could easily be fixed.
 
-Adding a line at the bottom of a window will hide the line until the
-cursor moves up and down again or the screen is refreshed.
-
 dired eventually enters the key query loop recursively: one has to
-select a file buffer and eventually **q** out of it from there.
+select a file buffer and eventually <span class="kbd">q</span> out of it
+from there.

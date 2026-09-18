@@ -231,57 +231,57 @@
   <p>Additional extensions loaded by <code>femto.rc</code></p>
   <ul>
     <li>
-      <p><strong>dired</strong> - enbles directory editing (Emacs style filemanager)</p>
+      <p><code>dired</code> - enbles directory editing (Emacs style filemanager)</p>
       <ul>
-        <li><strong>C-x C-d</strong> to invoke, then single character keystrokes provide menu options</li>
-        <li><strong>f/Ret</strong> load file or dired directory on&nbsp;current line</li>
-        <li><b>q</b> exit dired</li>
-        <li><strong>g</strong> reload dired buffer</li>
-        <li><strong>^</strong> dired parent directory</li>
-        <li><strong>+</strong> create directory</li>
+        <li><kbd>C-x C-d</kbd> to invoke, then single character keystrokes provide menu options</li>
+        <li><kbd>f/Ret</kbd> load file or dired directory on&nbsp;current line</li>
+        <li><kbd>q</kbd> exit dired</li>
+        <li><kbd>g</kbd> reload dired buffer</li>
+        <li><kbd>^</kbd> dired parent directory</li>
+        <li><kbd>+</kbd> create directory</li>
         <li>On current line:
           <ul>
-            <li><strong>C</strong> copy</li>
-            <li><strong>D</strong> delete&nbsp;</li>
-            <li><strong>G</strong> change group</li>
-            <li><strong>M</strong> change mode</li>
-            <li><strong>O</strong> change owner</li>
-            <li><strong>R</strong> rename/move</li>
-            <li><strong>S</strong> symlink</li>
-            <li><strong>T</strong> touch (change timestamp)</li>
+            <li><kbd>C</kbd> copy</li>
+            <li><kbd>D</kbd> delete&nbsp;</li>
+            <li><kbd>G</kbd> change group</li>
+            <li><kbd>M</kbd> change mode</li>
+            <li><kbd>O</kbd> change owner</li>
+            <li><kbd>R</kbd> rename/move</li>
+            <li><kbd>S</kbd> symlink</li>
+            <li><kbd>T</kbd> touch (change timestamp)</li>
           </ul>
         </li>
       </ul>
     </li>
     <li>
-      <p><strong>grep</strong> - enables searching for text in files and loading of the files at the location of the
-      match into the editor.</p>
+      <p><code>grep</code> - enables searching for text in files and loading of the files at the location of the match
+      into the editor.</p>
       <ul>
-        <li><strong>C-x g</strong> to invoke, will request a search string and files to search</li>
-        <li><strong>C-x `</strong> to load the next matching file</li>
+        <li><kbd>C-x g</kbd> to invoke, will request a search string and files to search</li>
+        <li><kbd>C-x `</kbd> to load the next matching file</li>
       </ul>
     </li>
     <li>
-      <p><strong>bufmenu</strong> - the classic Emacs buffer menu</p>
+      <p><code>bufmenu</code> - the classic Emacs buffer menu</p>
       <ul>
-        <li><strong>C-x C-b</strong> to invoke, then single character keystrokes provide menu options</li>
-        <li><strong>1</strong> loads the file on the current line in one window</li>
-        <li><strong>2</strong> loads the file on the current line in a split window</li>
-        <li><strong>s</strong> saves the file on the current line to disk</li>
-        <li><strong>k</strong> unloads the file without saving</li>
-        <li><strong>x</strong> exits bufmenu</li>
+        <li><kbd>C-x C-b</kbd> to invoke, then single character keystrokes provide menu options</li>
+        <li><kbd>1</kbd> loads the file on the current line in one window</li>
+        <li><kbd>2</kbd> loads the file on the current line in a split window</li>
+        <li><kbd>s</kbd> saves the file on the current line to disk</li>
+        <li><kbd>k</kbd> unloads the file without saving</li>
+        <li><kbd>x</kbd> exits bufmenu</li>
       </ul>
     </li>
     <li>
-      <p><strong>git</strong> - a simple interface to the git version control tool (similar to GNU Emacs magit).</p>
+      <p><code>git</code> - a simple interface to the git version control tool (similar to GNU Emacs magit).</p>
       <ul>
-        <li><strong>C-x g</strong> to invoke, then single character keystrokes menu options</li>
+        <li><kbd>C-x g</kbd> to invoke, then single character keystrokes menu options</li>
       </ul>
     </li>
     <li>
-      <p><strong>oxo</strong> - a basic implementation of tick-tack-toe that runs in the Editor.</p>
+      <p><code>oxo</code> - a basic implementation of tick-tack-toe that runs in the Editor.</p>
       <ul>
-        <li><strong>C-x C-o</strong> to invoke</li>
+        <li><kbd>C-x C-o</kbd> to invoke</li>
       </ul>
     </li>
   </ul>
@@ -289,9 +289,7 @@
   <h2>Known Issues</h2>
   <p><code>goto-line</code> will fail to go to the very last line. This is a special case that could easily be
   fixed.</p>
-  <p>Adding a line at the bottom of a window will hide the line until the cursor moves up and down again or the screen
-  is refreshed.</p>
-  <p>dired eventually enters the key query loop recursively: one has to select a file buffer and
-  eventually&nbsp;<strong>q</strong> out of it from there.</p>
+  <p>dired eventually enters the key query loop recursively: one has to select a file buffer and eventually
+  <kbd>q</kbd> out of it from there.</p>
 </body>
 </html>

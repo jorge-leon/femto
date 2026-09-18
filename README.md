@@ -123,7 +123,7 @@ codebase less then half of the size.
 	atto           atto       33002     1.9k      10
 	pEmacs         pe         59465     5.7K      16
 	Esatz-Emacs    ee         59050     5.7K      14
-	femto          femto     166472     7.4k/2.4k 36/10 **
+	femto          femto     221136     7.4k/2.2k 36/10 **
 	GNOME          GNOME      55922     9.8k      13
 	Zile           zile      257360    11.7k      48
 	Mg             mg        585313    16.5K      50
@@ -137,6 +137,7 @@ codebase less then half of the size.
 
     ** KLOC: C / Lisp lines
 	   Files: total files / fLisp only files.
+
 
 Since Femto 2.12 C code is being moved out to Lisp, since Femto 2.25
 fLisp has been moved out of the Femto source tree.

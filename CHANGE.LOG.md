@@ -1,7 +1,9 @@
-## Femto 2.25.1
+## Femto 2.25.3
 
-* Adjust to fLisp 0.16
-* Experimental improvement on buffer name
+* Adjust to fLisp 0.17
+
+## Femto 2.25.2
+
 * Adjust to fLisp 0.16
 * Experimental improvement on buffer name
 * Fix batch-mode, segfault w/o femtorc

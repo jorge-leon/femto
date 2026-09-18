@@ -4,6 +4,8 @@
 - Implement Lisp buffer object
 - Fix bufmenu to use after-mode-switch-hook
 - Fix git and grep
+- Auoload applications to reduce startup time.
+- Bug: femto segfaults w/o femtorc, batch-mode
 - Use posix-filename on save-buffer.
 - Move prompt-filename to Lisp.
 - Consider implementing bury-buffer.
@@ -28,6 +30,11 @@
 - Make buffer name and filename Lisp string objects.
 - Write a test file for all lisp functions.
 - User defined color themes/schemes.
+
+
+# Femto 2.25.3
+- Update to fLisp 0.17. With this version fLisp switches from throwing exceptions
+  to returning error objects. This requires adaptions in both C and Lisp code.
 
 
 # Femto 2.25.2

@@ -2,8 +2,8 @@
 
 (defun show-startup-message()
   (let* ((current  (current-buffer))
-	 (result   (catch (set-buffer "*scratch*"))) )
-    (if (car result)  (progn (set-buffer current) (apply throw result))
+	 (result   (set-buffer "*scratch*")) )
+    (if (errorp result)  (progn (set-buffer current) result)
 	(insert-string "\n\n\n\n
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;
@@ -32,7 +32,7 @@
     ((consp opts)
      (cond
        ((string-equal "-" (substring (car opts) 0 1))
-	(throw wrong-type-argument "(getopts opts pos) - unknown option" (car opts)) )
+	(error wrong-type-argument "(getopts opts pos) - unknown option" (car opts)) )
        ((eq "+" (car opts)) (getopts (cdr opts) 0))
        ((eq "+" (substring (car opts) 0 1))
 	(getopts (cdr opts) (string-to-number (substring (car opts) 1))))
@@ -40,7 +40,7 @@
 	(switch-to-buffer (find-file-noselect (car opts)))
 	(cond ((> pos 0) (goto-line pos)))
 	(getopts (cdr opts) 0))))
-    (t (throw wrong-type-argument "(getopts opts pos) - opts must be list"))))
+    (t (error wrong-type-argument "(getopts opts pos) - opts must be list"))))
 
 ;; Load and edit user specific config
 (setq
@@ -53,11 +53,6 @@
 (defun edit-config()
   (find-file-noselect (confn config_file)))
 
-(defun log (level result . message)
-  (cond (result
-	 (log-debug (concat  level":"(car result)": "message" '"(caddr result)"' - "(cadr result)"\n")) )
-	 (t (log-debug (concat level": "message"\n"))) ))
-
 (provide 'startup)
 
 ;;
@@ -65,34 +60,18 @@
 ;;
 (require 'defmacro)
 
-(defun buffer-menu ()
-  ;;; autoload dired with c-x c-b
-  (require 'bufmenu) )
-
-(defun dired-interactive ()
-  ;;; autoload dired with c-x d
-  (require 'dired)
-  (dired-interactive) )
-
-(defun grep-command ()
-  ;;; autoload grep with c-x g
-  (require 'grep)
-  (grep-command) )
-
-(defun git-menu ()
-  ;;; autoload git with c-x c-g
-  (require 'git)
-  (git-menu) )
-
-(defun oxo ()
-  ;; autoload info with c-x c-o
-  (require 'oxo)
-  (oxo) )
-
-(defun show-info ()
-  ;; autoload info with c-x h
-  (require 'info)
-  (show-info) )
+;;; autoload dired with c-x c-b
+(defun buffer-menu () (require 'bufmenu) buffer-menu)
+;;; autoload dired with c-x d
+(defun dired-interactive () (require 'dired) (dired-interactive))
+;;; autoload grep with c-x g
+(defun grep-command () (require 'grep) (grep-command))
+;;; autoload git with c-x c-g
+(defun git-menu () (require 'git) (git-menu))
+;;; autoload info with c-x c-o
+(defun oxo () (require 'oxo) (oxo))
+;;; autoload info with c-x h
+(defun show-info () (require 'info) (show-info))
 
 ;;
 ;;  Key Bindings, setkey is used to bind keys to user defined functions in lisp
@@ -128,13 +107,14 @@
 ;;
 ;; Try to load the user rc file
 ;;
-(let ((rcfile (confn config_file)) (result nil))
-  (cond ((car (setq result (catch (load rcfile))))
-	 (log 'ERROR result "error loading rc file:"))
-	(t (log 'NOTICE nil "rc file '"rcfile"' loaded\n")) ))
+(let* ((rcfile (confn config_file))
+       ;; Note: admittedly it's rude to test for existence this way. It just that it is so short... 
+       (result (load rcfile)) )
+  (if (errorp result)  (errorp (log 'ERROR (elements result 0 1) " error loading rc file: "(elements result 1 2)))
+      (log 'NOTICE nil "rc file '"rcfile"' loaded\n") ))
 
 ;;
 ;; Try to parse the commandline arguments
 ;;
-(let ((result (catch (getopts argv 0))))
-  (cond ((car result) (log 'ERROR result "parsing command line"))))
+(let ((result (getopts argv 0)))
+  (when (errorp result) (log 'ERROR result "parsing command line")) )

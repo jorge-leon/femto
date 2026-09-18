@@ -3,9 +3,9 @@
 Femto is an extended version of Atto Emacs with a tiny Lisp extension
 language.
 
-![Femto screenshot](https://github.com/hughbarney/femto/blob/master/screenshots/femto-hilite.png)
+![Femto screenshot](https://github.com/jorge-leon/femto/blob/master/screenshots/femto-2.25.3_hilite.png)
 
-![Femto screenshot](https://github.com/hughbarney/femto/blob/master/screenshots/femto-startup.jpg)
+![Femto screenshot](https://github.com/jorge-leon/femto/blob/master/screenshots/femto-2.25.3_startup.png)
 
 > A designer knows he has achieved perfection not when there is
 > nothing left to add, but when there is nothing left to take away.
@@ -53,9 +53,9 @@ computers) I am not aware of any other editor that works this way.
 This feature was born out of the principle of keeping a small editor
 code written in C and where possible using Lisp to implement new
 features.  The standard Emacs macro keystrokes [C-x (, C-c ), C-x e]
-are all written in Lisp in the file examples/defmacro.lsp. This meant
-that no special C code was needed in Femto to know when it was in
-macro mode or not.
+are all written in Lisp in the file
+[defmacro.lsp](examples/defmacro.lsp). This meant that no special C
+code was needed in Femto to know when it was in macro mode or not.
 
 
 ## Why the name Femto?
@@ -71,7 +71,7 @@ and Pico Emacs editors have been around for a while.
 * Zepto means 10 to the power of minus 21
 * Zep is smaller version of Zepto Emacs
 
-In Defining Atto as the lowest functional Emacs I have had to consider
+In defining Atto as the lowest functional Emacs I have had to consider
 the essential feature set that makes Emacs, 'Emacs'. I have defined
 this point as a basic Emacs command set and key bindings; the ability
 to edit multiple files (buffers), and switch between them; edit the
@@ -123,7 +123,7 @@ codebase less then half of the size.
 	atto           atto       33002     1.9k      10
 	pEmacs         pe         59465     5.7K      16
 	Esatz-Emacs    ee         59050     5.7K      14
-	femto          femto     166472     7.4k/2.4k 36/10 **
+	femto          femto     221136     7.4k/2.2k 36/10 **
 	GNOME          GNOME      55922     9.8k      13
 	Zile           zile      257360    11.7k      48
 	Mg             mg        585313    16.5K      50
@@ -137,6 +137,7 @@ codebase less then half of the size.
 
     ** KLOC: C / Lisp lines
 	   Files: total files / fLisp only files.
+
 
 Since Femto 2.12 C code is being moved out to Lisp, since Femto 2.25
 fLisp has been moved out of the Femto source tree.

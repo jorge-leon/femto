@@ -25,15 +25,16 @@
 #include "flisp/lisp.h"
 #include "flisp/string.h"
 #include "flisp/posix.h"
-#ifdef FLISP_DOUBLE_EXTENSION
 #include "flisp/double.h"
-#endif
 
 void gui(void); /* The GUI loop used in interactive mode */
 
-Object *interp;
+Object *interp, *err_stream;
 char debug_file[] = "debug.out";
-FILE *prev, *debug_fp = NULL;
+FILE *debug_fp = NULL;
+int flisp_input_pipe[2];
+char *flisp_error_output;
+size_t flisp_error_size;
 
 /** lisp_init() - initialize fLisp interpreter and load rc file
  *
@@ -68,10 +69,8 @@ void lisp_init(char **argv)
         debug("femto primitives and constants registered\n");
         FLISP_UNLESS_ERR(femto_init(interp, interp->self.extensions->car));
         debug("femto extension loaded\n");
-#ifdef FLISP_DOUBLE_EXTENSION
         FLISP_UNLESS_ERR(flisp_register_extension(interp, "double", flisp_double_init));
         debug("double extension registered\n");
-#endif
     } while(0);
     if (FLISP_IS_ERR(e))
         fatal("fLisp initialization failed");
@@ -87,8 +86,15 @@ void lisp_init(char **argv)
         if (FLISP_IS_OOM(e))
             fatal("exiting..");
     }
-    if (init_fd != NULL && fclose(init_fd))
-        debug("failed to close rcfile %s: %s\n", init_file, strerror(errno));
+
+    if ((FLISP_STDERR.fd = open_memstream(&flisp_error_output, &flisp_error_size)) == NULL)
+        fatal("Failed to create fLisp error stream");
+    /* fLisp's input is a pipe, Femto writes commands to it */
+    if (pipe(flisp_input_pipe) == -1)
+        fatal("Failed to create fLisp input pipe");
+    if ((FLISP_STANDARD_INPUT.fd = fdopen(flisp_input_pipe[0], "r")) == NULL)
+        fatal("Failed to open fLisp input pipe read stream");
+    debug("fLisp input pipe set up\n");
 }
 
 int main(int argc, char **argv)
@@ -124,14 +130,24 @@ int main(int argc, char **argv)
         FLISP_STANDARD_INPUT.fd = stdin;
         FLISP_STANDARD_OUTPUT.fd = stdout;
         FLISP_STDERR.fd = stderr;
+        /* Note: we might need to set interp->self.print here */
         while (!FLISP_IS_EOF(flisp_eval_input(interp, nil)));
-    } else
-        /* GUI */
-        gui();
+        return 0;
+    }
+
+    err_stream = file_fopen(interp, "", ">");
+    if (FLISP_IS_ERR(err_stream))
+        fatal("failed to open error formatting stream");
+    
+    /* GUI */
+    gui();
 
     debug("main(): shutdown\n");
+    if (file_fclose(interp, err_stream))
+        fatal("failed to close error formatting stream");
+
     // Note: exit frees all memory, do we need this here?
-    // Note: we can't do
+    // Note: we can't do, or we can again
     //flisp_destroy(interp);
     //here, because we get segfaults in wide character routines.
 
@@ -146,59 +162,46 @@ int main(int argc, char **argv)
  */
 void msg_lisp_err(Object *interp, Object *e)
 {
-    char *buf;
-    size_t len;
-    FILE *fd;
-
-    /* Note: use file_fopen() here. */
-    if (NULL == (fd = open_memstream(&buf, &len)))
-        fatal("failed to allocate error formatting buffer");
-    FLISP_STANDARD_OUTPUT.fd = fd;
-    flisp_write_object(interp, e, t, interp->self.output);
-    msg("%s", buf);
-    FLISP_STANDARD_OUTPUT.fd = NULL;
-    fclose(fd);
-    free(buf);
+    rewind(err_stream->stream.fd);
+    flisp_write_object(interp, e, nil, err_stream);
+    msg("%s", err_stream->stream.buf);
+}
+void drain_flisp_input_pipe() {
+    char buf[PIPE_BUF];
+    int size = read(flisp_input_pipe[0], buf, PIPE_BUF);
+    if (size == -1)
+        debug("eval_string: buffer empty, %\n", strerror(errno));
+    else 
+        debug("eval_string: emptying %d bytes: %s\n", buf);
 }
 
 /** eval_string - Invoke fLisp interpreter and return result as string
  *
- * @param do_format  If true, the input string is passed through
- *                   printf style formatting, otherwise it is used directly.
- * @param format     Input string for the interpreter.
+ * @param ...        parameters to the format string.
  *
  */
-void eval_string(bool do_format, char *format, ...)
+void eval_string(char *format, ...)
 {
-    char buf[INPUT_FMT_BUFSIZ], *input;
     Object *e;
-
-    int size;
     va_list args;
+    size_t size;
 
-    if (do_format) {
-        va_start(args, format);
-        size = vsnprintf (buf, sizeof(buf), format, args);
-        va_end(args);
-        if (size > INPUT_FMT_BUFSIZ) {
-            msg("input string larger then %d", INPUT_FMT_BUFSIZ);
-            return;
-        }
-        input = buf;
-    } else {
-        input = format;
+    va_start(args, format);
+    size = vdprintf(flisp_input_pipe[1], format, args);
+    va_end(args);
+    if (size > PIPE_BUF) {
+        msg("input string larger then %d", PIPE_BUF);
+        drain_flisp_input_pipe();
+        return;
     }
-    if (FLISP_IS_ERR(interp->self.input = file_fopen(interp, input, "<")))
-        fatal("OOM preparing input...");
-    e = flisp_eval_input(interp, t);
+    e = flisp_eval_expr(interp, t);
     if (!FLISP_IS_ERR(e))
         return;
+    if (FLISP_IS_OOM(e))
+        fatal("OOM wile evaluating expression");    
+    if (FLISP_IS_EOF(e))
+        fatal("fLisp input pipe closed");
     msg_lisp_err(interp, e);
-    if (debug_mode)
-        flisp_write_object(interp, e, t, interp->self.debug);
-    if (e->error.type == out_of_memory)
-        fatal("OOM, exiting..");
-    return;
 }
 
 void gui(void)

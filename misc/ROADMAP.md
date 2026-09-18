@@ -32,6 +32,11 @@
 - User defined color themes/schemes.
 
 
+# Femto 2.25.3
+- Update to fLisp 0.17. With this version fLisp switches from throwing exceptions
+  to returning error objects. This requires adaptions in both C and Lisp code.
+
+
 # Femto 2.25.2
 - Update to fLisp 0.16
 - Autoload applications to reduce startup time.
